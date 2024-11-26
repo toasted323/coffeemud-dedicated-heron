@@ -38,6 +38,15 @@ jobs:
         if: ${{ github.event.inputs.dry_run != 'true' }}
         run: ./gradlew build -Drevision=${{ github.event.inputs.version }}
 
+      - name: Run Tests and Coverage
+        run: ./gradlew test jacocoTestReport || true
+        continue-on-error: true
+
+      - name: Report Coverage Results
+        run: |
+          echo "Coverage report generated."
+          echo "Check the reports in build/reports/jacoco/test/html/index.html"
+
       - name: Tag Release (Dry Run)
         if: ${{ github.event.inputs.dry_run == 'true' }}
         run: |

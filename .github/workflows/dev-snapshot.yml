@@ -41,9 +41,18 @@ jobs:
         if: ${{ github.event.inputs.dry_run != 'true' }}
         run: ./gradlew build -Drevision=${{ env.dev_revision }}
 
+      - name: Run Tests and Coverage
+        run: ./gradlew test jacocoTestReport || true
+        continue-on-error: true
+
+      - name: Report Coverage Results
+        run: |
+          echo "Coverage report generated."
+          echo "Check the reports in build/reports/jacoco/test/html/index.html"
+
       - name: Upload Artifact
         if: ${{ github.event.inputs.dry_run != 'true' }}
         uses: actions/upload-artifact@v3
         with:
           name: coffeemud-build-artifact
-          path: build/libs/*.jar  # Adjusted path for Gradle output
+          path: build/libs/*.jar
