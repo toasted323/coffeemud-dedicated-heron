@@ -28,6 +28,9 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
 
+      - name: Check Java version
+        run: java -version
+
       - name: Build Project (Dry Run)
         if: ${{ github.event.inputs.dry_run == 'true' }}
         run: |

@@ -62,7 +62,7 @@ tasks.withType(JavaCompile) {
     println "Configuring JavaCompile task: ${name}"
     options.encoding = 'UTF-8'
     options.compilerArgs << '-Xlint:-deprecation'
-    options.compilerArgs << '-Xlint:-removal'
+    // options.compilerArgs << '-Xlint:-removal' // failing on github
 }
 
 test {

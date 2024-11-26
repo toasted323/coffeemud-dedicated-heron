@@ -24,6 +24,9 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
 
+      - name: Check Java version
+        run: java -version
+
       - name: Get Committer Date and Short Hash
         id: get_commit_info
         run: |
