@@ -30,9 +30,9 @@ jobs:
       - name: Get Committer Date and Short Hash
         id: get_commit_info
         run: |
-          COMMITTER_DATE=$(git log -1 --format=%ci | cut -d' ' -f1)
+          COMMITTER_DATE=$(git log -1 --format=%ci | cut -d' ' -f1 | tr -d '-') 
           SHORT_HASH=$(echo $GITHUB_SHA | cut -c1-7)  # Get the short commit hash
-          echo "dev_version=dev_${COMMITTER_DATE}_${SHORT_HASH}" >> $GITHUB_ENV  # Format as DEV_YYYY-MM-DD_hash
+          echo "dev_version=dev-${COMMITTER_DATE}-${SHORT_HASH}" >> $GITHUB_ENV  # Format as DEV_YYYY-MM-DD_hash
 
       - name: Build Project (Dry Run)
         if: ${{ github.event.inputs.dry_run == 'true' }}
