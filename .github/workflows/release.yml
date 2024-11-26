@@ -10,9 +10,6 @@ on:
         description: 'Set to true for a dry run'
         required: false
         default: 'true'
-  push:
-    branches:
-      - 'release/*'
 
 jobs:
   package_release:
