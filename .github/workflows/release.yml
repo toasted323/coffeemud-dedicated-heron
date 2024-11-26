@@ -37,13 +37,22 @@ jobs:
       - name: Build Project (Actual)
         if: ${{ github.event.inputs.dry_run != 'true' }}
         env:
-        run: ARTIFACT_VERSION=${{ github.event.inputs.version }}  ./gradlew build
+          ARTIFACT_VERSION: ${{ github.event.inputs.version }}
+        run: ./gradlew build
 
-      - name: Run Tests and Coverage
+      - name: Run Tests and Coverage (Dry Run)
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        run: |
+          echo "Dry Run Mode: This would run tests and generate coverage reports."
+          echo "Command: ./gradlew test jacocoTestReport"
+
+      - name: Run Tests and Coverage (Actual)
+        if: ${{ github.event.inputs.dry_run != 'true' }}
         run: ./gradlew test jacocoTestReport || true
         continue-on-error: true
 
       - name: Report Coverage Results
+        if: ${{ github.event.inputs.dry_run != 'true' }}
         run: |
           echo "Coverage report generated."
           echo "Check the reports in build/reports/jacoco/test/html/index.html"
