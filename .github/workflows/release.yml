@@ -32,11 +32,12 @@ jobs:
         if: ${{ github.event.inputs.dry_run == 'true' }}
         run: |
           echo "Dry Run Mode: This would build the project with version ${{ github.event.inputs.version }}"
-          echo "Command: ./gradlew build -Drevision=${{ github.event.inputs.version }}"
+          echo "Command: ARTIFACT_VERSION=${{ github.event.inputs.version }} ./gradlew build"
 
       - name: Build Project (Actual)
         if: ${{ github.event.inputs.dry_run != 'true' }}
-        run: ./gradlew build -Drevision=${{ github.event.inputs.version }}
+        env:
+        run: ARTIFACT_VERSION=${{ github.event.inputs.version }}  ./gradlew build
 
       - name: Run Tests and Coverage
         run: ./gradlew test jacocoTestReport || true

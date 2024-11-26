@@ -4,6 +4,11 @@ plugins {
 }
 
 group = 'io.github.toasted323.coffeemud-dedicated-heron'
+version = 'dev'
+
+def artifactName = System.getenv('ARTIFACT_NAME') ?: 'coffeemud-dedicated-heron'
+def artifactVersion = System.getenv('ARTIFACT_VERSION') ?: version
+
 description = '''
 `coffeemud-dedicated-heron` is a fork of the original CoffeeMud project
 ([GitHub Repository](https://github.com/bozimmerman/CoffeeMud)). This version includes enhancements, additional
@@ -16,7 +21,6 @@ While it attempts to retain compatibility with the original CoffeeMud codebase, 
 issues due to the modifications made. Users should proceed with caution and thoroughly test in their specific
 environments.
 '''
-version = 'dev-SNAPSHOT'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
@@ -61,7 +65,7 @@ sourceSets {
 tasks.withType(JavaCompile) {
     println "Configuring JavaCompile task: ${name}"
     options.encoding = 'UTF-8'
-    options.compilerArgs << '-Xlint:-deprecation'
+    // options.compilerArgs << '-Xlint:-deprecation'
     // options.compilerArgs << '-Xlint:-removal' // failing on github
 }
 
@@ -93,10 +97,12 @@ jar.dependsOn(copyClasses)
 
 
 jar {
+    archiveBaseName = artifactName
+    version = artifactVersion
     manifest {
         attributes(
-                'Implementation-Title': 'CoffeeMud-Dedicated-Heron',
-                'Implementation-Version': version,
+                'Implementation-Title': artifactName,
+                'Implementation-Version': artifactVersion,
                 'Main-Class': 'com.planet_ink.coffee_mud.application.MUD'
         )
     }
