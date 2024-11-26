@@ -31,7 +31,7 @@ jobs:
       - name: Build Project (Dry Run)
         if: ${{ github.event.inputs.dry_run == 'true' }}
         run: |
-          echo "Dry Run Mode: This would build the project with version ${github.event.inputs.version}"
+          echo "Dry Run Mode: This would build the project with version ${{ github.event.inputs.version }}"
           echo "Command: ./gradlew build -Drevision=${{ github.event.inputs.version }}"
 
       - name: Build Project (Actual)
