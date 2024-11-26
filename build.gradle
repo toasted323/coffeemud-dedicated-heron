@@ -102,16 +102,18 @@ jar {
     }
 
     from('com') {
-        include '**/*.class'
         include '**/*.java'
+        into('com')
     }
 
     from('resources/help') {
         include '*'
+        into('resources/help')
     }
 
     from('resources/fakedb') {
         include 'fakedb.schema'
+        into('resources/fakedb')
     }
 
     //eachFile { FileCopyDetails details ->
