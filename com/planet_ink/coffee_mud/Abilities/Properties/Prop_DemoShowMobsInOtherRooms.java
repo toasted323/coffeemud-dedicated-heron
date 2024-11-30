@@ -27,13 +27,13 @@ import java.util.Enumeration;
    limitations under the License.
 */
 
-public class Prop_TestShowMobsInOtherRooms extends Property
+public class Prop_DemoShowMobsInOtherRooms extends Property
 {
 
 	@Override
 	public String ID()
 	{
-		return "Prop_TestShowMobsInOtherRooms";
+		return "Prop_DemoShowMobsInOtherRooms";
 	}
 
 	@Override
