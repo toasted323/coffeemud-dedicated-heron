@@ -25,7 +25,7 @@ import java.util.Enumeration;
 */
 
 public
-class Prop_DebugMessages extends Property
+class Prop_DebugMessages extends LoggableProperty
 {
 	@Override
 	public String ID()
@@ -49,18 +49,26 @@ class Prop_DebugMessages extends Property
 	public String accountForYourself()
 	{
 		return "This is a property to debug messages passing through rooms.";
-
 	}
 
 	@Override
-	public boolean okMessage(final Environmental myHost,final CMMsg msg)
+	protected void handleParsedConfiguration()
 	{
-		return super.okMessage(myHost,msg);
+		super.handleParsedConfiguration();
+		logger.logInfo("Configuration parsed");
 	}
 
 	@Override
-	public void executeMsg(final Environmental myHost,final CMMsg msg)
+	public boolean okMessage(final Environmental myHost, final CMMsg msg)
 	{
+		logger.logDebug("Received okMessage: " + msg.toString());
+		return super.okMessage(myHost, msg);
+	}
+
+	@Override
+	public void executeMsg(final Environmental myHost, final CMMsg msg)
+	{
+		logger.logDebug("Executing message: " + msg.toString());
 		if(myHost instanceof Room)
 		{
 			Room room = (Room) myHost;
@@ -79,9 +87,10 @@ class Prop_DebugMessages extends Property
 					debugMessage.append("Others Message: ").append(msg.othersMessage()).append("\n");
 					debugMessage.append("Type: ").append(msg.sourceMinor()).append("/").append(msg.targetMinor()).append("/").append(msg.othersMinor()).append("\n");
 					mob.tell(debugMessage.toString());
+					logger.logInfo("Debug message sent to player: " + mob.name());
 				}
 			}
 		}
-		super.executeMsg(myHost,msg);
+		super.executeMsg(myHost, msg);
 	}
 }

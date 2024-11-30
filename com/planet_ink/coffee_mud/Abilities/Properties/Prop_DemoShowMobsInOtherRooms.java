@@ -27,9 +27,8 @@ import java.util.Enumeration;
    limitations under the License.
 */
 
-public class Prop_DemoShowMobsInOtherRooms extends Property
+public class Prop_DemoShowMobsInOtherRooms extends LoggableProperty
 {
-
 	@Override
 	public String ID()
 	{
@@ -55,14 +54,23 @@ public class Prop_DemoShowMobsInOtherRooms extends Property
 	}
 
 	@Override
-	public boolean okMessage(final Environmental myHost,final CMMsg msg)
+	protected void handleParsedConfiguration()
 	{
-		return super.okMessage(myHost,msg);
+		super.handleParsedConfiguration();
+		logger.logInfo("Configuration parsed");
 	}
 
 	@Override
-	public void executeMsg(final Environmental myHost,final CMMsg msg)
+	public boolean okMessage(final Environmental myHost, final CMMsg msg)
 	{
+		logger.logDebug("Received okMessage: " + msg.toString());
+		return super.okMessage(myHost, msg);
+	}
+
+	@Override
+	public void executeMsg(final Environmental myHost, final CMMsg msg)
+	{
+		logger.logDebug("Executing message: " + msg.toString());
 		if(myHost instanceof Room && msg.targetMinor() == CMMsg.TYP_LOOK)
 		{
 			Room room = (Room) myHost;
@@ -93,6 +101,7 @@ public class Prop_DemoShowMobsInOtherRooms extends Property
 				}
 			}
 
+			logger.logInfo("Adding mob information to look message: " + mobInfo);
 			msg.addTrailerMsg(CMClass.getMsg(msg.source(),null,null,CMMsg.MSG_OK_VISUAL,mobInfo.toString(),CMMsg.NO_EFFECT,null,CMMsg.NO_EFFECT,null));
 		}
 		super.executeMsg(myHost,msg);
