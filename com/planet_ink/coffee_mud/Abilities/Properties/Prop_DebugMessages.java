@@ -2,11 +2,7 @@ package com.planet_ink.coffee_mud.Abilities.Properties;
 
 import com.planet_ink.coffee_mud.Abilities.interfaces.Ability;
 import com.planet_ink.coffee_mud.Common.interfaces.CMMsg;
-import com.planet_ink.coffee_mud.Locales.interfaces.Room;
-import com.planet_ink.coffee_mud.MOBS.interfaces.MOB;
 import com.planet_ink.coffee_mud.core.interfaces.Environmental;
-
-import java.util.Enumeration;
 
 /*
    Copyright 2024 github.com/toasted323
@@ -25,69 +21,46 @@ import java.util.Enumeration;
 */
 
 public
-class Prop_DebugMessages extends LoggableProperty
-{
+class Prop_DebugMessages extends LoggableProperty {
 	@Override
-	public String ID()
-	{
+	public String ID() {
 		return "Prop_DebugMessages";
 	}
 
 	@Override
-	public String name()
-	{
+	public String name() {
 		return "Room Debug Messages";
 	}
 
 	@Override
-	protected int canAffectCode()
-	{
+	protected int canAffectCode() {
 		return Ability.CAN_ROOMS;
 	}
 
 	@Override
-	public String accountForYourself()
-	{
+	public String accountForYourself() {
 		return "This is a property to debug messages passing through rooms.";
 	}
 
 	@Override
-	protected void handleParsedConfiguration()
-	{
+	protected void handleParsedConfiguration() {
 		super.handleParsedConfiguration();
 		logger.logInfo("Configuration parsed");
 	}
 
 	@Override
-	public boolean okMessage(final Environmental myHost, final CMMsg msg)
-	{
+	public boolean okMessage(final Environmental myHost, final CMMsg msg) {
 		logger.logDebug("Received okMessage: " + describeMessage(msg));
 		return super.okMessage(myHost, msg);
 	}
 
 	@Override
-	public void executeMsg(final Environmental myHost, final CMMsg msg)
-	{
+	public void executeMsg(final Environmental myHost, final CMMsg msg) {
 		logger.logDebug("Executing message: " + describeMessage(msg));
-		if(myHost instanceof Room)
-		{
-			Room room = (Room) myHost;
-			for(Enumeration<MOB> e = room.inhabitants(); e.hasMoreElements(); )
-			{
-				MOB mob = e.nextElement();
-				if(mob != null && mob.isPlayer())
-				{
-					String debugMessage = describeMessage(msg);
-					mob.tell(debugMessage);
-					logger.logInfo("Debug message sent to player: " + mob.name());
-				}
-			}
-		}
 		super.executeMsg(myHost, msg);
 	}
 
-	private String describeMessage(CMMsg msg)
-	{
+	private String describeMessage(CMMsg msg) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Debug: Message Details:\n");
 		sb.append("Source: ").append(describeMsgComponent(msg.source())).append("\n");
