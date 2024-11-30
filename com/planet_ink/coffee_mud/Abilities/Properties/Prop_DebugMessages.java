@@ -63,12 +63,22 @@ class Prop_DebugMessages extends LoggableProperty {
 	private String describeMessage(CMMsg msg) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Debug: Message Details:\n");
+
 		sb.append("Source: ").append(describeMsgComponent(msg.source())).append("\n");
 		sb.append("Target: ").append(describeMsgComponent(msg.target())).append("\n");
 		sb.append("Tool: ").append(describeMsgComponent(msg.tool())).append("\n");
+
 		sb.append("Source Message: ").append(describeStringField(msg.sourceMessage())).append("\n");
 		sb.append("Target Message: ").append(describeStringField(msg.targetMessage())).append("\n");
 		sb.append("Others Message: ").append(describeStringField(msg.othersMessage())).append("\n");
+
+		sb.append("Source Minor: ").append(describeMsgType(msg.sourceMinor())).append("\n");
+		sb.append("Target Minor: ").append(describeMsgType(msg.targetMinor())).append("\n");
+		sb.append("Others Minor: ").append(describeMsgType(msg.othersMinor())).append("\n");
+
+		sb.append("Source Major: ").append(describeMsgType(msg.sourceMajor())).append("\n");
+		sb.append("Target Major: ").append(describeMsgType(msg.targetMajor())).append("\n");
+		sb.append("Others Major: ").append(describeMsgType(msg.othersMajor())).append("\n");
 
 		sb.append("Source Code (flags): ").append(Integer.toBinaryString(msg.sourceCode())).append(" (Decimal: ").append(msg.sourceCode()).append(")\n");
 		sb.append("Target Code (flags): ").append(Integer.toBinaryString(msg.targetCode())).append(" (Decimal: ").append(msg.targetCode()).append(")\n");
@@ -90,7 +100,11 @@ class Prop_DebugMessages extends LoggableProperty {
 	}
 
 	private String describeMsgType(int type) {
-		String typeName = CMMsg.TYPE_DESCS[type];
-		return typeName + " (" + type + ")";
+		if (type >= 0 && type < CMMsg.TYPE_DESCS.length) {
+			String typeName = CMMsg.TYPE_DESCS[type];
+			return typeName + " (" + type + ")";
+		} else {
+			return "Unknown Type (" + type + ")";
+		}
 	}
 }
