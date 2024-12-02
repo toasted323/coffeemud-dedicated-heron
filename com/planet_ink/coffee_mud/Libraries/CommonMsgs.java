@@ -2272,72 +2272,96 @@ public class CommonMsgs extends StdLibrary implements CommonCommands
 			mob.tell(L("You can't see that way!"));
 	}
 
-	protected void handleBeingMobLookedAt(final CMMsg msg)
-	{
-		final MOB viewermob=msg.source();
-		final MOB viewedmob=(MOB)msg.target();
-		final boolean longlook=msg.targetMinor()==CMMsg.TYP_EXAMINE;
-		final StringBuilder myDescription=new StringBuilder("");
-		if(CMLib.flags().canBeSeenBy(viewedmob,viewermob))
-		{
-			if(viewermob.isAttributeSet(MOB.Attrib.SYSOPMSGS))
-			{
-				myDescription.append("\n\rType  : "+viewedmob.ID()
-									+"\n\rRejuv : "+viewedmob.basePhyStats().rejuv()
-									+((!viewedmob.isMonster())?", Hunger="+viewedmob.curState().getHunger():"")
-									+"\n\rAbile : "+viewedmob.basePhyStats().ability()
-									+((!viewedmob.isMonster())?", Thirst="+viewedmob.curState().getThirst():"")
-									+"\n\rLevel : "+viewedmob.basePhyStats().level()
-									+((viewedmob.isPlayer())?", Hygeine="+viewedmob.playerStats().getHygiene():"")
-									+"\n\rDesc  : "+viewedmob.description()
-									+"\n\rStart : "+((viewedmob.getStartRoom()==null)?"null":viewedmob.getStartRoom().roomID())
-									+"\n\r"+getRiderAddendum(viewedmob)
-										   +getFollowAddendum(viewedmob)
-									+"Misc  : "+viewedmob.text()
-									+"\n\r");
+	protected void handleBeingMobLookedAt(final CMMsg msg) {
+		final MOB viewermob = msg.source();
+		final MOB viewedmob = (MOB) msg.target();
+
+		// Check if the viewer is looking at themselves
+		boolean isSelfExamination = viewermob == viewedmob;
+
+		final boolean longlook = msg.targetMinor() == CMMsg.TYP_EXAMINE;
+		final StringBuilder myDescription = new StringBuilder("");
+
+		if (CMLib.flags().canBeSeenBy(viewedmob, viewermob)) {
+			if (viewermob.isAttributeSet(MOB.Attrib.SYSOPMSGS)) {
+				myDescription.append("\n\rType  : " + viewedmob.ID()
+						+ "\n\rRejuv : " + viewedmob.basePhyStats().rejuv()
+						+ ((!viewedmob.isMonster()) ? ", Hunger=" + viewedmob.curState().getHunger() : "")
+						+ "\n\rAbile : " + viewedmob.basePhyStats().ability()
+						+ ((!viewedmob.isMonster()) ? ", Thirst=" + viewedmob.curState().getThirst() : "")
+						+ "\n\rLevel : " + viewedmob.basePhyStats().level()
+						+ ((!viewedmob.isPlayer()) ? ", Hygeine=" + viewedmob.playerStats().getHygiene() : "")
+						+ "\n\rDesc  : " + viewedmob.description()
+						+ "\n\rStart : " + ((viewedmob.getStartRoom() == null) ? "null" : viewedmob.getStartRoom().roomID())
+						+ "\n\r" + getRiderAddendum(viewedmob)
+						+ getFollowAddendum(viewedmob)
+						+ "Misc  : " + viewedmob.text()
+						+ "\n\r");
 			}
-			if(!viewedmob.isMonster())
-			{
-				String levelStr=null;
-				if((!CMSecurity.isDisabled(CMSecurity.DisFlag.CLASSES))
-				&&(!viewedmob.charStats().getMyRace().classless())
-				&&(!viewedmob.charStats().getCurrentClass().leveless())
-				&&(!viewedmob.charStats().getMyRace().leveless())
-				&&(!CMSecurity.isDisabled(CMSecurity.DisFlag.LEVELS)))
-					levelStr=CMLib.english().startWithAorAn(viewedmob.charStats().displayClassLevel(viewedmob,false));
-				else
-				if((!CMSecurity.isDisabled(CMSecurity.DisFlag.LEVELS))
-				&&(!viewedmob.charStats().getCurrentClass().leveless())
-				&&(!viewedmob.charStats().getMyRace().leveless()))
-					levelStr="level "+viewedmob.charStats().displayClassLevelOnly(viewedmob);
-				else
-				if((!CMSecurity.isDisabled(CMSecurity.DisFlag.CLASSES))
-				&&(!viewedmob.charStats().getMyRace().classless()))
-					levelStr=CMLib.english().startWithAorAn(viewedmob.charStats().displayClassName());
-				if((!CMSecurity.isDisabled(CMSecurity.DisFlag.RACES))
-				&&(!viewedmob.charStats().getCurrentClass().raceless()))
-				{
-					myDescription.append(viewedmob.name(viewermob)+" the ");
-					if((viewedmob.charStats().getStat(CharStats.STAT_AGE)>0)&&(!CMSecurity.isDisabled(CMSecurity.DisFlag.ALL_AGEING)))
-						myDescription.append(viewedmob.charStats().ageName().toLowerCase()+" ");
-					myDescription.append(viewedmob.charStats().raceName());
+
+			// Class and level information logic
+			if (!viewedmob.isMonster()) {
+				String levelStr = null;
+
+				// Show class and level information for self-examination or SysOp
+				if (isSelfExamination || CMSecurity.isASysOp(viewermob)) {
+					if ((!CMSecurity.isDisabled(CMSecurity.DisFlag.CLASSES))
+							&& (!viewedmob.charStats().getMyRace().classless())
+							&& (!viewedmob.charStats().getCurrentClass().leveless())
+							&& (!viewedmob.charStats().getMyRace().leveless())
+							&& (!CMSecurity.isDisabled(CMSecurity.DisFlag.LEVELS))) {
+						levelStr = CMLib.english().startWithAorAn(viewedmob.charStats().displayClassLevel(viewedmob, false));
+					} else if ((!CMSecurity.isDisabled(CMSecurity.DisFlag.LEVELS))
+							&& (!viewedmob.charStats().getCurrentClass().leveless())
+							&& (!viewedmob.charStats().getMyRace().leveless())) {
+						levelStr = "level " + viewedmob.charStats().displayClassLevelOnly(viewedmob);
+					} else if ((!CMSecurity.isDisabled(CMSecurity.DisFlag.CLASSES))
+							&& (!viewedmob.charStats().getMyRace().classless())) {
+						levelStr = CMLib.english().startWithAorAn(viewedmob.charStats().displayClassName());
+					}
 				}
-				else
-					myDescription.append(viewedmob.name(viewermob)+" ");
-				if(levelStr!=null)
-					myDescription.append(" is "+levelStr+".\n\r");
-				else
-					myDescription.append("is here.\n\r");
+
+				// Race information logic
+				if ((!CMSecurity.isDisabled(CMSecurity.DisFlag.RACES))
+						&& (!viewedmob.charStats().getCurrentClass().raceless())) {
+					myDescription.append(viewedmob.name(viewermob) + " the ");
+
+					if ((viewedmob.charStats().getStat(CharStats.STAT_AGE) > 0)
+							&& (!CMSecurity.isDisabled(CMSecurity.DisFlag.ALL_AGEING))) {
+						myDescription.append(viewedmob.charStats().ageName().toLowerCase() + " ");
+					}
+
+					myDescription.append(viewedmob.charStats().raceName());
+				} else {
+					myDescription.append(viewedmob.name(viewermob) + " ");
+				}
+
+				// Append level information based on conditions
+				if ((isSelfExamination) && levelStr != null) {
+					myDescription.append(" is " + levelStr + ".\n\r");
+				} else if (CMSecurity.isASysOp(viewermob) && levelStr != null) {
+					myDescription.append(" is " + levelStr + ".\n\r");
+				} else {
+					myDescription.append(" is here.\n\r");
+				}
 			}
-			if(viewedmob.phyStats().height()>0)
-				myDescription.append(L("@x1 is @x2 inches tall and weighs @x3 pounds.\n\r",viewedmob.charStats().HeShe(),""+viewedmob.phyStats().height(),""+viewedmob.baseWeight()));
-			if((longlook)&&(viewermob.charStats().getStat(CharStats.STAT_INTELLIGENCE)>5))
-			{
-				myDescription.append(L("@x1 has ",viewedmob.charStats().HeShe()));
-				final int[] parts=new int[Race.BODY_PARTS];
-				for(int i=0;i<Race.BODY_PARTS;i++)
-					parts[i]=viewedmob.charStats().getBodyPart(i);
-				final List<String> partsList=new ArrayList<String>();
+
+			// Physical characteristics
+			if (viewedmob.phyStats().height() > 0) {
+				myDescription.append(L("@x1 is @x2 inches tall and weighs @x3 pounds.\n\r",
+						viewedmob.charStats().HeShe(),
+						"" + viewedmob.phyStats().height(),
+						"" + viewedmob.baseWeight()));
+			}
+
+			// Long look details
+			if (longlook && (viewermob.charStats().getStat(CharStats.STAT_INTELLIGENCE) > 5)) {
+				myDescription.append(L("@x1 has ", viewedmob.charStats().HeShe()));
+				final int[] parts = new int[Race.BODY_PARTS];
+				for (int i = 0; i < Race.BODY_PARTS; i++)
+					parts[i] = viewedmob.charStats().getBodyPart(i);
+
+				final List<String> partsList = new ArrayList<String>();
 				if(parts[Race.BODY_LEG]>0)
 					partsList.add(L("@x1 leg(s)",""+parts[Race.BODY_LEG]));
 				else
@@ -2378,50 +2402,58 @@ public class CommonMsgs extends StdLibrary implements CommonCommands
 				}
 				if(parts[Race.BODY_WING] > 0)
 					partsList.add(L("wings"));
+
 				myDescription.append(CMLib.english().toEnglishStringList(partsList)).append(".\n\r");
 			}
-			if((longlook)&&(viewermob.charStats().getStat(CharStats.STAT_INTELLIGENCE)>12))
-			{
-				final CharStats C=(CharStats)CMClass.getCommon("DefaultCharStats");
-				final MOB testMOB=CMClass.getFactoryMOB();
-				viewedmob.charStats().getMyRace().affectCharStats(testMOB,C);
-				myDescription.append(relativeCharStatTest(C,viewedmob,"weaker","stronger",CharStats.STAT_STRENGTH));
-				myDescription.append(relativeCharStatTest(C,viewedmob,"clumsier","more nimble",CharStats.STAT_DEXTERITY));
-				myDescription.append(relativeCharStatTest(C,viewedmob,"more sickly","healthier",CharStats.STAT_CONSTITUTION));
-				myDescription.append(relativeCharStatTest(C,viewedmob,"more repulsive","more attractive",CharStats.STAT_CHARISMA));
-				myDescription.append(relativeCharStatTest(C,viewedmob,"more naive","wiser",CharStats.STAT_WISDOM));
-				myDescription.append(relativeCharStatTest(C,viewedmob,"dumber","smarter",CharStats.STAT_INTELLIGENCE));
+
+			// Intelligence-based insights
+			if (longlook && (viewermob.charStats().getStat(CharStats.STAT_INTELLIGENCE) > 12)) {
+				final CharStats C = (CharStats) CMClass.getCommon("DefaultCharStats");
+				final MOB testMOB = CMClass.getFactoryMOB();
+				viewedmob.charStats().getMyRace().affectCharStats(testMOB, C);
+
+				myDescription.append(relativeCharStatTest(C, viewedmob, "weaker", "stronger", CharStats.STAT_STRENGTH));
+				myDescription.append(relativeCharStatTest(C, viewedmob, "clumsier", "more nimble", CharStats.STAT_DEXTERITY));
+				myDescription.append(relativeCharStatTest(C, viewedmob, "more sickly", "healthier", CharStats.STAT_CONSTITUTION));
+				myDescription.append(relativeCharStatTest(C, viewedmob, "more repulsive", "more attractive", CharStats.STAT_CHARISMA));
+				myDescription.append(relativeCharStatTest(C, viewedmob, "more naive", "wiser", CharStats.STAT_WISDOM));
+				myDescription.append(relativeCharStatTest(C, viewedmob, "dumber", "smarter", CharStats.STAT_INTELLIGENCE));
+
 				testMOB.destroy();
 			}
-			if(!viewermob.isMonster())
-				myDescription.append(CMLib.protocol().mxpImage(viewedmob," ALIGN=RIGHT H=70 W=70"));
-			myDescription.append(CMStrings.capitalizeFirstLetter(viewedmob.healthText(viewermob))+"\n\r\n\r");
-			myDescription.append(CMStrings.capitalizeFirstLetter(viewedmob.description(viewermob))+"\n\r\n\r");
+
+			// Equipment display
+			if (!viewermob.isMonster())
+				myDescription.append(CMLib.protocol().mxpImage(viewedmob, " ALIGN=RIGHT H=70 W=70"));
+
+			myDescription.append(CMStrings.capitalizeFirstLetter(viewedmob.healthText(viewermob)) + "\n\r\n\r");
+			myDescription.append(CMStrings.capitalizeFirstLetter(viewedmob.description(viewermob)) + "\n\r\n\r");
 
 			final StringBuilder eq;
-			if(longlook)
-				eq=CMLib.commands().getEquipmentLong(viewermob,viewedmob);
+			if (longlook)
+				eq = CMLib.commands().getEquipmentLong(viewermob, viewedmob);
 			else
-				eq=CMLib.commands().getEquipment(viewermob,viewedmob);
-			if(eq.length() > 0)
-			{
-				if((CMProps.getIntVar(CMProps.Int.EQVIEW)>CMProps.Int.EQVIEW_MIXED)
-				||((viewermob!=viewedmob)&&(CMProps.getIntVar(CMProps.Int.EQVIEW)>CMProps.Int.EQVIEW_DEFAULT)))
-					myDescription.append(viewedmob.charStats().HeShe()+" is wearing "+eq.toString());
-				else
-					myDescription.append(viewedmob.charStats().HeShe()+" is wearing:\n\r"+eq.toString());
+				eq = CMLib.commands().getEquipment(viewermob, viewedmob);
+
+			if (eq.length() > 0) {
+				if ((CMProps.getIntVar(CMProps.Int.EQVIEW) > CMProps.Int.EQVIEW_MIXED)
+						|| ((viewermob != viewedmob) && (CMProps.getIntVar(CMProps.Int.EQVIEW) > CMProps.Int.EQVIEW_DEFAULT))) {
+					myDescription.append(viewedmob.charStats().HeShe() + " is wearing " + eq.toString());
+				} else {
+					myDescription.append(viewedmob.charStats().HeShe() + " is wearing:\n\r" + eq.toString());
+				}
 			}
+
 			viewermob.tell(msg.source(), viewedmob, null, myDescription.toString());
-			if(longlook)
-			{
-				final Command C=CMClass.getCommand("Consider");
-				try
-				{
+
+			// Consider command execution on long look
+			if (longlook) {
+				final Command C = CMClass.getCommand("Consider");
+				try {
 					if (C != null)
 						C.executeInternal(viewermob, 0, viewedmob);
-				}
-				catch (final java.io.IOException e)
-				{
+				} catch (final java.io.IOException e) {
+					// Handle exception appropriately
 				}
 			}
 		}
