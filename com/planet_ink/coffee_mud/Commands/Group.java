@@ -164,8 +164,7 @@ public class Group extends StdCommand
 			cols[1] = CMLib.lister().fixColWidth(0, mob.session()); // class
 			cols[2] = CMLib.lister().fixColWidth(0, mob.session()); // level
 		}
-		cols[3]=CMLib.lister().fixColWidth(longestName,mob.session());
-		//name
+		cols[3]=CMLib.lister().fixColWidth(longestName,mob.session());//name
 		cols[4]=CMLib.lister().fixColWidth(3,mob.session()); // one digit
 		cols[5]=CMLib.lister().fixColWidth(statLen,mob.session()); // one stat
 		return shortCode;
