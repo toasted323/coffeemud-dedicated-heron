@@ -124,7 +124,7 @@ public class WhoIs extends Who
 			msg.append(showWhoSingle(lst.getFirst(),mob,colWidths));
 		else
 		{
-			msg.append(getHead(colWidths));
+			msg.append(getHead(mob, colWidths));
 			for(final MOB mob2 : lst)
 				msg.append(showWhoShort(mob2,mob,colWidths));
 		}

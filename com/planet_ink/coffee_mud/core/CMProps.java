@@ -3,7 +3,6 @@ package com.planet_ink.coffee_mud.core;
 import com.planet_ink.coffee_mud.Abilities.interfaces.Ability;
 import com.planet_ink.coffee_mud.Common.interfaces.Session;
 import com.planet_ink.coffee_mud.Libraries.interfaces.CombatLibrary;
-import com.planet_ink.coffee_mud.Libraries.interfaces.ExpertiseLibrary;
 import com.planet_ink.coffee_mud.MOBS.interfaces.MOB;
 import com.planet_ink.coffee_mud.Libraries.interfaces.LanguageLibrary;
 import com.planet_ink.coffee_mud.Libraries.interfaces.TimeManager;
@@ -262,6 +261,7 @@ public class CMProps extends Properties
 		NEWACODES,
 		PRIDECATS,
 		FORMULA_PROFGAIN,
+		PRIVATE_CHARACTER_INFO,
 	}
 
 	public final static int DEFAULT_MOB_HP_BASE = 11;
@@ -611,6 +611,21 @@ public class CMProps extends Properties
 		CMProps.WhiteList.class,
 	};
 
+	public static enum PrivateCharacterInfo {
+		CLASS,
+		LEVEL;
+
+		private String key;
+
+		private PrivateCharacterInfo() {
+			this.key = this.toString();
+		}
+
+		public String getKey() {
+			return key;
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	protected final Set<String>[]sysLstFileSet		= new Set[ListFile.values().length];
 	protected final String[]	 sysVars			= new String[Str.values().length];
@@ -654,6 +669,7 @@ public class CMProps extends Properties
 	protected final Map<String,CostDef> skillsCost  =new HashMap<String,CostDef>();
 	protected final Map<String,CostDef> languageCost=new HashMap<String,CostDef>();
 	protected final Map<String,String>	ableArgs	=new HashMap<String,String>();
+	protected final Set<PrivateCharacterInfo> privateCharacterInfoSet = new HashSet<>();
 
 	protected double speedAdj = 1.0;
 
@@ -2969,6 +2985,7 @@ public class CMProps extends Properties
 		setUpLowVar(Str.FORMULA_MAXFOLLOW, getStr("FORMULA_MAXFOLLOW","1 + ( ( @x2 - 6.0 ) / 3.0)"));
 		setUpLowVar(Str.FORMULA_PROFGAIN, getStr("FORMULA_PROFGAIN","(100 - (@x3 * 50)) * ( (@x1 + 1 - @x2) / ( (@x1 * 2) + (10 * @x2) ) )"));
 
+
 		final LanguageLibrary lang = CMLib.lang();
 		Directions.instance().reInitialize(getInt("DIRECTIONS"), new Directions.DirectionWordTranslator()
 		{
@@ -2978,6 +2995,8 @@ public class CMProps extends Properties
 				return lang.L(string);
 			}
 		});
+
+		loadPrivateCharacterInfo();
 
 		resetSecurityVars();
 		statCodeExtensions = getStrsStarting("EXTVAR_");
@@ -3603,6 +3622,24 @@ public class CMProps extends Properties
 		}
 	}
 
+	public static boolean isCharacterInfoPrivate(PrivateCharacterInfo infoType) {
+		return instance().privateCharacterInfoSet.contains(infoType);
+	}
+
+	private void loadPrivateCharacterInfo() {
+		String privateInfoStr = getStr(Str.PRIVATE_CHARACTER_INFO.toString(), "");
+		if (privateInfoStr != null && !privateInfoStr.isEmpty()) {
+			String[] privateInfoArray = privateInfoStr.toUpperCase().split(",");
+			for (String info : privateInfoArray) {
+				try {
+					privateCharacterInfoSet.add(PrivateCharacterInfo.valueOf(info.trim()));
+				} catch (IllegalArgumentException e) {
+					Log.errOut("Invalid private character info type: " + info);
+				}
+			}
+		}
+	}
+
 	/**
 	 * Checks the properties for any "extra" properties attached to an object of
 	 * the given object type, and if found, constructs a string array to hold
@@ -3644,4 +3681,5 @@ public class CMProps extends Properties
 			newStatCodes[x+baseStatCodes.length] = addedStatCodesV.get(x);
 		return newStatCodes;
 	}
+
 }
