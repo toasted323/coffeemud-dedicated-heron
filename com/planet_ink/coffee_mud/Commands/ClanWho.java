@@ -132,7 +132,7 @@ public class ClanWho extends Who
 				}
 				else
 				{
-					msg.append(getHead(colWidths));
+					msg.append(getHead(mob, colWidths));
 					for(final Session S : CMLib.sessions().localOnlineIterable())
 					{
 						MOB mob2=S.mob();
