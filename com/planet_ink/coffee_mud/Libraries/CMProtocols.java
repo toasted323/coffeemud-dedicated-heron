@@ -1,4 +1,5 @@
 package com.planet_ink.coffee_mud.Libraries;
+import com.planet_ink.coffee_mud.Protocols.gmcp.RoomInfoSender;
 import com.planet_ink.coffee_mud.core.exceptions.BadEmailAddressException;
 import com.planet_ink.coffee_mud.core.interfaces.*;
 import com.planet_ink.coffee_web.util.CWThread;
@@ -2406,48 +2407,7 @@ public class CMProtocols extends StdLibrary implements ProtocolLibrary
 				case request_sectors:
 				case request_room:
 				case room_info:
-					if(mob!=null)
-					{
-						final Room room=mob.location();
-						if(room != null)
-						{
-							final StringBuilder doc=new StringBuilder("room.info {");
-							final String roomID=CMLib.map().getExtendedRoomID(room);
-							final String domType;
-							if((room.domainType()&Room.INDOORS)==0)
-								domType=Room.DOMAIN_OUTDOOR_DESCS[room.domainType()];
-							else
-								domType=Room.DOMAIN_INDOORS_DESCS[CMath.unsetb(room.domainType(),Room.INDOORS)];
-							doc.append("\"num\":").append(CMath.abs(roomID.hashCode())).append(",")
-								.append("\"id\":\"").append(roomID).append("\",")
-								.append("\"name\":\"").append(MiniJSON.toJSONString(room.displayText(mob))).append("\",")
-								.append("\"zone\":\"").append(MiniJSON.toJSONString(room.getArea().name())).append("\",")
-								.append("\"desc\":\"").append(MiniJSON.toJSONString(room.description(mob))).append("\",")
-								.append("\"terrain\":\"").append(domType.toLowerCase()).append("\",")
-								.append("\"details\":\"").append("\",")
-								.append("\"exits\":{");
-							boolean comma=false;
-							for(int d=0;d<Directions.NUM_DIRECTIONS();d++)
-							{
-								final Room R2=room.getRoomInDir(d);
-								if((R2!=null)&&(room.getExitInDir(d)!=null))
-								{
-									final String room2ID=CMLib.map().getExtendedRoomID(R2);
-									if(room2ID.length()>0)
-									{
-										if(comma)
-											doc.append(",");
-										comma=true;
-										doc.append("\""+CMLib.directions().getDirectionChar(d)+"\":").append(CMath.abs(room2ID.hashCode()));
-									}
-								}
-							}
-							doc.append("},\"coord\":{\"id\":0,\"x\":-1,\"y\":-1,\"cont\":0}");
-							doc.append("}");
-							return doc.toString();
-						}
-					}
-					break;
+					return new RoomInfoSender().sendRoomInfo(mob);
 				case request_quest:
 					// comm.quest responds whenever quest stuff happens..
 					// comm.quest {"action": "start", "targ": "a swamp ape", "room": "Swamp Ape Enclosure", "area": "Aardwolf Zoological Park", "timer": 52 }
