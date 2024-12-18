@@ -198,8 +198,7 @@ public class ExtraData extends ThinAbility
 
 	private void cloneFix(final ExtraData E)
 	{
-		this.data.clear();
-		this.data.putAll(E.data);
+		this.data = new Hashtable<>(E.data);
 		CODES=BASE_CODES;
 	}
 
