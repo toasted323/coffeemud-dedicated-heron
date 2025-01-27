@@ -1,4 +1,5 @@
 package com.planet_ink.coffee_mud.Common;
+
 import com.planet_ink.coffee_mud.core.interfaces.*;
 import com.planet_ink.coffee_mud.core.threads.CMRunnable;
 import com.planet_ink.coffee_mud.core.*;
@@ -17,6 +18,11 @@ import com.planet_ink.coffee_mud.MOBS.interfaces.*;
 import com.planet_ink.coffee_mud.MOBS.interfaces.MOB.Attrib;
 import com.jcraft.jzlib.*;
 
+import com.planet_ink.coffee_mud.core.Log;
+
+import com.planet_ink.coffee_mud.Protocols.DefaultInputHandler;
+import com.planet_ink.coffee_mud.Protocols.DefaultOutputHandler;
+
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +32,7 @@ import java.net.*;
 import java.nio.charset.Charset;
 
 /*
-   Copyright 2024 github.com/toasted323
+   Copyright 2025 github.com/toasted323
    Copyright 2005-2024 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,9 +48,11 @@ import java.nio.charset.Charset;
    limitations under the License.
 
    CHANGES:
-   2024-12 toasted323: ensure any exit changes observed by the player are sent via gmcp too
-   2024-12 toasted323: mapping from ships
+   2025-02 toasted323: Introduced Input- and OutputHandler interfaces for standardized byte I/O operations
+   2024-12 toasted323: Ensure any exit changes observed by the player are sent via gmcp too
+   2024-12 toasted323: Mapping from ships
 */
+
 public class DefaultSession implements Session
 {
 	protected static final int		SOTIMEOUT		= 300;
@@ -143,6 +151,10 @@ public class DefaultSession implements Session
 	protected volatile InputCallback	inputCallback	= null;
 	protected String 					lastSeenRoomID 	= null;
 	protected Integer 					lastRoomHash 	= null;
+
+	private InputHandler inputHandler = null;
+	private OutputHandler outputHandler = null;
+
 
 	@Override
 	public String ID()
@@ -252,6 +264,7 @@ public class DefaultSession implements Session
 		return false;
 	}
 
+
 	@Override
 	public void initializeSession(final Socket s, final String groupName, final String introTextStr)
 	{
@@ -328,16 +341,22 @@ public class DefaultSession implements Session
 
 			if((sock == null)||(!sock.isConnected()))
 			{
-				rawout=new BufferedOutputStream(new ByteArrayOutputStream());
 				rawin=new BufferedInputStream(new ByteArrayInputStream(new byte[0]));
+				inputHandler = new DefaultInputHandler(rawin, debugStrInput, debugBinInput);
+				rawout=new BufferedOutputStream(new ByteArrayOutputStream());
+				outputHandler = new DefaultOutputHandler(rawout, writeLock, debugStrOutput, debugStrOutput);
+
 				in=new BufferedReader(new InputStreamReader(rawin));
 				out=new PrintWriter(new OutputStreamWriter(rawout));
 				return;
 			}
 
 			sock.setSoTimeout(SOTIMEOUT);
-			rawout=new BufferedOutputStream(sock.getOutputStream());
 			rawin=new BufferedInputStream(sock.getInputStream());
+			inputHandler = new DefaultInputHandler(rawin, debugStrInput, debugBinInput);
+			rawout=new BufferedOutputStream(sock.getOutputStream());
+			outputHandler = new DefaultOutputHandler(rawout, writeLock, debugStrOutput, debugStrOutput);
+
 			if(!mcpDisabled)
 			{
 				rawBytesOut(rawout,("\n\r#$#mcp version: 2.1 to: 2.1\n\r").getBytes(CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
@@ -422,6 +441,7 @@ public class DefaultSession implements Session
 									{
 										final ZOutputStream zOut=new ZOutputStream(rawout, JZlib.Z_DEFAULT_COMPRESSION);
 										rawout=zOut;
+										outputHandler.resetByteStream(rawout);
 										zOut.setFlushMode(JZlib.Z_SYNC_FLUSH);
 										out = new PrintWriter(new OutputStreamWriter(zOut,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
 										if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
@@ -532,6 +552,7 @@ public class DefaultSession implements Session
 		changeTelnetMode(rawout,TELNET_COMPRESS2,false);
 		//rawout.flush(); rawBytesOut already flushes
 		rawout=new BufferedOutputStream(sock.getOutputStream());
+		outputHandler.resetByteStream(rawout);
 		out = new PrintWriter(new OutputStreamWriter(rawout,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
 		CMLib.s_sleep(50);
 		changeTelnetMode(rawout,TELNET_COMPRESS2,false);
@@ -1127,61 +1148,10 @@ public class DefaultSession implements Session
 
 	public final void rawBytesOut(final OutputStream out, final byte[] bytes) throws IOException
 	{
-		try
-		{
-			if((sock==null)||(sock.isClosed())||(!sock.isConnected()))
-				return;
-			if(writeLock.tryLock(10000, TimeUnit.MILLISECONDS))
-			{
-				try
-				{
-					if((sock==null)||(sock.isClosed())||(!sock.isConnected()))
-						return;
-					writeThread=Thread.currentThread();
-					writeStartTime=System.currentTimeMillis();
-					if(debugBinOutput && Log.debugChannelOn())
-					{
-						final StringBuilder str=new StringBuilder("OUTPUT: '");
-						for(final byte c : bytes)
-							str.append((c & 0xff)).append(" ");
-						Log.debugOut( str.toString()+"'");
-					}
-					if(debugStrOutput && Log.debugChannelOn())
-					{
-						final StringBuilder str=new StringBuilder("OUTPUT: '");
-						for(final byte c : bytes)
-							str.append(((c<32)||(c>127))?"%"+CMStrings.padLeftWith(Integer.toHexString((c & 0xff)).toUpperCase(), '0', 2):(""+(char)c));
-						Log.debugOut( str.toString()+"'");
-					}
-					if(this.out!=null)
-						this.out.flush();
-					out.write(bytes);
-					out.flush();
-				}
-				catch(final ArrayIndexOutOfBoundsException x)
-				{
-					Log.errOut("ZLibFail",x.getMessage());
-					this.setKillFlag(true);
-				}
-				catch(final NullPointerException x)
-				{
-					final IOException ioe=new IOException("rawBytesOut: "+x.getMessage());
-					ioe.setStackTrace(new StackTraceElement[0]);
-					throw ioe;
-				}
-				finally
-				{
-					writeThread=null;
-					writeStartTime=0;
-					lastWriteTime=System.currentTimeMillis();
-					writeLock.unlock();
-				}
-			}
-		}
-		catch (final Exception ioe)
-		{
-			stopSession(true,true,false);
-			setKillFlag(true);
+		if (outputHandler != null) {
+			outputHandler.rawBytesOut(bytes);
+		} else {
+			throw new IOException("No IOHandler configured for output");
 		}
 	}
 
@@ -2025,6 +1995,7 @@ public class DefaultSession implements Session
 										//rawout.flush(); rawBytesOut already flushes
 										final ZOutputStream zOut=new ZOutputStream(rawout, JZlib.Z_DEFAULT_COMPRESSION);
 										rawout=zOut;
+										outputHandler.resetByteStream(rawout);
 										zOut.setFlushMode(JZlib.Z_SYNC_FLUSH);
 										out = new PrintWriter(new OutputStreamWriter(zOut,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
 										if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
@@ -2107,6 +2078,7 @@ public class DefaultSession implements Session
 			{
 				setClientTelnetMode(last,false);
 				rawout=new BufferedOutputStream(sock.getOutputStream());
+				outputHandler.resetByteStream(rawout);
 				out = new PrintWriter(new OutputStreamWriter(rawout,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
 			}
 			if((mightSupportTelnetMode(last)&&(getServerTelnetMode(last))))
@@ -2150,21 +2122,7 @@ public class DefaultSession implements Session
 
 	public int readByte() throws IOException
 	{
-		if(bNextByteIs255)
-			return (byte)255;
-		bNextByteIs255 = false;
-		if(fakeInput!=null)
-			throw new java.io.InterruptedIOException(".");
-		if((rawin!=null) && (rawin.available()>0))
-		{
-			final int read = rawin.read();
-			if(read==-1)
-				throw new java.io.InterruptedIOException(".");
-			if(debugBinInput && Log.debugChannelOn())
-				debugBinInputBuf.append(read & 0xff).append(" ");
-			return read;
-		}
-		throw new java.io.InterruptedIOException(".");
+		return inputHandler.readByte(bNextByteIs255, fakeInput);
 	}
 
 	public int readChar() throws IOException
