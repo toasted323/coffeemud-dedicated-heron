@@ -48,6 +48,24 @@ public class DefaultOutputHandlerTest {
 	}
 
 	@Test
+	public void testIsTerminationRequested() {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ReentrantLock writeLock = new ReentrantLock();
+		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
+				outputStream,
+				writeLock,
+				false,
+				false
+		);
+
+		assertFalse(outputHandler.isTerminationRequested());
+
+		outputHandler.requestTermination();
+
+		assertTrue(outputHandler.isTerminationRequested());
+	}
+
+	@Test
 	public void testRawBytesOut() throws IOException {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ReentrantLock writeLock = new ReentrantLock();
@@ -63,6 +81,25 @@ public class DefaultOutputHandlerTest {
 
 		byte[] writtenBytes = outputStream.toByteArray();
 		assertArrayEquals(bytesToSend, writtenBytes);
+	}
+
+	@Test
+	public void testRawBytesOut_AfterTermination() {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ReentrantLock writeLock = new ReentrantLock();
+		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
+				outputStream,
+				writeLock,
+				false,
+				false
+		);
+
+		outputHandler.requestTermination();
+
+		byte[] testBytes = {1, 2, 3};
+		assertDoesNotThrow(() -> {
+			outputHandler.rawBytesOut(testBytes);
+		});
 	}
 
 	@Test

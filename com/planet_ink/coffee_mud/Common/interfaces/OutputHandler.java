@@ -27,6 +27,19 @@ import java.io.OutputStream;
 public interface OutputHandler {
 
 	/**
+	 * Signals a one-way, non-blocking termination request.
+	 * Idempotent method that can be called multiple times safely.
+	 */
+	void requestTermination();
+
+	/**
+	 * Checks if termination has been requested.
+	 *
+	 * @return boolean indicating termination status
+	 */
+	boolean isTerminationRequested();
+
+	/**
 	 * Resets the byte output stream to a new output destination.
 	 *
 	 * @param outputStream the new OutputStream to use for writing bytes
