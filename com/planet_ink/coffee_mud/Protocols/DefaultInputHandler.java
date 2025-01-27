@@ -6,6 +6,7 @@ import com.planet_ink.coffee_mud.core.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
    Copyright 2025 github.com/toasted323
@@ -25,6 +26,8 @@ import java.io.InterruptedIOException;
 */
 
 public class DefaultInputHandler implements InputHandler {
+	private final AtomicBoolean terminationRequested = new AtomicBoolean(false);
+
 	private InputStream in;
 	private boolean debugStrInput;
 	private boolean debugBinInput;
@@ -37,6 +40,17 @@ public class DefaultInputHandler implements InputHandler {
 		this.debugStrInput = debugStrInput;
 		this.debugBinInput = debugBinInput;
 	}
+
+	@Override
+	public void requestTermination() {
+		terminationRequested.compareAndSet(false, true);
+	}
+
+	@Override
+	public boolean isTerminationRequested() {
+		return terminationRequested.get();
+	}
+
 
 	private boolean isByteStreamAvailable() {
 		try {
@@ -67,6 +81,11 @@ public class DefaultInputHandler implements InputHandler {
 
 	@Override
 	public int readByte() throws IOException {
+		if (isTerminationRequested()) {
+			Log.warnOut("InputHandler", "readByte: Termination requested");
+			throw new InterruptedIOException("Termination requested");
+		}
+
 		if (!isByteStreamAvailable()) {
 			Log.warnOut("InputHandler", "readByte: Input stream is not available");
 			throw new IOException("Input stream is not available");

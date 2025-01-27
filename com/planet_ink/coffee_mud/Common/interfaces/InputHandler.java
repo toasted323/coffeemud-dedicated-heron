@@ -28,6 +28,19 @@ import java.io.InterruptedIOException;
 public interface InputHandler {
 
 	/**
+	 * Signals a one-way, non-blocking termination request.
+	 * Idempotent method that can be called multiple times safely.
+	 */
+	void requestTermination();
+
+	/**
+	 * Checks if termination has been requested.
+	 *
+	 * @return boolean indicating termination status
+	 */
+	boolean isTerminationRequested();
+
+	/**
 	 * Resets the byte input stream to a new input source.
 	 *
 	 * @param inputStream the new InputStream to use for reading bytes
