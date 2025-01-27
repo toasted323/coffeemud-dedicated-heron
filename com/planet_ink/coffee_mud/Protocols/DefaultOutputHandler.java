@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 /*
@@ -29,6 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
 */
 
 public class DefaultOutputHandler implements OutputHandler {
+	private final AtomicBoolean terminationRequested = new AtomicBoolean(false);
 	private static final long WRITE_LOCK_TIMEOUT_MS = 10000;
 	private final ReentrantLock writeLock;
 	private Thread writeThread;
@@ -60,10 +62,22 @@ public class DefaultOutputHandler implements OutputHandler {
 	}
 
 	@Override
+	public void requestTermination() {
+		terminationRequested.compareAndSet(false, true);
+	}
+
+	@Override
+	public boolean isTerminationRequested() {
+		return terminationRequested.get();
+	}
+
+	@Override
 	public void resetByteStream(OutputStream outputStream) {
 		if (outputStream == null) {
 			throw new IllegalArgumentException("Output stream cannot be null");
 		}
+
+		//TODO check termination requested
 
 		try {
 			if (this.out != null && this.out != outputStream) {
@@ -79,6 +93,11 @@ public class DefaultOutputHandler implements OutputHandler {
 
 	@Override
 	public void rawBytesOut(byte[] bytes) throws IOException {
+		if (isTerminationRequested()) {
+			Log.warnOut("OutputHandler", "rawBytesOut: Termination requested, skipping write");
+			return;
+		}
+
 		if (bytes == null || bytes.length == 0) {
 			Log.warnOut("OutputHandler", "rawBytesOut: Attempting to write empty or null byte array");
 			return;

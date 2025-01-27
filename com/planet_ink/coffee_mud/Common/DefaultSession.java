@@ -48,6 +48,7 @@ import java.nio.charset.Charset;
    limitations under the License.
 
    CHANGES:
+   2025-02 toasted323: Introduce lightweight termination mechanism for Input- and OutputHandler
    2025-02 toasted323: Introduced Input- and OutputHandler interfaces for standardized byte I/O operations
    2024-12 toasted323: Ensure any exit changes observed by the player are sent via gmcp too
    2024-12 toasted323: Mapping from ships
@@ -414,7 +415,7 @@ public class DefaultSession implements Session
 						}
 						else
 						{
-							killFlag=true;
+							setKillFlag(true);
 							return false;
 						}
 						switch(status)
@@ -710,7 +711,7 @@ public class DefaultSession implements Session
 		}
 		catch(final IOException e)
 		{
-			killFlag=true;
+			setKillFlag(true);
 		}
 		catch(final Exception e)
 		{
@@ -989,7 +990,13 @@ public class DefaultSession implements Session
 
 	public void setKillFlag(final boolean truefalse)
 	{
-		killFlag=truefalse;
+		if(killFlag != truefalse) {
+			killFlag = truefalse;
+			if (killFlag) {
+				inputHandler.requestTermination();
+				outputHandler.requestTermination();
+			}
+		}
 	}
 
 	private static final List<String> empty = new ReadOnlyList<String>(new ArrayList<String>(0));
@@ -1933,7 +1940,7 @@ public class DefaultSession implements Session
 					{
 						if(subOptionStream.size()>1024*1024*5)
 						{
-							killFlag=true;
+							setKillFlag(true);
 							return;
 						}
 						else
@@ -3058,7 +3065,7 @@ public class DefaultSession implements Session
 					setInputLoopTime();
 			}
 			if(loginSession == null)
-				killFlag = true;
+				setKillFlag(true);
 			else
 			if(!killFlag)
 			{

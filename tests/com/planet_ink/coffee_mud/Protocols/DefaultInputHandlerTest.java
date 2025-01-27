@@ -9,14 +9,10 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 /*
    Copyright 2025 github.com/toasted323
@@ -57,12 +53,20 @@ public class DefaultInputHandlerTest {
 	public void setUp() {
 		inputStream = new ByteArrayInputStream(new byte[]{});
 		inputHandler = new DefaultInputHandler(
-			inputStream,
-			false,
-			false
+				inputStream,
+				false,
+				false
 		);
 	}
 
+	@Test
+	public void testIsTerminationRequested() {
+		assertFalse(inputHandler.isTerminationRequested());
+
+		inputHandler.requestTermination();
+
+		assertTrue(inputHandler.isTerminationRequested());
+	}
 
 	@Test
 	public void testReadByte_NormalReading() throws IOException {
@@ -73,6 +77,15 @@ public class DefaultInputHandlerTest {
 		assertEquals(65, inputHandler.readByte());
 		assertEquals(66, inputHandler.readByte());
 		assertEquals(67, inputHandler.readByte());
+	}
+
+	@Test
+	public void testReadByte_AfterTermination() {
+		inputHandler.requestTermination();
+
+		assertThrows(InterruptedIOException.class, () -> {
+			inputHandler.readByte();
+		});
 	}
 
 	@Test
