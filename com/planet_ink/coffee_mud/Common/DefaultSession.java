@@ -48,6 +48,7 @@ import java.nio.charset.Charset;
    limitations under the License.
 
    CHANGES:
+   2025-02 toasted323: Remove unused OutputStream parameter from rawBytesOut
    2025-02 toasted323: Introduce lightweight termination mechanism for Input- and OutputHandler
    2025-02 toasted323: Introduced Input- and OutputHandler interfaces for standardized byte I/O operations
    2024-12 toasted323: Ensure any exit changes observed by the player are sent via gmcp too
@@ -360,9 +361,9 @@ public class DefaultSession implements Session
 
 			if(!mcpDisabled)
 			{
-				rawBytesOut(rawout,("\n\r#$#mcp version: 2.1 to: 2.1\n\r").getBytes(CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
+				rawBytesOut(("\n\r#$#mcp version: 2.1 to: 2.1\n\r").getBytes(CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
 			}
-			rawBytesOut(rawout,("\n\rConnecting to "+CMProps.getVar(CMProps.Str.MUDNAME)+"...\n\r").getBytes("US-ASCII"));
+			rawBytesOut(("\n\rConnecting to "+CMProps.getVar(CMProps.Str.MUDNAME)+"...\n\r").getBytes("US-ASCII"));
 			//rawout.flush(); rawBytesOut already flushes
 
 			setServerTelnetMode(TELNET_ANSI,true);
@@ -386,7 +387,7 @@ public class DefaultSession implements Session
 			changeTelnetMode(rawout,TELNET_NAWS,true);
 			//changeTelnetMode(rawout,TELNET_BINARY,true);
 			if(mightSupportTelnetMode(TELNET_GA))
-				rawBytesOut(rawout,TELNETGABYTES);
+				rawBytesOut(TELNETGABYTES);
 			//rawout.flush(); rawBytesOut already flushes
 			if((!CMSecurity.isDisabled(CMSecurity.DisFlag.MSSP))
 			&&(mightSupportTelnetMode(TELNET_MSSP)))
@@ -591,12 +592,12 @@ public class DefaultSession implements Session
 		if(optionCode==TELNET_TERMTYPE)
 		{
 			final byte[] stream={(byte)TELNET_IAC,(byte)TELNET_SB,(byte)optionCode,(byte)1,(byte)TELNET_IAC,(byte)TELNET_SE};
-			rawBytesOut(out, stream);
+			rawBytesOut(stream);
 		}
 		else
 		{
 			final byte[] stream={(byte)TELNET_IAC,(byte)TELNET_SB,(byte)optionCode,(byte)TELNET_IAC,(byte)TELNET_SE};
-			rawBytesOut(out, stream);
+			rawBytesOut(stream);
 		}
 		//out.flush(); rawBytesOut already flushes
 	}
@@ -654,7 +655,7 @@ public class DefaultSession implements Session
 			command=new byte[]{(byte)TELNET_IAC,onOff?(byte)TELNET_DO:(byte)TELNET_DONT,(byte)telnetCode};
 		else
 			command=new byte[]{(byte)TELNET_IAC,onOff?(byte)TELNET_WILL:(byte)TELNET_WONT,(byte)telnetCode};
-		rawBytesOut(out, command);
+		rawBytesOut(command);
 		//rawout.flush(); rawBytesOut already flushes
 		if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 			Log.debugOut("Sent: "+(onOff?"Will":"Won't")+" "+Session.TELNET_DESCS[telnetCode]);
@@ -705,7 +706,7 @@ public class DefaultSession implements Session
 			bout.write(TELNETBYTES_END_SB);
 			synchronized(gmcpSupports)
 			{
-				rawBytesOut(rawout,bout.toByteArray());
+				rawBytesOut(bout.toByteArray());
 			}
 			return true;
 		}
@@ -728,7 +729,7 @@ public class DefaultSession implements Session
 		{
 			final byte[] command={(byte)TELNET_IAC,onOff?(byte)TELNET_WILL:(byte)TELNET_WONT,(byte)telnetCode};
 			out.flush();
-			rawBytesOut(rawout, command);
+			rawBytesOut(command);
 			//rawout.flush(); rawBytesOut already flushes
 		}
 		catch (final Exception e)
@@ -744,7 +745,7 @@ public class DefaultSession implements Session
 		final byte[] command={(byte)TELNET_IAC,onOff?(byte)TELNET_DO:(byte)TELNET_DONT,(byte)telnetCode};
 		if(out!=null)
 			out.flush();
-		rawBytesOut(rawout, command);
+		rawBytesOut(command);
 		//rawout.flush(); rawBytesOut already flushes
 		if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 			Log.debugOut("Back-Sent: "+(onOff?"Do":"Don't")+" "+Session.TELNET_DESCS[telnetCode]);
@@ -754,7 +755,7 @@ public class DefaultSession implements Session
 	public void changeTelnetModeBackwards(final OutputStream out, final int telnetCode, final boolean onOff) throws IOException
 	{
 		final byte[] command={(byte)TELNET_IAC,onOff?(byte)TELNET_DO:(byte)TELNET_DONT,(byte)telnetCode};
-		rawBytesOut(out, command);
+		rawBytesOut(command);
 		//rawout.flush(); rawBytesOut already flushes
 		if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 			Log.debugOut("Back-Sent: "+(onOff?"Do":"Don't")+" "+Session.TELNET_DESCS[telnetCode]);
@@ -770,12 +771,12 @@ public class DefaultSession implements Session
 			if(telnetCode==TELNET_TERMTYPE)
 			{
 				final byte[] command={(byte)TELNET_IAC,(byte)TELNET_SB,(byte)telnetCode,(byte)1,(byte)TELNET_IAC,(byte)TELNET_SE};
-				rawBytesOut(rawout, command);
+				rawBytesOut(command);
 			}
 			else
 			{
 				final byte[] command={(byte)TELNET_IAC,(byte)TELNET_SB,(byte)telnetCode,(byte)TELNET_IAC,(byte)TELNET_SE};
-				rawBytesOut(rawout, command);
+				rawBytesOut(command);
 			}
 			//rawout.flush(); rawBytesOut already flushes
 		}
@@ -1153,7 +1154,7 @@ public class DefaultSession implements Session
 		return ((System.currentTimeMillis()-time)>10000);
 	}
 
-	public final void rawBytesOut(final OutputStream out, final byte[] bytes) throws IOException
+	public final void rawBytesOut(final byte[] bytes) throws IOException
 	{
 		if (outputHandler != null) {
 			outputHandler.rawBytesOut(bytes);
@@ -1419,7 +1420,7 @@ public class DefaultSession implements Session
 		{
 			try
 			{
-				rawBytesOut(rawout, promptSuffix);
+				rawBytesOut(promptSuffix);
 			}
 			catch (final IOException e)
 			{
@@ -1434,7 +1435,7 @@ public class DefaultSession implements Session
 		{
 			try
 			{
-				rawBytesOut(rawout, TELNETGABYTES);
+				rawBytesOut(TELNETGABYTES);
 			}
 			catch (final Exception e)
 			{
@@ -1757,7 +1758,7 @@ public class DefaultSession implements Session
 				if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 					Log.debugOut("For suboption "+Session.TELNET_DESCS[optionCode]+", got "+dataSize+" bytes, sent "+((resp==null)?0:resp.length));
 				if(resp!=null)
-					rawBytesOut(rawout, resp);
+					rawBytesOut(resp);
 			}
 			break;
 		case TELNET_GMCP:
@@ -1769,7 +1770,7 @@ public class DefaultSession implements Session
 					Log.debugOut(new String(suboptionData));
 				}
 				if(resp!=null)
-					rawBytesOut(rawout, resp);
+					rawBytesOut(resp);
 			}
 			break;
 		default:
@@ -2064,7 +2065,7 @@ public class DefaultSession implements Session
 					buf.write((char)Session.TELNET_IAC);buf.write((char)Session.TELNET_SE);
 					try
 					{
-						rawBytesOut(rawout, buf.toByteArray());
+						rawBytesOut(buf.toByteArray());
 					}
 					catch (final IOException e)
 					{
@@ -2804,7 +2805,7 @@ public class DefaultSession implements Session
 			{
 				try
 				{
-					rawBytesOut(rawout, msdpPingBuf);
+					rawBytesOut(msdpPingBuf);
 				}
 				catch (final IOException e)
 				{
@@ -2820,7 +2821,7 @@ public class DefaultSession implements Session
 			{
 				try
 				{
-					rawBytesOut(rawout, gmcpPingBuf);
+					rawBytesOut(gmcpPingBuf);
 				}
 				catch (final IOException e)
 				{
@@ -3772,7 +3773,7 @@ public class DefaultSession implements Session
 				{
 					try
 					{
-						rawBytesOut(rawout, gmcpPingBuf);
+						rawBytesOut(gmcpPingBuf);
 					}
 					catch (final IOException e)
 					{
