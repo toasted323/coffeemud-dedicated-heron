@@ -224,6 +224,29 @@ public class DefaultOutputHandler implements OutputHandler {
 	}
 
 	@Override
+	public long getWriteStartTime() {
+		return writeStartTime;
+	}
+
+	@Override
+	public long getLastWriteTime() {
+		return lastWriteTime;
+	}
+
+	@Override
+	public boolean isLockedUpWriting() {
+		final long time = writeStartTime;
+		if (time == 0)
+			return false;
+		return ((System.currentTimeMillis() - time) > WRITE_LOCK_TIMEOUT_MS);
+	}
+
+	@Override
+	public void resetLastWriteTime() {
+		lastWriteTime = System.currentTimeMillis();
+	}
+
+	@Override
 	public void setDebugStr(boolean flag) {
 		debugStrOutput = flag;
 	}
