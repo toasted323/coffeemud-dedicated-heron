@@ -79,6 +79,41 @@ public interface InputHandler {
 	int readByte() throws IOException;
 
 	/**
+	 * Reads a single character from the input reader with special handling options.
+	 *
+	 * @param nextByteIs255 If true, forces the next byte to be 255 regardless of actual input
+	 * @param fakeInput     A {@link StringBuffer} containing simulated input. If non-null and not empty,
+	 *                      the first character is returned, and it is removed from the buffer.
+	 * @return The byte read from the stream, or 255 if nextByteIs255 is true
+	 * @throws IOException If an I/O error occurs
+	 * @deprecated This method is maintained for compatibility and may be removed in future versions
+	 */
+	int readChar(boolean nextByteIs255, StringBuffer fakeInput) throws IOException;
+
+	/**
+	 * Reads a single character from the input reader.
+	 *
+	 * <p>This method handles multi-byte character sets and special telnet characters.
+	 * It may read multiple bytes to construct a single character, depending on the
+	 * character encoding in use.</p>
+	 *
+	 * <p>Special handling is provided for:</p>
+	 * <ul>
+	 *   <li>Telnet IAC (Interpret As Command) character</li>
+	 *   <li>Escape character</li>
+	 * </ul>
+	 *
+	 * <p>If termination has been requested, this method will throw an
+	 * InterruptedIOException instead of attempting to read.</p>
+	 *
+	 * @return The character read from the reader, or a special telnet/escape character
+	 * @throws IOException if an I/O error occurs during reading
+	 * @throws InterruptedIOException if termination has been requested or if
+	 *         interrupted while waiting for a complete multi-byte character
+	 */
+	int readChar() throws IOException;
+
+	/**
 	 * Configures debug flag for string input logging.
 	 *
 	 * @param flag enable or disable string input debugging

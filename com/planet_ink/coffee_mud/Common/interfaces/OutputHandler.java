@@ -56,6 +56,14 @@ public interface OutputHandler {
 	void rawBytesOut(byte[] bytes) throws IOException;
 
 	/**
+	 * Writes characters to the output writer.
+	 *
+	 * @param chars the characters to write
+	 * @throws IOException if an I/O error occurs during writing
+	 */
+	void rawCharsOut(char[] chars) throws IOException;
+
+	/**
 	 * Configures debug flag for string output logging.
 	 *
 	 * @param flag enable or disable string output debugging
