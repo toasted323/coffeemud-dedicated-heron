@@ -38,12 +38,15 @@ public class DefaultOutputHandler implements OutputHandler {
 	private long lastWriteTime;
 
 	private OutputStream out;
+	private Charset outputCharset;
+	private PrintWriter charOut;
 
 	private boolean debugStrOutput;
 	private boolean debugBinOutput;
 
 	public DefaultOutputHandler(
 			OutputStream out,
+			Charset outputCharSet,
 			ReentrantLock writeLock,
 			boolean debugStrOutput,
 			boolean debugBinOutput
@@ -55,8 +58,12 @@ public class DefaultOutputHandler implements OutputHandler {
 			throw new IllegalArgumentException("Write lock cannot be null");
 		}
 
-		this.out = out;
 		this.writeLock = writeLock;
+
+		this.out = out;
+		this.outputCharset = outputCharSet;
+		this.charOut =  new PrintWriter(new OutputStreamWriter(out, outputCharSet));
+
 		this.debugStrOutput = debugStrOutput;
 		this.debugBinOutput = debugBinOutput;
 	}
@@ -89,6 +96,7 @@ public class DefaultOutputHandler implements OutputHandler {
 
 		//TODO thread safety
 		this.out = outputStream;
+		this.charOut = new PrintWriter(new OutputStreamWriter(outputStream, this.outputCharset));
 	}
 
 	@Override
@@ -113,6 +121,7 @@ public class DefaultOutputHandler implements OutputHandler {
 				try {
 					writeThread = Thread.currentThread();
 					writeStartTime = System.currentTimeMillis();
+					//TODO add method name to debug logging
 					if (Log.debugChannelOn()) {
 						if (debugBinOutput) {
 							final StringBuilder binStr = new StringBuilder("OUTPUT (Binary): '");
@@ -147,6 +156,69 @@ public class DefaultOutputHandler implements OutputHandler {
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			Log.errOut("OutputHandler", "rawBytesOut: Write operation interrupted: " + e.getMessage());
+			throw new IOException("Write operation interrupted", e);
+		}
+	}
+
+	@Override
+	public void rawCharsOut(char[] chars) throws IOException {
+		if (isTerminationRequested()) {
+			Log.warnOut("OutputHandler", "rawCharsOut: Termination requested, skipping write");
+			return;
+		}
+
+		if (chars == null || chars.length == 0) {
+			Log.warnOut("OutputHandler", "rawCharsOut: Attempting to write empty or null chars array");
+			return;
+		}
+
+		if (charOut == null) {
+			Log.warnOut("OutputHandler", "rawCharsOut: Output stream is not available");
+			throw new IOException("Output stream is not available");
+		}
+
+		try {
+			if (writeLock.tryLock(WRITE_LOCK_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+				try {
+					if (Log.debugChannelOn()) {
+						if (debugBinOutput) {
+							final StringBuilder binStr = new StringBuilder("rawCharsOut: OUTPUT (Binary): '");
+							for (final char c : chars)
+								binStr.append((c & 0xff)).append(" ");
+							Log.debugOut(binStr.toString() + "'");
+						}
+						if (debugStrOutput) {
+							final StringBuilder strStr = new StringBuilder("rawCharsOut: OUTPUT (Printable): '");
+							for (final char c : chars)
+								strStr.append(((c < 32) || (c > 127))
+										? "%" + String.format("%02X", (int) c)
+										: ("" + c));
+							Log.debugOut(strStr.toString() + "'");
+						}
+					}
+
+					charOut.write(chars);
+					// Note: checkError() implicitly flushes the stream
+					if (charOut.checkError()) {
+						Log.errOut("OutputHandler", "rawCharsOut: Error detected when writing to charOut");
+						throw new IOException("Error detected when writing to charOut");
+					}
+				} finally {
+					writeThread=null;
+					writeStartTime=0;
+					lastWriteTime=System.currentTimeMillis();
+					writeLock.unlock();
+				}
+			}
+			else {
+				Log.errOut("OutputHandler", "rawCharsOut: Could not acquire write lock within " +
+						(WRITE_LOCK_TIMEOUT_MS / 1000) + "-second timeout");
+				throw new IOException("Could not acquire write lock within " +
+						(WRITE_LOCK_TIMEOUT_MS / 1000) + " seconds");
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			Log.errOut("OutputHandler", "rawCharsOut: Write operation interrupted: " + e.getMessage());
 			throw new IOException("Write operation interrupted", e);
 		}
 	}

@@ -48,6 +48,7 @@ import java.nio.charset.Charset;
    limitations under the License.
 
    CHANGES:
+   2025-02 toasted323: Extract char-level I/O methods into Input- and OutputHandler interfaces
    2025-02 toasted323: Remove unused OutputStream parameter from rawBytesOut
    2025-02 toasted323: Introduce lightweight termination mechanism for Input- and OutputHandler
    2025-02 toasted323: Introduced Input- and OutputHandler interfaces for standardized byte I/O operations
@@ -341,12 +342,15 @@ public class DefaultSession implements Session
 				}, 0, 1, 1);
 			}
 
+			final Charset inputCharSet=Charset.forName(CMProps.getVar(CMProps.Str.CHARSETINPUT));
+			final Charset outputCharSet=Charset.forName(CMProps.getVar(CMProps.Str.CHARSETOUTPUT));
+
 			if((sock == null)||(!sock.isConnected()))
 			{
 				rawin=new BufferedInputStream(new ByteArrayInputStream(new byte[0]));
-				inputHandler = new DefaultInputHandler(rawin, debugStrInput, debugBinInput);
+				inputHandler = new DefaultInputHandler(rawin, inputCharSet, debugStrInput, debugBinInput);
 				rawout=new BufferedOutputStream(new ByteArrayOutputStream());
-				outputHandler = new DefaultOutputHandler(rawout, writeLock, debugStrOutput, debugStrOutput);
+				outputHandler = new DefaultOutputHandler(rawout, outputCharSet, writeLock, debugStrOutput, debugStrOutput);
 
 				in=new BufferedReader(new InputStreamReader(rawin));
 				out=new PrintWriter(new OutputStreamWriter(rawout));
@@ -355,9 +359,14 @@ public class DefaultSession implements Session
 
 			sock.setSoTimeout(SOTIMEOUT);
 			rawin=new BufferedInputStream(sock.getInputStream());
-			inputHandler = new DefaultInputHandler(rawin, debugStrInput, debugBinInput);
+			inputHandler = new DefaultInputHandler(rawin, inputCharSet, debugStrInput, debugBinInput);
 			rawout=new BufferedOutputStream(sock.getOutputStream());
-			outputHandler = new DefaultOutputHandler(rawout, writeLock, debugStrOutput, debugStrOutput);
+			outputHandler = new DefaultOutputHandler(rawout, outputCharSet, writeLock, debugStrOutput, debugStrOutput);
+
+			inMaxBytesPerChar=(int)Math.round(Math.ceil(inputCharSet.newEncoder().maxBytesPerChar()));
+			charWriter=new SesInputStream(inMaxBytesPerChar);
+			in=new BufferedReader(new InputStreamReader(charWriter,inputCharSet));
+			out=new PrintWriter(new OutputStreamWriter(rawout,outputCharSet));
 
 			if(!mcpDisabled)
 			{
@@ -393,11 +402,7 @@ public class DefaultSession implements Session
 			&&(mightSupportTelnetMode(TELNET_MSSP)))
 				changeTelnetMode(rawout,TELNET_MSSP,true);
 
-			final Charset charSet=Charset.forName(CMProps.getVar(CMProps.Str.CHARSETINPUT));
-			inMaxBytesPerChar=(int)Math.round(Math.ceil(charSet.newEncoder().maxBytesPerChar()));
-			charWriter=new SesInputStream(inMaxBytesPerChar);
-			in=new BufferedReader(new InputStreamReader(charWriter,charSet));
-			out=new PrintWriter(new OutputStreamWriter(rawout,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
+
 			//final DefaultSession me = this;
 			prompt(new TickingCallback(250)
 			{
@@ -1159,6 +1164,7 @@ public class DefaultSession implements Session
 		if (outputHandler != null) {
 			outputHandler.rawBytesOut(bytes);
 		} else {
+			// TODO: Consider a no-op behavior or logging.
 			throw new IOException("No IOHandler configured for output");
 		}
 	}
@@ -1171,62 +1177,11 @@ public class DefaultSession implements Session
 
 	public void rawCharsOut(final PrintWriter out, final char[] chars)
 	{
-		final Socket sock=this.sock;
-		if((out==null)||(chars==null)||(chars.length==0))
-			return;
-		try
-		{
-			if(writeLock.tryLock(10000, TimeUnit.MILLISECONDS))
-			{
-				if((sock==null)||(sock.isClosed())||(!sock.isConnected()))
-					return;
-				try
-				{
-					writeThread=Thread.currentThread();
-					writeStartTime=System.currentTimeMillis();
-					if(debugBinOutput && Log.debugChannelOn())
-					{
-						final StringBuilder str=new StringBuilder("OUTPUT: '");
-						for(final char c : chars)
-							str.append((c & 0xff)).append(" ");
-						Log.debugOut( str.toString()+"'");
-					}
-					if(debugStrOutput && Log.debugChannelOn())
-					{
-						final StringBuilder str=new StringBuilder("OUTPUT: '");
-						for(final char c : chars)
-							str.append(((c<32)||(c>127))?"%"+CMStrings.padLeftWith(Integer.toHexString((c & 0xff)).toUpperCase(), '0', 2):(""+c));
-						Log.debugOut( str.toString()+"'");
-					}
-					out.write(chars);
-					if(out.checkError() && (!killFlag))
-						stopSession(true,true,false);
-				}
-				finally
-				{
-					writeThread=null;
-					writeStartTime=0;
-					lastWriteTime=System.currentTimeMillis();
-					writeLock.unlock();
-				}
-			}
-			else
-			if(!killFlag)
-			{
-				final String name=(mob!=null)?mob.Name():getAddress();
-				Log.errOut("DefaultSession","Kicked out "+name+" due to write-lock ("+out.getClass().getName()+".");
-				stopSession(true,true,true);
-				final Thread killThisThread=writeThread;
-				if(killThisThread!=null)
-					CMLib.killThread(killThisThread,500,1);
-			}
-			if(chars != PINGCHARS)
-				lastWasPrompt.set(false);
-		}
-		catch (final Exception ioe)
-		{
-			stopSession(true,true,false);
-			setKillFlag(true);
+		try {
+			outputHandler.rawCharsOut(chars);
+		} catch (IOException e) {
+			Log.errOut("DefaultSession", "rawCharsOut: Exception thrown by outputHandler.rawCharsOut: " + e.getMessage());
+			stopSession(true, true, false);
 		}
 	}
 
@@ -2135,46 +2090,11 @@ public class DefaultSession implements Session
 
 	public int readChar() throws IOException
 	{
-		if(bNextByteIs255)
-			return 255;
-		bNextByteIs255 = false;
-		if(fakeInput!=null)
-		{
-			if(fakeInput.length()>0)
-			{
-				final char c=fakeInput.charAt(0);
-				fakeInput.delete(0, 1);
-				return c;
-			}
-			fakeInput=null;
+		int c = inputHandler.readChar(bNextByteIs255, fakeInput);
+		if (fakeInput != null && fakeInput.length() == 0) {
+			fakeInput = null;
 		}
-		int b = readByte();
-		if(1==inMaxBytesPerChar)
-			return b;
-		if((b==TELNET_IAC)||((b&0xff)==TELNET_IAC)||(b=='\033')||(b==27)||(in==null))
-			return b;
-		charWriter.write(b);
-		int maxBytes=inMaxBytesPerChar;
-		while((in!=null)
-		&& !in.ready()
-		&& !killFlag
-		&& (rawin!=null)
-		&&(rawin.available()>0)
-		&& (--maxBytes>=0))
-		{
-			try
-			{
-				return in.read();
-			}
-			catch(final java.io.InterruptedIOException e)
-			{
-				b = readByte();
-				charWriter.write(b);
-			}
-		}
-		if(in==null)
-			throw new java.io.InterruptedIOException();
-		return in.read();
+		return c;
 	}
 
 	@Override

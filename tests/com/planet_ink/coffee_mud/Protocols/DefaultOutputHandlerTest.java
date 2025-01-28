@@ -9,6 +9,8 @@ import org.mockito.Mockito;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -49,10 +51,12 @@ public class DefaultOutputHandlerTest {
 
 	@Test
 	public void testIsTerminationRequested() {
+		final Charset outputCharSet = StandardCharsets.UTF_8;
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ReentrantLock writeLock = new ReentrantLock();
 		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
 				outputStream,
+				outputCharSet,
 				writeLock,
 				false,
 				false
@@ -67,10 +71,12 @@ public class DefaultOutputHandlerTest {
 
 	@Test
 	public void testRawBytesOut() throws IOException {
+		final Charset outputCharSet = StandardCharsets.UTF_8;
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ReentrantLock writeLock = new ReentrantLock();
 		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
 				outputStream,
+				outputCharSet,
 				writeLock,
 				false,
 				false
@@ -84,11 +90,33 @@ public class DefaultOutputHandlerTest {
 	}
 
 	@Test
-	public void testRawBytesOut_AfterTermination() {
+	public void testRawCharsOut_SingleByteCharset() throws IOException {
+		final Charset outputCharSet = StandardCharsets.US_ASCII;
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ReentrantLock writeLock = new ReentrantLock();
 		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
 				outputStream,
+				outputCharSet,
+				writeLock,
+				false,
+				false
+		);
+
+		char[] charsToSend = {'A', 'B', 'C'};
+		outputHandler.rawCharsOut(charsToSend);
+
+		byte[] writtenBytes = outputStream.toByteArray();
+		assertArrayEquals(new byte[]{65, 66, 67}, writtenBytes);
+	}
+
+	@Test
+	public void testRawBytesOut_AfterTermination() {
+		final Charset outputCharSet = StandardCharsets.UTF_8;
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ReentrantLock writeLock = new ReentrantLock();
+		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
+				outputStream,
+				outputCharSet,
 				writeLock,
 				false,
 				false
@@ -104,12 +132,14 @@ public class DefaultOutputHandlerTest {
 
 	@Test
 	public void testRawBytesOut_WriteLockTimeout() throws InterruptedException {
+		final Charset outputCharSet = StandardCharsets.UTF_8;
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ReentrantLock mockLock = Mockito.mock(ReentrantLock.class);
 		when(mockLock.tryLock(10000, TimeUnit.MILLISECONDS)).thenReturn(false);
 
 		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
 				outputStream,
+				outputCharSet,
 				mockLock,
 				false,
 				false
@@ -126,12 +156,14 @@ public class DefaultOutputHandlerTest {
 
 	@Test
 	public void testRawBytesOut_InterruptedExceptionHandling() throws IOException, InterruptedException {
+		final Charset outputCharSet = StandardCharsets.UTF_8;
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ReentrantLock mockLock = Mockito.mock(ReentrantLock.class);
 		when(mockLock.tryLock(10000, TimeUnit.MILLISECONDS)).thenThrow(new InterruptedException("Interrupted"));
 
 		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
 				outputStream,
+				outputCharSet,
 				mockLock,
 				false,
 				false
@@ -145,4 +177,175 @@ public class DefaultOutputHandlerTest {
 
 		assertEquals("Write operation interrupted", exception.getMessage());
 	}
+
+	@Test
+	public void testRawCharsOut() throws IOException {
+		final Charset outputCharSet = StandardCharsets.UTF_8;
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ReentrantLock writeLock = new ReentrantLock();
+		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
+				outputStream,
+				outputCharSet,
+				writeLock,
+				false,
+				false
+		);
+
+		char[] charsToSend = {'A', 'B', 'C'};
+		outputHandler.rawCharsOut(charsToSend);
+
+		String writtenString = outputStream.toString(outputCharSet.name());
+		assertEquals("ABC", writtenString);
+	}
+
+	@Test
+	public void testRawCharsOut_UTF8MultibyteIcon() throws IOException {
+		final Charset outputCharSet = StandardCharsets.UTF_8;
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ReentrantLock writeLock = new ReentrantLock();
+		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
+				outputStream,
+				outputCharSet,
+				writeLock,
+				false,
+				false
+		);
+
+		String emojiString = "😀"; // Grinning Face emoji
+		outputHandler.rawCharsOut(emojiString.toCharArray());
+
+		String writtenString = outputStream.toString(outputCharSet.name());
+		assertEquals(emojiString, writtenString);
+	}
+
+
+	@Test
+	public void testRawCharsOut_UTF8MultibyteChinese() throws IOException {
+		final Charset outputCharSet = StandardCharsets.UTF_8;
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ReentrantLock writeLock = new ReentrantLock();
+		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
+				outputStream,
+				outputCharSet,
+				writeLock,
+				false,
+				false
+		);
+
+		char[] charsToSend = {'中'};
+		outputHandler.rawCharsOut(charsToSend);
+
+		String writtenString = outputStream.toString(outputCharSet.name());
+		assertEquals("中", writtenString);
+	}
+
+	@Test
+	public void testRawCharsOut_UTF8MultibyteConsecutiveChinese() throws IOException {
+		final Charset outputCharSet = StandardCharsets.UTF_8;
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ReentrantLock writeLock = new ReentrantLock();
+		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
+				outputStream,
+				outputCharSet,
+				writeLock,
+				false,
+				false
+		);
+
+		char[] charsToSend = {'中', '国'};
+		outputHandler.rawCharsOut(charsToSend);
+
+		String writtenString = outputStream.toString(outputCharSet.name());
+		assertEquals("中国", writtenString);
+	}
+
+	@Test
+	public void testRawCharsOut_UTF8MultibyteConsecutiveGermanUmlauts() throws IOException {
+		final Charset outputCharSet = StandardCharsets.UTF_8;
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ReentrantLock writeLock = new ReentrantLock();
+		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
+				outputStream,
+				outputCharSet,
+				writeLock,
+				false,
+				false
+		);
+
+		char[] charsToSend = {'ä', 'ö', 'ü'};
+		outputHandler.rawCharsOut(charsToSend);
+
+		String writtenString = outputStream.toString(outputCharSet.name());
+		assertEquals("äöü", writtenString);
+	}
+
+	@Test
+	public void testRawCharsOut_AfterTermination() {
+		final Charset outputCharSet = StandardCharsets.UTF_8;
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ReentrantLock writeLock = new ReentrantLock();
+		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
+				outputStream,
+				outputCharSet,
+				writeLock,
+				false,
+				false
+		);
+
+		outputHandler.requestTermination();
+
+		char[] testChars = {'X', 'Y', 'Z'};
+		assertDoesNotThrow(() -> {
+			outputHandler.rawCharsOut(testChars);
+		});
+	}
+
+	@Test
+	public void testRawCharsOut_WriteLockTimeout() throws InterruptedException {
+		final Charset outputCharSet = StandardCharsets.UTF_8;
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ReentrantLock mockLock = Mockito.mock(ReentrantLock.class);
+		when(mockLock.tryLock(10000, TimeUnit.MILLISECONDS)).thenReturn(false);
+
+		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
+				outputStream,
+				outputCharSet,
+				mockLock,
+				false,
+				false
+		);
+
+		char[] charsToSend = {'A', 'B', 'C'};
+
+		IOException exception = assertThrows(IOException.class, () -> {
+			outputHandler.rawCharsOut(charsToSend);
+		});
+
+		assertEquals("Could not acquire write lock within 10 seconds", exception.getMessage());
+	}
+
+	@Test
+	public void testRawCharsOut_InterruptedExceptionHandling() throws IOException, InterruptedException {
+		final Charset outputCharSet = StandardCharsets.UTF_8;
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ReentrantLock mockLock = Mockito.mock(ReentrantLock.class);
+		when(mockLock.tryLock(10000, TimeUnit.MILLISECONDS)).thenThrow(new InterruptedException("Interrupted"));
+
+		DefaultOutputHandler outputHandler = new DefaultOutputHandler(
+				outputStream,
+				outputCharSet,
+				mockLock,
+				false,
+				false
+		);
+
+		char[] charsToSend = {'A', 'B', 'C'};
+
+		IOException exception = assertThrows(IOException.class, () -> {
+			outputHandler.rawCharsOut(charsToSend);
+		});
+
+		assertEquals("Write operation interrupted", exception.getMessage());
+	}
+
 }
