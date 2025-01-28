@@ -11,6 +11,8 @@ import org.mockito.Mockito;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,9 +53,11 @@ public class DefaultInputHandlerTest {
 
 	@BeforeEach
 	public void setUp() {
+		final Charset inputCharSet = StandardCharsets.UTF_8;
 		inputStream = new ByteArrayInputStream(new byte[]{});
 		inputHandler = new DefaultInputHandler(
 				inputStream,
+				inputCharSet,
 				false,
 				false
 		);
@@ -118,5 +122,114 @@ public class DefaultInputHandlerTest {
 		});
 	}
 
+	@Test
+	public void testReadChar_SingleByteCharset() throws IOException {
+		byte[] testData = {65, 66, 67}; // ASCII for 'A', 'B', 'C'
+		inputStream = new ByteArrayInputStream(testData);
+		inputHandler = new DefaultInputHandler(inputStream, StandardCharsets.US_ASCII, false, false);
 
+		assertEquals('A', inputHandler.readChar());
+		assertEquals('B', inputHandler.readChar());
+		assertEquals('C', inputHandler.readChar());
+	}
+
+	@Test
+	public void testReadChar_UTF8MultibyteIcon() throws IOException {
+		byte[] testData = {(byte) 0xF0, (byte) 0x9F, (byte) 0x98, (byte) 0x80}; // UTF-8 for '😀' (Grinning Face emoji)
+		inputStream = new ByteArrayInputStream(testData);
+		inputHandler = new DefaultInputHandler(inputStream, StandardCharsets.UTF_8, false, false);
+
+		assertEquals("😀".codePointAt(0), inputHandler.readChar());
+	}
+
+	@Test
+	public void testReadChar_UTF8MultibyteChinese() throws IOException {
+		byte[] testData = {(byte) 0xE4, (byte) 0xB8, (byte) 0xAD}; // UTF-8 for '中'
+		inputStream = new ByteArrayInputStream(testData);
+		inputHandler = new DefaultInputHandler(inputStream, StandardCharsets.UTF_8, false, false);
+
+		assertEquals('中', inputHandler.readChar());
+	}
+
+	@Test
+	public void testReadChar_UTF8MultibyteConsecutiveChinese() throws IOException {
+		byte[] testData = {
+				(byte) 0xE4, (byte) 0xB8, (byte) 0xAD, // 中
+				(byte) 0xE5, (byte) 0x9B, (byte) 0xBD  // 国
+		};
+		inputStream = new ByteArrayInputStream(testData);
+		inputHandler = new DefaultInputHandler(inputStream, StandardCharsets.UTF_8, false, false);
+
+		assertEquals('中', inputHandler.readChar());
+		assertEquals('国', inputHandler.readChar());
+	}
+
+	@Test
+	public void testReadChar_UTF8MultibyteGermanUmlaut() throws IOException {
+		byte[] testData = {
+				(byte) 0xC3, (byte) 0xA4 // ä
+		};
+		inputStream = new ByteArrayInputStream(testData);
+		inputHandler = new DefaultInputHandler(inputStream, StandardCharsets.UTF_8, false, false);
+
+		assertEquals('ä', inputHandler.readChar());
+	}
+
+	@Test
+	public void testReadChar_UTF8MultibyteConsecutiveGermanUmlauts() throws IOException {
+		byte[] testData = {
+				(byte) 0xC3, (byte) 0xA4, // ä
+				(byte) 0xC3, (byte) 0xB6, // ö
+				(byte) 0xC3, (byte) 0xBC  // ü
+		};
+		inputStream = new ByteArrayInputStream(testData);
+		inputHandler = new DefaultInputHandler(inputStream, StandardCharsets.UTF_8, false, false);
+
+		assertEquals('ä', inputHandler.readChar());
+		assertEquals('ö', inputHandler.readChar());
+		assertEquals('ü', inputHandler.readChar());
+	}
+
+	@Test
+	public void testReadChar_TelnetIAC() throws IOException {
+		byte[] testData = {(byte) 255, 65}; // TELNET_IAC followed by 'A'
+		inputStream = new ByteArrayInputStream(testData);
+		inputHandler = new DefaultInputHandler(inputStream, StandardCharsets.UTF_8, false, false);
+
+		assertEquals(255, inputHandler.readChar());
+		assertEquals('A', inputHandler.readChar());
+	}
+
+	@Test
+	public void testReadChar_EscapeChar() throws IOException {
+		byte[] testData = {27, 65}; // ESCAPE_CHAR followed by 'A'
+		inputStream = new ByteArrayInputStream(testData);
+		inputHandler = new DefaultInputHandler(inputStream, StandardCharsets.UTF_8, false, false);
+
+		assertEquals(27, inputHandler.readChar());
+		assertEquals('A', inputHandler.readChar());
+	}
+
+	@Test
+	public void testReadChar_AfterTermination() {
+		inputHandler.requestTermination();
+
+		assertThrows(InterruptedIOException.class, () -> {
+			inputHandler.readByte();
+		});
+	}
+
+	@Test
+	public void testReadChar_WithFakeInput() throws IOException {
+		StringBuffer fakeInput = new StringBuffer("test");
+		int result = inputHandler.readChar(false, fakeInput);
+		assertEquals('t', (char) result);
+		assertEquals("est", fakeInput.toString());
+	}
+
+	@Test
+	public void testReadChar_WithNextByteIs255Flag() throws IOException {
+		int result = assertDoesNotThrow(() -> inputHandler.readChar(true, null));
+		assertEquals(255, result);
+	}
 }

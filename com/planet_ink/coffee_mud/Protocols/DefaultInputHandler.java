@@ -3,9 +3,8 @@ package com.planet_ink.coffee_mud.Protocols;
 import com.planet_ink.coffee_mud.Common.interfaces.InputHandler;
 import com.planet_ink.coffee_mud.core.Log;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
@@ -26,17 +25,28 @@ import java.util.concurrent.atomic.AtomicBoolean;
 */
 
 public class DefaultInputHandler implements InputHandler {
+	public static final int TELNET_IAC = 255; // Interpret as Command
+	public static final char ESCAPE_CHAR = '\033'; // Escape character (= 27)
+
 	private final AtomicBoolean terminationRequested = new AtomicBoolean(false);
 
 	private InputStream in;
+	private final Reader charIn;
+	private final CharacterCircularBufferInputStream charInWriter;
+	private final int maxBytesPerCharIn;
+
 	private boolean debugStrInput;
 	private boolean debugBinInput;
 
-	public DefaultInputHandler(InputStream in, boolean debugStrInput, boolean debugBinInput) {
+	public DefaultInputHandler(InputStream in, Charset charset, boolean debugStrInput, boolean debugBinInput) {
 		if (in == null) {
 			throw new IllegalArgumentException("Input stream cannot be null");
 		}
 		this.in = in;
+		this.maxBytesPerCharIn = (int) Math.round(Math.ceil(charset.newEncoder().maxBytesPerChar()));
+		this.charInWriter = new CharacterCircularBufferInputStream(this.maxBytesPerCharIn);
+		this.charIn = new BufferedReader(new InputStreamReader(this.charInWriter, charset));
+
 		this.debugStrInput = debugStrInput;
 		this.debugBinInput = debugBinInput;
 	}
@@ -50,7 +60,6 @@ public class DefaultInputHandler implements InputHandler {
 	public boolean isTerminationRequested() {
 		return terminationRequested.get();
 	}
-
 
 	private boolean isByteStreamAvailable() {
 		try {
@@ -118,6 +127,66 @@ public class DefaultInputHandler implements InputHandler {
 	}
 
 	@Override
+	public int readChar(boolean nextByteIs255, StringBuffer fakeInput) throws IOException {
+		if (nextByteIs255) {
+			return (char) 255;
+		}
+
+		if (fakeInput != null && fakeInput.length() > 0) {
+			char c = fakeInput.charAt(0);
+			fakeInput.deleteCharAt(0);
+			return c;
+		}
+
+		return readChar();
+	}
+
+	@Override
+	public int readChar() throws IOException {
+		if (isTerminationRequested()) {
+			Log.warnOut("InputHandler", "readChar: Termination requested");
+			throw new InterruptedIOException("Termination requested");
+		}
+
+		// Start by reading a single byte
+		int b = readByte();
+
+		// If charset is single-byte, return the byte as a char
+		if (maxBytesPerCharIn == 1) {
+			return (char) b;
+		}
+
+		// Special handling for telnet and escape characters
+		if ((b == TELNET_IAC) ||
+				((b & 0xff) == TELNET_IAC) ||
+				(b == ESCAPE_CHAR)) {
+			return (char) b;
+		}
+
+		// Write the first byte to the circular buffer
+		charInWriter.write(b);
+
+		// Attempt to read a full character
+		int maxBytes = this.maxBytesPerCharIn;
+		while (!isTerminationRequested() && this.charIn.ready() && this.in.available() > 0 && (--maxBytes >= 0)) {
+			try {
+				// Try to read a character from the buffer
+				return charIn.read();
+			} catch (final java.io.InterruptedIOException e) {
+				// If interrupted (not enough bytes for a full character),
+				// read another byte and add it to the buffer
+				b = readByte();
+				this.charInWriter.write(b);
+
+				// Continue the loop to try reading again
+			}
+		}
+
+		// Final attempt to read a character
+		return charIn.read();
+	}
+
+	@Override
 	public void setDebugStr(boolean flag) {
 		debugStrInput = flag;
 	}
@@ -125,5 +194,30 @@ public class DefaultInputHandler implements InputHandler {
 	@Override
 	public void setDebugBin(boolean flag) {
 		debugBinInput = flag;
+	}
+
+	private static class CharacterCircularBufferInputStream extends InputStream {
+		private final int[] bytes;
+		private int start = 0;
+		private int end = 0;
+
+		protected CharacterCircularBufferInputStream(final int maxBytesPerChar) {
+			bytes = new int[maxBytesPerChar + 1];
+		}
+
+		public void write(int b) {
+			bytes[end] = b;
+			end = (end + 1) % bytes.length;
+		}
+
+		public int read() throws IOException {
+			if (start == end) {
+				// Buffer is empty, throw exception to signal more input is needed
+				throw new InterruptedIOException();
+			}
+			int b = bytes[start];
+			start = (start + 1) % bytes.length;
+			return b;
+		}
 	}
 }
