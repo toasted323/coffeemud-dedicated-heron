@@ -64,6 +64,32 @@ public interface OutputHandler {
 	void rawCharsOut(char[] chars) throws IOException;
 
 	/**
+	 * Gets the time when the last write operation started.
+	 *
+	 * @return the timestamp of the last write start time in milliseconds
+	 */
+	long getWriteStartTime();
+
+	/**
+	 * Gets the time when the last write operation completed.
+	 *
+	 * @return the timestamp of the last write completion time in milliseconds
+	 */
+	long getLastWriteTime();
+
+	/**
+	 * Resets the last write time to the current system time.
+	 */
+	void resetLastWriteTime();
+
+	/**
+	 * Checks if the output stream is locked up in a write operation.
+	 *
+	 * @return true if the stream has been writing for more than 10 seconds, false otherwise
+	 */
+	boolean isLockedUpWriting();
+
+	/**
 	 * Configures debug flag for string output logging.
 	 *
 	 * @param flag enable or disable string output debugging

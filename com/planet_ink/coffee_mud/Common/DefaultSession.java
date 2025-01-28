@@ -48,6 +48,7 @@ import java.nio.charset.Charset;
    limitations under the License.
 
    CHANGES:
+   2025-02 toasted323: Extract write timing logic into OutputHandler
    2025-02 toasted323: Extract char-level I/O methods into Input- and OutputHandler interfaces
    2025-02 toasted323: Remove unused OutputStream parameter from rawBytesOut
    2025-02 toasted323: Introduce lightweight termination mechanism for Input- and OutputHandler
@@ -115,7 +116,6 @@ public class DefaultSession implements Session
 	protected String		 terminalType		 = "UNKNOWN";
 	protected int			 terminalWidth		 = -1;
 	protected int			 terminalHeight		 = -1;
-	protected long			 writeStartTime		 = 0;
 	protected boolean		 bNextByteIs255		 = false;
 	protected boolean		 connectionComplete	 = false;
 	protected ReentrantLock  writeLock 			 = new ReentrantLock(true);
@@ -141,7 +141,6 @@ public class DefaultSession implements Session
 	protected volatile long	 lastIACIn		 	 = System.currentTimeMillis();
 	protected long			 promptLastShown	 = 0;
 	protected char 			 threadGroupChar	 = '\0';
-	protected volatile long  lastWriteTime		 = System.currentTimeMillis();
 	protected boolean		 debugStrInput		 = false;
 	protected boolean		 debugStrOutput		 = false;
 	protected boolean		 debugBinOutput		 = false;
@@ -1145,18 +1144,10 @@ public class DefaultSession implements Session
 		setKillFlag(true);
 	}
 
-	protected long getWriteStartTime()
-	{
-		return writeStartTime;
-	}
-
 	@Override
 	public boolean isLockedUpWriting()
 	{
-		final long time=writeStartTime;
-		if(time==0)
-			return false;
-		return ((System.currentTimeMillis()-time)>10000);
+		return outputHandler.isLockedUpWriting();
 	}
 
 	public final void rawBytesOut(final byte[] bytes) throws IOException
@@ -2978,7 +2969,7 @@ public class DefaultSession implements Session
 				final String lastInput = loginSession.acceptInput(this);
 				if(lastInput==null)
 				{
-					if((System.currentTimeMillis()-lastWriteTime)>PINGTIMEOUT)
+					if((System.currentTimeMillis()-outputHandler.getLastWriteTime())>PINGTIMEOUT)
 						rawCharsOut(PINGCHARS);
 					return;
 				}
@@ -3190,7 +3181,7 @@ public class DefaultSession implements Session
 				input=readlineContinue();
 			if(input==null)
 			{
-				if((System.currentTimeMillis()-lastWriteTime)>PINGTIMEOUT)
+				if((System.currentTimeMillis()-outputHandler.getLastWriteTime())>PINGTIMEOUT)
 					rawCharsOut(PINGCHARS);
 			}
 			else
@@ -3533,7 +3524,6 @@ public class DefaultSession implements Session
 		this.lastStr=""; // also resets spam counter
 		this.spamStack=0;
 		lastKeystroke=System.currentTimeMillis();
-		lastWriteTime=System.currentTimeMillis();
 	}
 
 	private static enum SESS_STAT_CODES {PREVCMD,ISAFK,AFKMESSAGE,ADDRESS,IDLETIME,
