@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
@@ -226,6 +228,49 @@ public class DefaultOutputHandler implements OutputHandler {
 	@Override
 	public long getWriteStartTime() {
 		return writeStartTime;
+	}
+
+	@Override
+	public void shutdown() throws IOException {
+		List<IOException> exceptions = new ArrayList<>();
+
+		requestTermination();
+
+		if (out != null) {
+			try {
+				out.flush();
+				out.close();
+			} catch (IOException e) {
+				exceptions.add(e);
+				Log.errOut("OutputHandler", "shutdown: Error while closing output stream: " + e.getMessage());
+			} finally {
+				out = null;
+				charOut = null;
+			}
+		}
+		// Closing the underlying output stream automatically closes charOut.
+
+		if (writeLock.isHeldByCurrentThread()) {
+			try {
+				writeLock.unlock();
+			} catch (IllegalMonitorStateException e) {
+				IOException ioException = new IOException("Error while releasing write lock: " + e.getMessage(), e);
+				exceptions.add(ioException);
+				Log.errOut("OutputHandler", "shutdown: " + ioException.getMessage());
+			}
+		}
+
+		writeThread = null;
+		writeStartTime = 0;
+		lastWriteTime = System.currentTimeMillis();
+
+		if (!exceptions.isEmpty()) {
+			StringBuilder errorMessage = new StringBuilder("Errors occurred during shutdown:");
+			for (IOException e : exceptions) {
+				errorMessage.append("\n").append(e.getMessage());
+			}
+			throw new IOException(errorMessage.toString(), exceptions.get(0));
+		}
 	}
 
 	@Override
