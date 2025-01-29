@@ -25,7 +25,6 @@ import com.planet_ink.coffee_mud.Protocols.DefaultOutputHandler;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.net.*;
@@ -48,6 +47,7 @@ import java.nio.charset.Charset;
    limitations under the License.
 
    CHANGES:
+   2025-02 toasted323: Implement shutdown methods in IO handlers
    2025-02 toasted323: Extract write timing logic into OutputHandler
    2025-02 toasted323: Extract char-level I/O methods into Input- and OutputHandler interfaces
    2025-02 toasted323: Remove unused OutputStream parameter from rawBytesOut
@@ -76,7 +76,7 @@ public class DefaultSession implements Session
 	protected final Map<String,String>	mcpKeyPairs		= new TreeMap<String,String>();
 	protected final boolean		 		mcpDisabled		= CMSecurity.isDisabled(DisFlag.MCP);
 	protected final Map<String,float[]>	mcpSupported	= new TreeMap<String,float[]>();
-	protected final AtomicBoolean 		sockObj 		= new AtomicBoolean(false);
+	protected final AtomicBoolean socketShutdownLock = new AtomicBoolean(false);
 	protected final LinkedList<List<String>>history		= new LinkedList<List<String>>();
 
 	private volatile Thread  runThread 			 = null;
@@ -2512,50 +2512,31 @@ public class DefaultSession implements Session
 	protected void closeSocks(final String finalMsg)
 	{
 		final Socket sock=this.sock;
-		final PrintWriter out=this.out;
-		if((sock!=null)&&(!sockObj.get()))
+		if((sock!=null) && (!socketShutdownLock.get()))
 		{
-			sockObj.set(true);
+			socketShutdownLock.set(true);
 			try
 			{
 				Log.sysOut("Disconnect: "+finalMsg+getAddress()+" ("+CMLib.time().date2SmartEllapsedTime(getMillisOnline(),true)+")");
+				inputHandler.shutdown();
 				setStatus(SessionStatus.LOGOUT7);
-				sock.shutdownInput();
+				outputHandler.shutdown();
 				setStatus(SessionStatus.LOGOUT8);
-				if(out!=null)
-				{
-					try
-					{
-						if(!out.checkError())
-						{
-							out.write(PINGCHARS);
-							out.checkError();
-						}
-					}
-					catch (final Exception t)
-					{
-					}
-					out.close();
-				}
+				sock.shutdownInput();
 				setStatus(SessionStatus.LOGOUT9);
 				sock.shutdownOutput();
 				setStatus(SessionStatus.LOGOUT10);
 				sock.close();
 				setStatus(SessionStatus.LOGOUT11);
 			}
-			catch(final IOException e)
+			catch(final IOException | IndexOutOfBoundsException e)
 			{
-			}
-			catch (final IndexOutOfBoundsException e)
+			} finally
 			{
-			}
-			finally
-			{
-				this.rawin=null;
-				this.in=null;
-				this.out=null;
+				this.outputHandler = null;
+				this.inputHandler = null;
 				this.sock=null;
-				this.sockObj.set(false);
+				this.socketShutdownLock.set(false);
 			}
 		}
 	}

@@ -9,6 +9,8 @@ import org.mockito.Mockito;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
@@ -348,4 +350,48 @@ public class DefaultOutputHandlerTest {
 		assertEquals("Write operation interrupted", exception.getMessage());
 	}
 
+	@Test
+	public void testShutdown_NormalOperation() throws IOException {
+		OutputStream mockOutputStream = Mockito.mock(OutputStream.class);
+		PrintWriter mockPrintWriter = Mockito.mock(PrintWriter.class);
+		ReentrantLock mockLock = Mockito.mock(ReentrantLock.class);
+
+		DefaultOutputHandler handler = new DefaultOutputHandler(mockOutputStream, StandardCharsets.UTF_8, mockLock, false, false);
+		handler.shutdown();
+
+		assertTrue(handler.isTerminationRequested());
+		Mockito.verify(mockOutputStream).close();
+		Mockito.verify(mockLock).isHeldByCurrentThread();
+	}
+
+	@Test
+	public void testShutdown_ExceptionHandling() throws IOException {
+		OutputStream mockOutputStream = Mockito.mock(OutputStream.class);
+		PrintWriter mockPrintWriter = Mockito.mock(PrintWriter.class);
+		ReentrantLock mockLock = Mockito.mock(ReentrantLock.class);
+
+		Mockito.doThrow(new IOException("Test exception")).when(mockOutputStream).close();
+
+		DefaultOutputHandler handler = new DefaultOutputHandler(mockOutputStream, StandardCharsets.UTF_8, mockLock, false, false);
+
+		IOException exception = assertThrows(IOException.class, () -> handler.shutdown());
+		assertTrue(exception.getMessage().contains("Test exception"));
+		assertTrue(handler.isTerminationRequested());
+	}
+
+	@Test
+	public void testShutdown_WriteLockHandling() throws IOException {
+		OutputStream mockOutputStream = Mockito.mock(OutputStream.class);
+		PrintWriter mockPrintWriter = Mockito.mock(PrintWriter.class);
+		ReentrantLock mockLock = Mockito.mock(ReentrantLock.class);
+
+		Mockito.when(mockLock.isHeldByCurrentThread()).thenReturn(true);
+		Mockito.doThrow(new IllegalMonitorStateException("Test exception")).when(mockLock).unlock();
+
+		DefaultOutputHandler handler = new DefaultOutputHandler(mockOutputStream, StandardCharsets.UTF_8, mockLock, false, false);
+
+		IOException exception = assertThrows(IOException.class, () -> handler.shutdown());
+		assertTrue(exception.getMessage().contains("Error while releasing write lock"));
+		assertTrue(handler.isTerminationRequested());
+	}
 }

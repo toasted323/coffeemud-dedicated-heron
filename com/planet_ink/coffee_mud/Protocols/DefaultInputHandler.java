@@ -5,6 +5,8 @@ import com.planet_ink.coffee_mud.core.Log;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
@@ -31,8 +33,8 @@ public class DefaultInputHandler implements InputHandler {
 	private final AtomicBoolean terminationRequested = new AtomicBoolean(false);
 
 	private InputStream in;
-	private final Reader charIn;
-	private final CharacterCircularBufferInputStream charInWriter;
+	private Reader charIn;
+	private CharacterCircularBufferInputStream charInWriter;
 	private final int maxBytesPerCharIn;
 
 	private boolean debugStrInput;
@@ -185,6 +187,58 @@ public class DefaultInputHandler implements InputHandler {
 		// Final attempt to read a character
 		return charIn.read();
 	}
+
+	@Override
+	public void shutdown() throws IOException {
+		requestTermination();
+		List<IOException> exceptions = new ArrayList<>();
+
+		if (in != null) {
+			try {
+				in.close();
+			} catch (IOException e) {
+				exceptions.add(e);
+				Log.errOut("InputHandler", "Error while closing input stream: " + e.getMessage());
+			} finally {
+				in = null;
+			}
+		}
+
+		if (charInWriter != null) {
+			try {
+				charInWriter.close();
+			} catch (IOException e) {
+				exceptions.add(e);
+				Log.errOut("InputHandler", "Error while closing charInWriter: " + e.getMessage());
+			} finally {
+				charInWriter = null;
+			}
+		}
+
+		if (charIn != null) {
+			try {
+				charIn.close();
+			} catch (IOException e) {
+				exceptions.add(e);
+				Log.errOut("InputHandler", "Error while closing charIn: " + e.getMessage());
+			} finally {
+				charIn = null;
+			}
+		}
+
+		if (!exceptions.isEmpty() || Thread.interrupted()) {
+			StringBuilder errorMessage = new StringBuilder("Errors occurred during shutdown:");
+			for (IOException e : exceptions) {
+				errorMessage.append("\n").append(e.getMessage());
+			}
+			if (Thread.interrupted()) {
+				errorMessage.append("\nShutdown was interrupted");
+			}
+			throw new IOException(errorMessage.toString());
+		}
+	}
+
+
 
 	@Override
 	public void setDebugStr(boolean flag) {

@@ -83,7 +83,7 @@ public interface InputHandler {
 	 *
 	 * @param nextByteIs255 If true, forces the next byte to be 255 regardless of actual input
 	 * @param fakeInput     A {@link StringBuffer} containing simulated input. If non-null and not empty,
-	 *                      the first character is returned, and it is removed from the buffer.
+	 *                      thoutpute first character is returned, and it is removed from the buffer.
 	 * @return The byte read from the stream, or 255 if nextByteIs255 is true
 	 * @throws IOException If an I/O error occurs
 	 * @deprecated This method is maintained for compatibility and may be removed in future versions
@@ -112,6 +112,13 @@ public interface InputHandler {
 	 *         interrupted while waiting for a complete multi-byte character
 	 */
 	int readChar() throws IOException;
+
+	/**
+	 * Closes the input handler and releases any associated resources.
+	 *
+	 * @throws IOException If an error occurs during closing.
+	 */
+	void shutdown() throws IOException;
 
 	/**
 	 * Configures debug flag for string input logging.
