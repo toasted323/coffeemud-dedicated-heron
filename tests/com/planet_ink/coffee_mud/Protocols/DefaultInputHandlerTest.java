@@ -10,6 +10,7 @@ import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -232,4 +233,39 @@ public class DefaultInputHandlerTest {
 		int result = assertDoesNotThrow(() -> inputHandler.readChar(true, null));
 		assertEquals(255, result);
 	}
+
+	@Test
+	public void testShutdown_NormalOperation() throws IOException {
+		InputStream mockInputStream = Mockito.mock(InputStream.class);
+		inputHandler = new DefaultInputHandler(mockInputStream, StandardCharsets.UTF_8, false, false);
+
+		inputHandler.shutdown();
+
+		assertTrue(inputHandler.isTerminationRequested());
+
+		Mockito.verify(mockInputStream).close();
+	}
+
+	@Test
+	public void testShutdown_ExceptionHandling() throws IOException {
+		InputStream mockInputStream = Mockito.mock(InputStream.class);
+		Mockito.doThrow(new IOException("Test exception")).when(mockInputStream).close();
+		inputHandler = new DefaultInputHandler(mockInputStream, StandardCharsets.UTF_8, false, false);
+
+		assertThrows(IOException.class, () -> inputHandler.shutdown());
+
+		assertTrue(inputHandler.isTerminationRequested());
+	}
+
+	@Test
+	public void testShutdown_MultipleInvocations() throws IOException {
+		InputStream mockInputStream = Mockito.mock(InputStream.class);
+		inputHandler = new DefaultInputHandler(mockInputStream, StandardCharsets.UTF_8, false, false);
+
+		inputHandler.shutdown();
+		inputHandler.shutdown();
+
+		Mockito.verify(mockInputStream, Mockito.times(1)).close();
+	}
+
 }

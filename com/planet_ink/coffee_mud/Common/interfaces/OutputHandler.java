@@ -71,6 +71,13 @@ public interface OutputHandler {
 	long getWriteStartTime();
 
 	/**
+	 * Closes the output handler and releases any associated resources.
+	 *
+	 * @throws IOException If an error occurs during closing.
+	 */
+	void shutdown() throws IOException;
+
+	/**
 	 * Gets the time when the last write operation completed.
 	 *
 	 * @return the timestamp of the last write completion time in milliseconds
