@@ -47,6 +47,7 @@ import java.nio.charset.Charset;
    limitations under the License.
 
    CHANGES:
+   2025-02 toasted323: Remove low-level stream handling leftovers from DefaultSession
    2025-02 toasted323: Implement shutdown methods in IO handlers
    2025-02 toasted323: Extract write timing logic into OutputHandler
    2025-02 toasted323: Extract char-level I/O methods into Input- and OutputHandler interfaces
@@ -86,10 +87,6 @@ public class DefaultSession implements Session
 	protected volatile long  lastStateChangeMs	 = System.currentTimeMillis();
 	protected int   		 snoopSuspensionStack= 0;
 	protected Socket 	 	 sock				 = null;
-	protected SesInputStream charWriter;
-	protected int			 inMaxBytesPerChar	 = 1;
-	protected BufferedReader in;
-	protected PrintWriter	 out;
 	protected InputStream    rawin;
 	protected OutputStream   rawout;
 	protected MOB   		 mob;
@@ -350,9 +347,6 @@ public class DefaultSession implements Session
 				inputHandler = new DefaultInputHandler(rawin, inputCharSet, debugStrInput, debugBinInput);
 				rawout=new BufferedOutputStream(new ByteArrayOutputStream());
 				outputHandler = new DefaultOutputHandler(rawout, outputCharSet, writeLock, debugStrOutput, debugStrOutput);
-
-				in=new BufferedReader(new InputStreamReader(rawin));
-				out=new PrintWriter(new OutputStreamWriter(rawout));
 				return;
 			}
 
@@ -362,17 +356,11 @@ public class DefaultSession implements Session
 			rawout=new BufferedOutputStream(sock.getOutputStream());
 			outputHandler = new DefaultOutputHandler(rawout, outputCharSet, writeLock, debugStrOutput, debugStrOutput);
 
-			inMaxBytesPerChar=(int)Math.round(Math.ceil(inputCharSet.newEncoder().maxBytesPerChar()));
-			charWriter=new SesInputStream(inMaxBytesPerChar);
-			in=new BufferedReader(new InputStreamReader(charWriter,inputCharSet));
-			out=new PrintWriter(new OutputStreamWriter(rawout,outputCharSet));
-
 			if(!mcpDisabled)
 			{
 				rawBytesOut(("\n\r#$#mcp version: 2.1 to: 2.1\n\r").getBytes(CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
 			}
 			rawBytesOut(("\n\rConnecting to "+CMProps.getVar(CMProps.Str.MUDNAME)+"...\n\r").getBytes("US-ASCII"));
-			//rawout.flush(); rawBytesOut already flushes
 
 			setServerTelnetMode(TELNET_ANSI,true);
 			setClientTelnetMode(TELNET_ANSI,true);
@@ -396,7 +384,6 @@ public class DefaultSession implements Session
 			//changeTelnetMode(rawout,TELNET_BINARY,true);
 			if(mightSupportTelnetMode(TELNET_GA))
 				rawBytesOut(TELNETGABYTES);
-			//rawout.flush(); rawBytesOut already flushes
 			if((!CMSecurity.isDisabled(CMSecurity.DisFlag.MSSP))
 			&&(mightSupportTelnetMode(TELNET_MSSP)))
 				changeTelnetMode(rawout,TELNET_MSSP,true);
@@ -413,13 +400,7 @@ public class DefaultSession implements Session
 				{
 					try
 					{
-						if(out!=null)
-						{
-							out.flush();
-							rawout.flush();
-						}
-						else
-						{
+						if(outputHandler==null) {
 							setKillFlag(true);
 							return false;
 						}
@@ -429,7 +410,6 @@ public class DefaultSession implements Session
 						{
 							if((!terminalType.equals("ANSI"))&&(getClientTelnetMode(TELNET_ECHO)))
 								changeTelnetModeBackwards(rawout,TELNET_ECHO,false);
-							//rawout.flush(); rawBytesOut already flushes
 							setStatus(SessionStatus.HANDSHAKE_MCCP);
 							break;
 						}
@@ -442,14 +422,12 @@ public class DefaultSession implements Session
 								if(getClientTelnetMode(TELNET_COMPRESS2))
 								{
 									negotiateTelnetMode(rawout,TELNET_COMPRESS2);
-									//rawout.flush(); rawBytesOut already flushes
 									if(getClientTelnetMode(TELNET_COMPRESS2))
 									{
 										final ZOutputStream zOut=new ZOutputStream(rawout, JZlib.Z_DEFAULT_COMPRESSION);
 										rawout=zOut;
 										outputHandler.resetByteStream(rawout);
 										zOut.setFlushMode(JZlib.Z_SYNC_FLUSH);
-										out = new PrintWriter(new OutputStreamWriter(zOut,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
 										if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 											Log.debugOut("MCCP compression started");
 									}
@@ -483,10 +461,8 @@ public class DefaultSession implements Session
 						{
 							if(introTextStr!=null)
 								print(introTextStr);
-							if(out!=null)
+							if(outputHandler!=null)
 							{
-								out.flush();
-								rawout.flush();
 								if((getClientTelnetMode(Session.TELNET_MXP))
 								&&((mxpSupportSet.contains("+IMAGE.URL"))
 									||((mxpSupportSet.contains("+IMAGE"))&&(!mxpSupportSet.contains("-IMAGE.URL")))))
@@ -511,11 +487,6 @@ public class DefaultSession implements Session
 												introFilename=choices.get(CMLib.dice().roll(1,choices.size(),-1));
 										}
 										println("\n\r\n\r\n\r^<IMAGE '"+introFilename+"' URL='"+paths[0]+"' H=400 W=400^>\n\r\n\r");
-										if(out!=null)
-										{
-											out.flush();
-											rawout.flush();
-										}
 									}
 								}
 							}
@@ -528,7 +499,7 @@ public class DefaultSession implements Session
 								fakeInput=new StringBuffer(collectedInput.toString());
 							return false;
 						}
-						return (out!=null);
+						return (outputHandler!=null);
 					}
 					catch(final Exception e)
 					{
@@ -554,12 +525,9 @@ public class DefaultSession implements Session
 
 	protected void compress2Off() throws IOException
 	{
-		out.flush();
 		changeTelnetMode(rawout,TELNET_COMPRESS2,false);
-		//rawout.flush(); rawBytesOut already flushes
 		rawout=new BufferedOutputStream(sock.getOutputStream());
 		outputHandler.resetByteStream(rawout);
-		out = new PrintWriter(new OutputStreamWriter(rawout,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
 		CMLib.s_sleep(50);
 		changeTelnetMode(rawout,TELNET_COMPRESS2,false);
 		if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
@@ -660,7 +628,6 @@ public class DefaultSession implements Session
 		else
 			command=new byte[]{(byte)TELNET_IAC,onOff?(byte)TELNET_WILL:(byte)TELNET_WONT,(byte)telnetCode};
 		rawBytesOut(command);
-		//rawout.flush(); rawBytesOut already flushes
 		if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 			Log.debugOut("Sent: "+(onOff?"Will":"Won't")+" "+Session.TELNET_DESCS[telnetCode]);
 		setServerTelnetMode(telnetCode,onOff);
@@ -732,9 +699,7 @@ public class DefaultSession implements Session
 		try
 		{
 			final byte[] command={(byte)TELNET_IAC,onOff?(byte)TELNET_WILL:(byte)TELNET_WONT,(byte)telnetCode};
-			out.flush();
 			rawBytesOut(command);
-			//rawout.flush(); rawBytesOut already flushes
 		}
 		catch (final Exception e)
 		{
@@ -747,10 +712,7 @@ public class DefaultSession implements Session
 	public void changeTelnetModeBackwards(final int telnetCode, final boolean onOff) throws IOException
 	{
 		final byte[] command={(byte)TELNET_IAC,onOff?(byte)TELNET_DO:(byte)TELNET_DONT,(byte)telnetCode};
-		if(out!=null)
-			out.flush();
 		rawBytesOut(command);
-		//rawout.flush(); rawBytesOut already flushes
 		if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 			Log.debugOut("Back-Sent: "+(onOff?"Do":"Don't")+" "+Session.TELNET_DESCS[telnetCode]);
 		setServerTelnetMode(telnetCode,onOff);
@@ -760,7 +722,6 @@ public class DefaultSession implements Session
 	{
 		final byte[] command={(byte)TELNET_IAC,onOff?(byte)TELNET_DO:(byte)TELNET_DONT,(byte)telnetCode};
 		rawBytesOut(command);
-		//rawout.flush(); rawBytesOut already flushes
 		if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 			Log.debugOut("Back-Sent: "+(onOff?"Do":"Don't")+" "+Session.TELNET_DESCS[telnetCode]);
 		setServerTelnetMode(telnetCode,onOff);
@@ -771,7 +732,6 @@ public class DefaultSession implements Session
 	{
 		try
 		{
-			out.flush();
 			if(telnetCode==TELNET_TERMTYPE)
 			{
 				final byte[] command={(byte)TELNET_IAC,(byte)TELNET_SB,(byte)telnetCode,(byte)1,(byte)TELNET_IAC,(byte)TELNET_SE};
@@ -782,7 +742,6 @@ public class DefaultSession implements Session
 				final byte[] command={(byte)TELNET_IAC,(byte)TELNET_SB,(byte)telnetCode,(byte)TELNET_IAC,(byte)TELNET_SE};
 				rawBytesOut(command);
 			}
-			//rawout.flush(); rawBytesOut already flushes
 		}
 		catch (final Exception e)
 		{
@@ -1163,11 +1122,6 @@ public class DefaultSession implements Session
 	@Override
 	public void rawCharsOut(final char[] chars)
 	{
-		rawCharsOut(out,chars);
-	}
-
-	public void rawCharsOut(final PrintWriter out, final char[] chars)
-	{
 		try {
 			outputHandler.rawCharsOut(chars);
 		} catch (IOException e) {
@@ -1227,7 +1181,7 @@ public class DefaultSession implements Session
 	@Override
 	public void onlyPrint(String msg, final boolean noCache)
 	{
-		if((out==null)||(msg==null))
+		if((outputHandler==null)||(msg==null))
 			return;
 		try
 		{
@@ -1646,7 +1600,6 @@ public class DefaultSession implements Session
 					if(terminalType.startsWith("GIVE-WINTIN.NET-A-CHANCE"))
 					{
 						rawOut("\n\r\n\r**** Your MUD Client is Broken! Please use another!!****\n\r\n\r");
-						rawout.flush();
 						CMLib.s_sleep(1000);
 						rawout.close();
 					}
@@ -1727,7 +1680,7 @@ public class DefaultSession implements Session
 
 	public void handleEscape() throws IOException, InterruptedIOException
 	{
-		if((in==null)||(out==null))
+		if(outputHandler == null)
 			return;
 		int c=readByte();
 		if((char)c!='[')
@@ -1844,7 +1797,7 @@ public class DefaultSession implements Session
 						final Command C=CMClass.getCommand("Shutdown");
 						l="";
 						setKillFlag(true);
-						rawCharsOut(out,"\n\n\033[1z<Executing Shutdown...\n\n".toCharArray());
+						rawCharsOut("\n\n\033[1z<Executing Shutdown...\n\n".toCharArray());
 						M.setSession(this);
 						if(C!=null)
 							C.execute(M,cmd,0);
@@ -1857,7 +1810,7 @@ public class DefaultSession implements Session
 	public void handleIAC()
 		throws IOException, InterruptedIOException
 	{
-		if((in==null)||(out==null))
+		if(outputHandler==null)
 			return;
 		lastIACIn=System.currentTimeMillis();
 		int c=readByte();
@@ -1935,10 +1888,8 @@ public class DefaultSession implements Session
 						{
 							try
 							{
-								if((out==null)||(killFlag))
+								if((outputHandler==null)||(killFlag))
 									return false;
-								out.flush();
-								rawout.flush();
 								switch(counter)
 								{
 								case 3:
@@ -1946,12 +1897,10 @@ public class DefaultSession implements Session
 									if(getClientTelnetMode(TELNET_COMPRESS2))
 									{
 										negotiateTelnetMode(rawout,TELNET_COMPRESS2);
-										//rawout.flush(); rawBytesOut already flushes
 										final ZOutputStream zOut=new ZOutputStream(rawout, JZlib.Z_DEFAULT_COMPRESSION);
 										rawout=zOut;
 										outputHandler.resetByteStream(rawout);
 										zOut.setFlushMode(JZlib.Z_SYNC_FLUSH);
-										out = new PrintWriter(new OutputStreamWriter(zOut,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
 										if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 											Log.debugOut("MCCP compression started");
 									}
@@ -2033,7 +1982,6 @@ public class DefaultSession implements Session
 				setClientTelnetMode(last,false);
 				rawout=new BufferedOutputStream(sock.getOutputStream());
 				outputHandler.resetByteStream(rawout);
-				out = new PrintWriter(new OutputStreamWriter(rawout,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
 			}
 			if((mightSupportTelnetMode(last)&&(getServerTelnetMode(last))))
 				changeTelnetMode(last,false);
@@ -2091,7 +2039,7 @@ public class DefaultSession implements Session
 	@Override
 	public char hotkey(final long maxWait)
 	{
-		if((in==null)||(out==null))
+		if(outputHandler==null)
 			return '\0';
 		input=new StringBuffer("");
 		final long start=System.currentTimeMillis();
@@ -2230,7 +2178,7 @@ public class DefaultSession implements Session
 	public String blockingIn(final long maxTime, final boolean filter)
 		throws IOException
 	{
-		if((in==null)||(out==null))
+		if(outputHandler==null)
 			return "";
 		this.input.setLength(0);
 		final long start=System.currentTimeMillis();
@@ -2324,7 +2272,7 @@ public class DefaultSession implements Session
 	@Override
 	public String readlineContinue() throws IOException, SocketException
 	{
-		if((in==null)||(out==null))
+		if(outputHandler==null)
 			return "";
 		int code=-1;
 		while(!killFlag)
@@ -3676,39 +3624,6 @@ public class DefaultSession implements Session
 		default:
 			Log.errOut("Session", "setStat:Unhandled:" + stat.toString());
 			break;
-		}
-	}
-
-	private static class SesInputStream extends InputStream
-	{
-		private final int[] bytes;
-		private int start=0;
-		private int end=0;
-		protected SesInputStream(final int maxBytesPerChar)
-		{
-			bytes=new int[maxBytesPerChar+1];
-		}
-
-		@Override
-		public int read() throws IOException
-		{
-			if(start==end)
-				throw new java.io.InterruptedIOException();
-			final int b=bytes[start];
-			if(start==bytes.length-1)
-				start=0;
-			else
-				start++;
-			return b;
-		}
-
-		public void write(final int b)
-		{
-			bytes[end]=b;
-			if(end==bytes.length-1)
-				end=0;
-			else
-				end++;
 		}
 	}
 
