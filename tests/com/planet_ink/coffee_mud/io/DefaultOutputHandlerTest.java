@@ -1,4 +1,4 @@
-package com.planet_ink.coffee_mud.Protocols;
+package com.planet_ink.coffee_mud.io;
 
 import com.planet_ink.coffee_mud.core.Log;
 import org.junit.jupiter.api.AfterAll;
