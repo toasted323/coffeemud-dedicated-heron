@@ -1,4 +1,4 @@
-package com.planet_ink.coffee_mud.Common.interfaces;
+package com.planet_ink.coffee_mud.io.interfaces;
 
 import java.io.IOException;
 import java.io.InputStream;

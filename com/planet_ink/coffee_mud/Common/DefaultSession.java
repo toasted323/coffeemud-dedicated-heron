@@ -20,8 +20,10 @@ import com.jcraft.jzlib.*;
 
 import com.planet_ink.coffee_mud.core.Log;
 
-import com.planet_ink.coffee_mud.Protocols.DefaultInputHandler;
-import com.planet_ink.coffee_mud.Protocols.DefaultOutputHandler;
+import com.planet_ink.coffee_mud.io.DefaultInputHandler;
+import com.planet_ink.coffee_mud.io.DefaultOutputHandler;
+import com.planet_ink.coffee_mud.io.interfaces.InputHandler;
+import com.planet_ink.coffee_mud.io.interfaces.OutputHandler;
 
 import java.io.*;
 import java.util.*;
@@ -47,6 +49,7 @@ import java.nio.charset.Charset;
    limitations under the License.
 
    CHANGES:
+   2025-02 toasted323: Move I/O handlers and interfaces to dedicated package
    2025-02 toasted323: Remove low-level stream handling leftovers from DefaultSession
    2025-02 toasted323: Implement shutdown methods in IO handlers
    2025-02 toasted323: Extract write timing logic into OutputHandler
@@ -101,7 +104,7 @@ public class DefaultSession implements Session
 	protected String[]  	 clookup			 = null;
 	protected String		 lastColorStr		 = "";
 	protected String		 lastStr			 = null;
-	protected int			 spamStack			 = 0;
+	protected int			 spamStack;
 	protected List<Session>	 snoops				 = new Vector<Session>();
 	protected List<String>	 prevMsgs			 = new Vector<String>();
 	protected StringBuffer	 curPrevMsg			 = null;
