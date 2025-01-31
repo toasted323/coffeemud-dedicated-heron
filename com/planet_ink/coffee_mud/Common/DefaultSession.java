@@ -20,10 +20,10 @@ import com.jcraft.jzlib.*;
 
 import com.planet_ink.coffee_mud.core.Log;
 
+import com.planet_ink.coffee_mud.io.interfaces.*;
 import com.planet_ink.coffee_mud.io.DefaultInputHandler;
 import com.planet_ink.coffee_mud.io.DefaultOutputHandler;
-import com.planet_ink.coffee_mud.io.interfaces.InputHandler;
-import com.planet_ink.coffee_mud.io.interfaces.OutputHandler;
+import com.planet_ink.coffee_mud.io.DefaultOutputFormatter;
 
 import java.io.*;
 import java.util.*;
@@ -49,6 +49,7 @@ import java.nio.charset.Charset;
    limitations under the License.
 
    CHANGES:
+   2025-02 toasted323: Extract OutputFormatter from DefaultSession
    2025-02 toasted323: Move I/O handlers and interfaces to dedicated package
    2025-02 toasted323: Remove low-level stream handling leftovers from DefaultSession
    2025-02 toasted323: Implement shutdown methods in IO handlers
@@ -61,7 +62,7 @@ import java.nio.charset.Charset;
    2024-12 toasted323: Mapping from ships
 */
 
-public class DefaultSession implements Session
+public class DefaultSession implements Session, OutputFormattingContext, SnoopManager, BlockingInputProvider
 {
 	protected static final int		SOTIMEOUT		= 300;
 	protected static final int		PINGTIMEOUT  	= 30000;
@@ -103,11 +104,8 @@ public class DefaultSession implements Session
 	protected boolean   	 waiting			 = false;
 	protected String[]  	 clookup			 = null;
 	protected String		 lastColorStr		 = "";
-	protected String		 lastStr			 = null;
-	protected int			 spamStack;
 	protected List<Session>	 snoops				 = new Vector<Session>();
 	protected List<String>	 prevMsgs			 = new Vector<String>();
-	protected StringBuffer	 curPrevMsg			 = null;
 	protected boolean		 lastWasCR			 = false;
 	protected boolean		 lastWasLF			 = false;
 	protected boolean		 suspendCommandLine	 = false;
@@ -149,13 +147,14 @@ public class DefaultSession implements Session
 
 	protected final Stack<ColorState>	markedColors	= new Stack<ColorState>();
 	protected AtomicBoolean				lastWasPrompt	= new AtomicBoolean(false);
-	protected List<SessionFilter>		textFilters		= new Vector<SessionFilter>(3);
 	protected volatile InputCallback	inputCallback	= null;
 	protected String 					lastSeenRoomID 	= null;
 	protected Integer 					lastRoomHash 	= null;
 
 	private InputHandler inputHandler = null;
 	private OutputHandler outputHandler = null;
+	private DefaultOutputFormatter outputFormatter;
+	private IOExceptionHandler exceptionHandler;
 
 
 	@Override
@@ -344,12 +343,29 @@ public class DefaultSession implements Session
 			final Charset inputCharSet=Charset.forName(CMProps.getVar(CMProps.Str.CHARSETINPUT));
 			final Charset outputCharSet=Charset.forName(CMProps.getVar(CMProps.Str.CHARSETOUTPUT));
 
+			OutputTranslator cmLibTranslator = new OutputTranslator() {
+				@Override
+				public String translate(String message) {
+					return CMLib.lang().finalTranslation(message);
+				}
+			};
+
+			exceptionHandler = new IOExceptionHandler() {
+				@Override
+				public void handleException(Exception e) {
+					Log.errOut("DefaultSession", "handleException: I/O Exception: " + e.getMessage());
+					setKillFlag(true);
+				}
+			};
+
 			if((sock == null)||(!sock.isConnected()))
 			{
 				rawin=new BufferedInputStream(new ByteArrayInputStream(new byte[0]));
 				inputHandler = new DefaultInputHandler(rawin, inputCharSet, debugStrInput, debugBinInput);
 				rawout=new BufferedOutputStream(new ByteArrayOutputStream());
 				outputHandler = new DefaultOutputHandler(rawout, outputCharSet, writeLock, debugStrOutput, debugStrOutput);
+				outputFormatter = new DefaultOutputFormatter(outputHandler, this,this, exceptionHandler);
+
 				return;
 			}
 
@@ -358,6 +374,11 @@ public class DefaultSession implements Session
 			inputHandler = new DefaultInputHandler(rawin, inputCharSet, debugStrInput, debugBinInput);
 			rawout=new BufferedOutputStream(sock.getOutputStream());
 			outputHandler = new DefaultOutputHandler(rawout, outputCharSet, writeLock, debugStrOutput, debugStrOutput);
+			outputFormatter = new DefaultOutputFormatter(outputHandler, this,this, exceptionHandler);
+			outputFormatter.setTranslator(cmLibTranslator);
+			outputFormatter.setBlockingInputProvider(this);
+			outputFormatter.setSession(this);
+			outputFormatter.setMob(this.mob);
 
 			if(!mcpDisabled)
 			{
@@ -904,6 +925,12 @@ public class DefaultSession implements Session
 	}
 
 	@Override
+	public void addLastMsg(String msg)
+	{
+		prevMsgs.add(msg);
+	}
+
+	@Override
 	public String getTerminalType()
 	{
 		return terminalType;
@@ -935,6 +962,7 @@ public class DefaultSession implements Session
 		return ((mob!=null)&&(mob.playerStats()!=null))?mob.playerStats().getWrap():78;
 	}
 
+	@Override
 	public int getPageBreak()
 	{
 		if(((mob!=null)&&(mob.playerStats()!=null)))
@@ -947,6 +975,16 @@ public class DefaultSession implements Session
 			return pageBreak;
 		}
 		return -1;
+	}
+
+	@Override
+	public int getTerminalHeight() {
+		return terminalHeight;
+	}
+
+	@Override
+	public int getTerminalWidth() {
+		return terminalWidth;
 	}
 
 	@Override
@@ -1125,26 +1163,20 @@ public class DefaultSession implements Session
 	@Override
 	public void rawCharsOut(final char[] chars)
 	{
-		try {
-			outputHandler.rawCharsOut(chars);
-		} catch (IOException e) {
-			Log.errOut("DefaultSession", "rawCharsOut: Exception thrown by outputHandler.rawCharsOut: " + e.getMessage());
-			stopSession(true, true, false);
-		}
+		outputFormatter.rawCharsOut(chars);
 	}
 
-	public void rawCharsOut(final String c)
-	{
-		if(c!=null)
+	public void rawCharsOut(final String c) {
+		if (c != null)
 			rawCharsOut(c.toCharArray());
 	}
 
-	public void rawCharsOut(final char c)
-	{
-		final char[] cs={c};
+	public void rawCharsOut(final char c) {
+		final char[] cs = {c};
 		rawCharsOut(cs);
 	}
 
+	@Override
 	public void snoopSupportPrint(final String msg, final boolean noCache)
 	{
 		try
@@ -1178,316 +1210,140 @@ public class DefaultSession implements Session
 	@Override
 	public void onlyPrint(final String msg)
 	{
-		onlyPrint(msg,false);
+		outputFormatter.onlyPrint(msg);
 	}
 
 	@Override
 	public void onlyPrint(String msg, final boolean noCache)
 	{
-		if((outputHandler==null)||(msg==null))
-			return;
-		try
-		{
-			snoopSupportPrint(msg,noCache);
-			final String newMsg=CMLib.lang().finalTranslation(msg);
-			if(newMsg!=null)
-				msg=newMsg;
-
-			if(msg.endsWith("\n\r")
-			&&(msg.equals(lastStr))
-			&&(msg.length()>2)
-			&&(msg.indexOf("\n")==(msg.length()-2)))
-			{
-				spamStack++;
-				return;
-			}
-			else
-			if(spamStack>0)
-			{
-				if(spamStack>1)
-					lastStr=lastStr.substring(0,lastStr.length()-2)+"("+spamStack+")"+lastStr.substring(lastStr.length()-2);
-				rawCharsOut(lastStr.toCharArray());
-			}
-
-			spamStack=0;
-			if(msg.startsWith("\n\r")&&(msg.length()>2))
-				lastStr=msg.substring(2);
-			else
-				lastStr=msg;
-
-			if(runThread==Thread.currentThread())
-			{
-				final int pageBreak=getPageBreak();
-				int lines=0;
-				int last=0;
-				if(pageBreak>0)
-				for(int i=0;i<msg.length();i++)
-				{
-					if(msg.charAt(i)=='\n')
-					{
-						lines++;
-						if(lines>=pageBreak)
-						{
-							lines=0;
-							if((i<(msg.length()-1)&&(msg.charAt(i+1)=='\r')))
-								i++;
-							rawCharsOut(msg.substring(last,i+1).toCharArray());
-							last=i+1;
-							rawCharsOut("<pause - enter>".toCharArray());
-							try
-							{
-								String s=blockingIn(-1, true);
-								if(s!=null)
-								{
-									s=s.toLowerCase();
-									if(s.startsWith("qu")||s.startsWith("ex")||s.equals("x"))
-										return;
-								}
-							}
-							catch (final Exception e)
-							{
-								return;
-							}
-						}
-					}
-				}
-			}
-
-			// handle line cache --
-			if(!noCache)
-			for(int i=0;i<msg.length();i++)
-			{
-				if(curPrevMsg==null)
-					curPrevMsg=new StringBuffer("");
-				if(msg.charAt(i)=='\r')
-					continue;
-				if(msg.charAt(i)=='\n')
-				{
-					if(curPrevMsg.toString().trim().length()>0)
-					{
-						synchronized(prevMsgs)
-						{
-							while(prevMsgs.size()>=MAX_PREVMSGS)
-								prevMsgs.remove(0);
-							prevMsgs.add(curPrevMsg.toString());
-							curPrevMsg.setLength(0);
-						}
-					}
-					continue;
-				}
-				curPrevMsg.append(msg.charAt(i));
-			}
-			rawCharsOut(msg.toCharArray());
-		}
-		catch (final java.lang.NullPointerException e)
-		{
-		}
+		outputFormatter.onlyPrint(msg, noCache);
 	}
 
 	@Override
 	public void rawOut(final String msg)
 	{
-		rawCharsOut(msg);
+		outputFormatter.rawOut(msg);
 	}
 
 	@Override
 	public void rawPrint(final String msg)
 	{
-		if(msg==null)
-			return;
-		onlyPrint((needPrompt?"":(lastWasPrompt.get()?"\n\r":""))+msg,false);
-		flagTextDisplayed();
+		outputFormatter.rawPrint(msg);
 	}
 
 	@Override
 	public void safeRawPrint(final String msg)
 	{
-		if(msg==null)
-			return;
-		onlyPrint((needPrompt?"":(lastWasPrompt.get()?"\n\r":""))+CMLib.coffeeFilter().mxpSafetyFilter(msg, this),false);
-		flagTextDisplayed();
+		outputFormatter.safeRawPrint(msg);
 	}
 
 	@Override
 	public void print(final String msg)
 	{
-		onlyPrint(applyFilters(mob,mob,null,msg,false),false);
-	}
-
-	@Override
-	public void promptPrint(final String msg)
-	{
-		lastWasPrompt.set(true);
-		print(msg);
-		if(promptSuffix.length>0)
-		{
-			try
-			{
-				rawBytesOut(promptSuffix);
-			}
-			catch (final IOException e)
-			{
-			}
-		}
-		final MOB mob=mob();
-		if((!getClientTelnetMode(TELNET_SUPRESS_GO_AHEAD))
-		&& (!killFlag)
-		&& (mightSupportTelnetMode(TELNET_GA)
-			||(mob==null)
-			||(mob.isAttributeSet(MOB.Attrib.TELNET_GA))))
-		{
-			try
-			{
-				rawBytesOut(TELNETGABYTES);
-			}
-			catch (final Exception e)
-			{
-			}
-		}
-		lastWasPrompt.set(true);
+		outputFormatter.print(msg);
 	}
 
 	@Override
 	public void rawPrintln(final String msg)
 	{
-		if(msg!=null)
-			rawPrint(msg+"\n\r");
+		outputFormatter.rawPrintln(msg);
 	}
 
 	@Override
 	public void safeRawPrintln(final String msg)
 	{
-		if(msg!=null)
-			safeRawPrint(msg+"\n\r");
+		outputFormatter.safeRawPrintln(msg);
 	}
 
 	@Override
 	public void stdPrint(final String msg)
 	{
-		rawPrint(applyFilters(mob,mob,null,msg,false));
+		outputFormatter.stdPrint(msg);
 	}
 
 	@Override
 	public void print(final Physical src, final Environmental trg, final Environmental tol, final String msg)
 	{
-		onlyPrint((applyFilters(src,trg,tol,msg,false)),false);
+		outputFormatter.print(src, trg, tol, msg);
 	}
 
 	@Override
 	public void stdPrint(final Physical src, final Environmental trg, final Environmental tol, final String msg)
 	{
-		rawPrint(applyFilters(src,trg,trg,msg,false));
+		outputFormatter.stdPrint(src, trg, tol, msg);
 	}
 
 	@Override
 	public void println(final String msg)
 	{
-		if(msg!=null)
-			print(msg+"\n\r");
+		outputFormatter.println(msg);
 	}
 
 	@Override
 	public void wraplessPrintln(final String msg)
 	{
-		if(msg!=null)
-			onlyPrint(applyFilters(mob,mob,null,msg,true)+"\n\r",false);
-		flagTextDisplayed();
+		outputFormatter.wraplessPrintln(msg);
 	}
 
 	@Override
 	public void wraplessPrint(final String msg)
 	{
-		if(msg!=null)
-			onlyPrint(applyFilters(mob,mob,null,msg,true),false);
-		flagTextDisplayed();
+		outputFormatter.wraplessPrint(msg);
 	}
 
 	@Override
 	public void colorOnlyPrintln(final String msg)
 	{
-		colorOnlyPrint(msg+"\n\r",false);
+		outputFormatter.colorOnlyPrintln(msg);
 	}
 
 	@Override
 	public void colorOnlyPrintln(final String msg, final boolean noCache)
 	{
-		if(msg!=null)
-			onlyPrint(CMLib.coffeeFilter().colorOnlyFilter(msg,this)+"\n\r",noCache);
-		flagTextDisplayed();
+		outputFormatter.colorOnlyPrintln(msg, noCache);
 	}
 
 	@Override
 	public void colorOnlyPrint(final String msg)
 	{
-		colorOnlyPrint(msg,false);
+		outputFormatter.colorOnlyPrint(msg);
 	}
 
 	@Override
 	public void colorOnlyPrint(final String msg, final boolean noCache)
 	{
-		if(msg!=null)
-			onlyPrint(CMLib.coffeeFilter().colorOnlyFilter(msg,this),noCache);
-		flagTextDisplayed();
+	 	outputFormatter.colorOnlyPrint(msg, noCache);
 	}
 
-	protected void flagTextDisplayed()
+	@Override
+	public boolean addSessionFilter(final SessionFilter filter)
 	{
-		final MOB mob=this.mob;
-		if((mob != null)&&(mob.isAttributeSet(Attrib.NOREPROMPT))&&(!mob.isInCombat()))
-			return;
-		needPrompt=true;
-	}
-
-	protected String applyFilters(final Physical src, final Environmental trg, final Environmental tol, final String msg, final boolean noWrap)
-	{
-		if(msg!=null)
-		{
-			if(!textFilters.isEmpty())
-			{
-				String newMsg = msg;
-				for(final Iterator<SessionFilter> s=textFilters.iterator();s.hasNext();)
-				{
-					final SessionFilter filter = s.next();
-					newMsg = filter.applyFilter(mob, src, trg, tol, newMsg);
-					if(newMsg == null)
-					{
-						s.remove();
-						return CMLib.coffeeFilter().fullOutFilter(this,mob,src,trg,tol,msg,noWrap);
-					}
-				}
-				return CMLib.coffeeFilter().fullOutFilter(this,mob,src,trg,tol,newMsg,noWrap);
-			}
-			else
-				return CMLib.coffeeFilter().fullOutFilter(this,mob,src,trg,tol,msg,noWrap);
-		}
-		return msg;
+		return outputFormatter.addSessionFilter(filter);
 	}
 
 	@Override
 	public void stdPrintln(final String msg)
 	{
-		if(msg!=null)
-			rawPrint(applyFilters(mob,mob,null,msg,false)+"\n\r");
+		outputFormatter.stdPrintln(msg);
 	}
 
 	@Override
 	public void println(final Physical src, final Environmental trg, final Environmental tol, final String msg)
 	{
-		if(msg!=null)
-			onlyPrint(applyFilters(src,trg,tol,msg,false)+"\n\r",false);
+		outputFormatter.println(src, trg, tol, msg);
 	}
 
 	@Override
 	public void stdPrintln(final Physical src, final Environmental trg, final Environmental tol, final String msg)
 	{
-		if(msg!=null)
-			rawPrint(applyFilters(src,trg,tol,msg,false)+"\n\r");
+		outputFormatter.stdPrintln(src, trg, tol, msg);
 	}
 
 	@Override
 	public void setPromptFlag(final boolean truefalse)
 	{
 		needPrompt=truefalse;
+		outputFormatter.setNeedPrompt(truefalse);
 	}
 
 	@Override
@@ -1535,6 +1391,39 @@ public class DefaultSession implements Session
 		if((input.length()>0)&&(input.charAt(input.length()-1)=='\\'))
 			return input.substring(0,input.length()-1);
 		return input;
+	}
+
+	@Override
+	public void promptPrint(final String msg)
+	{
+		lastWasPrompt.set(true);
+		print(msg);
+		if(promptSuffix.length>0)
+		{
+			try
+			{
+				rawBytesOut(promptSuffix);
+			}
+			catch (final IOException e)
+			{
+			}
+		}
+		final MOB mob=mob();
+		if((!getClientTelnetMode(TELNET_SUPRESS_GO_AHEAD))
+				&& (!killFlag)
+				&& (mightSupportTelnetMode(TELNET_GA)
+				||(mob==null)
+				||(mob.isAttributeSet(MOB.Attrib.TELNET_GA))))
+		{
+			try
+			{
+				rawBytesOut(TELNETGABYTES);
+			}
+			catch (final Exception e)
+			{
+			}
+		}
+		lastWasPrompt.set(true);
 	}
 
 	@Override
@@ -2183,6 +2072,14 @@ public class DefaultSession implements Session
 	{
 		if(outputHandler==null)
 			return "";
+		if(runThread != Thread.currentThread()) {
+			// FIXME
+			if(runThread != Thread.currentThread()) {
+				Log.warnOut("DefaultSession", "blockingIn: Method called on non-runThread. This may cause unexpected behavior or threading issues.");
+				return "";
+			}
+			return "";
+		}
 		this.input.setLength(0);
 		final long start=System.currentTimeMillis();
 		final long timeoutTime= (maxTime<=0) ? Long.MAX_VALUE : (start + maxTime);
@@ -2238,7 +2135,7 @@ public class DefaultSession implements Session
 				Log.sysOut("INPUT: "+(mob==null?"":mob.Name())+": '"+inStr.toString()+"'");
 			final MOB mob=this.mob;
 			if((mob != null)&&(mob.isAttributeSet(Attrib.NOREPROMPT)))
-				needPrompt=true;
+				setPromptFlag(true);
 			return str;
 		}
 		finally
@@ -2314,7 +2211,7 @@ public class DefaultSession implements Session
 			Log.sysOut("INPUT: "+(mob==null?"":mob.Name())+": '"+inStr.toString()+"'");
 		final MOB mob=this.mob;
 		if((mob != null)&&(mob.isAttributeSet(Attrib.NOREPROMPT)))
-			needPrompt=true;
+			setPromptFlag(true);
 		return str;
 	}
 
@@ -2877,7 +2774,7 @@ public class DefaultSession implements Session
 			}
 		}
 
-		needPrompt=true;
+		setPromptFlag(true);
 		if((!killFlag)&&(mob!=null))
 		{
 			setStatus(SessionStatus.MAINLOOP);
@@ -3077,7 +2974,7 @@ public class DefaultSession implements Session
 			setStatus(SessionStatus.LOGOUT4);
 			setKillFlag(setKillFlag);
 			waiting=false;
-			needPrompt=false;
+			setPromptFlag(true);
 			this.acct=null;
 			snoops.clear();
 
@@ -3163,7 +3060,7 @@ public class DefaultSession implements Session
 					}
 					mob.setActions(curActions);
 				}
-				needPrompt=true;
+				setPromptFlag(true);
 			}
 			if(mob==null)
 			{
@@ -3239,13 +3136,13 @@ public class DefaultSession implements Session
 					||(input!=null))
 					{
 						showPrompt();
-						needPrompt=false;
+						setPromptFlag(false);
 					}
 				}
 				else
 				{
 					showPrompt();
-					needPrompt=false;
+					setPromptFlag(false);
 				}
 			}
 		}
@@ -3437,24 +3334,11 @@ public class DefaultSession implements Session
 		}
 	}
 
-	@Override
-	public boolean addSessionFilter(final SessionFilter filter)
-	{
-		if(filter == null)
-			return false;
-		if(!textFilters.contains(filter))
-		{
-			this.textFilters.add(filter);
-			return true;
-		}
-		return false;
-	}
 
 	@Override
 	public void setIdleTimers()
 	{
-		this.lastStr=""; // also resets spam counter
-		this.spamStack=0;
+		outputFormatter.resetSpamStack();
 		lastKeystroke=System.currentTimeMillis();
 	}
 
