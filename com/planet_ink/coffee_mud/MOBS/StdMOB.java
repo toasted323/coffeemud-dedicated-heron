@@ -3337,7 +3337,7 @@ public class StdMOB implements MOB
 	{
 		final Session S = mySession;
 		if((S != null) && (msg != null))
-			S.stdPrintln(source, target, tool, msg);
+			S.getOutputFormatter().stdPrintln(source, target, tool, msg);
 	}
 
 	@Override

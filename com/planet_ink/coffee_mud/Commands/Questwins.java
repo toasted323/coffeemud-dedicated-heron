@@ -337,7 +337,7 @@ public class Questwins extends StdCommand
 						msg.append(CMStrings.padRight(time,20)+name+"^N\n\r");
 					}
 					if(mob.session()!=null)
-						mob.session().colorOnlyPrintln(msg.toString());
+						mob.session().getOutputFormatter().colorOnlyPrintln(msg.toString());
 					return true;
 				}
 				else

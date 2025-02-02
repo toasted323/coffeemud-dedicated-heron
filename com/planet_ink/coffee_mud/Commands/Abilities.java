@@ -71,7 +71,7 @@ public class Abilities extends Skills
 			msg.append(L("\n\r^HYour @x1@x2:^? ",domainName[0].replace('_',' '),CMLib.english().makePlural(Ability.ACODE.DESCS.get(type[0]).toLowerCase())));
 			StringBuilder ableListStr = getAbilities(mob,mob,type[0],domain[0],true,level[0]);
 			if(!mob.isMonster())
-				mob.session().wraplessPrintln(msg.toString()+ableListStr.toString()+"\n\r");
+				mob.session().getOutputFormatter().wraplessPrintln(msg.toString()+ableListStr.toString()+"\n\r");
 		}
 		else
 		{
@@ -85,7 +85,7 @@ public class Abilities extends Skills
 					continue;
 				anythingShown=true;
 				if(!mob.isMonster())
-					mob.session().wraplessPrintln(msg.toString()+ableListStr.toString()+"\n\r");
+					mob.session().getOutputFormatter().wraplessPrintln(msg.toString()+ableListStr.toString()+"\n\r");
 			}
 			if((!mob.isMonster())&&(!anythingShown))
 				mob.tell(L("You have no abilities at all?!"));

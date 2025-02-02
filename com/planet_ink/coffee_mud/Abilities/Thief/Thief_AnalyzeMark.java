@@ -129,7 +129,7 @@ public class Thief_AnalyzeMark extends ThiefSkill
 					helpProficiency((MOB)affected, 0);
 				final StringBuilder str=CMLib.commands().getScore((MOB)msg.target());
 				if(!mob.isMonster())
-					mob.session().wraplessPrintln(str.toString());
+					mob.session().getOutputFormatter().wraplessPrintln(str.toString());
 			}
 		}
 		super.executeMsg(myHost,msg);

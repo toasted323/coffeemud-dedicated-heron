@@ -64,7 +64,7 @@ public class Worth extends Inventory
 			mob.tell(L("^HYou are ^!Broke!^?\n\r"));
 		else
 		if(!mob.isMonster())
-			mob.session().wraplessPrintln(msg.toString());
+			mob.session().getOutputFormatter().wraplessPrintln(msg.toString());
 		return false;
 	}
 

@@ -321,7 +321,7 @@ public class Skill_RegionalAwareness extends StdSkill
 				for(final String s : miniMap)
 				{
 					sess.setIdleTimers();
-					sess.colorOnlyPrintln(s);
+					sess.getOutputFormatter().colorOnlyPrintln(s);
 				}
 			}
 			return true;
@@ -356,7 +356,7 @@ public class Skill_RegionalAwareness extends StdSkill
 					for(final String s : miniMap)
 					{
 						sess.setIdleTimers(); // prevents spam block
-						sess.colorOnlyPrintln(s+"\n\r");
+						sess.getOutputFormatter().colorOnlyPrintln(s+"\n\r");
 					}
 				}
 			}

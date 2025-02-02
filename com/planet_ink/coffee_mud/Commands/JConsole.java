@@ -112,7 +112,7 @@ public class JConsole extends StdCommand
 				@Override
 				public void showPrompt()
 				{
-					session.print(addMode[0]?".":">");
+					session.getOutputFormatter().print(addMode[0]?".":">");
 				}
 
 				@Override
@@ -145,11 +145,11 @@ public class JConsole extends StdCommand
 						try
 						{
 							final Context cx=Context.enter();
-							session.safeRawPrintln(cx.evaluateString(myScope, this.input.replace('`','\''),"<cmd>", 1, null).toString());
+							session.getOutputFormatter().safeRawPrintln(cx.evaluateString(myScope, this.input.replace('`','\''),"<cmd>", 1, null).toString());
 						}
 						catch(final Exception e)
 						{
-							session.println(e.getMessage());
+							session.getOutputFormatter().println(e.getMessage());
 						}
 						finally
 						{

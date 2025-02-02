@@ -4091,7 +4091,7 @@ public class ListCmd extends StdCommand
 						return obj.getBaseName();
 					}
 				}));
-				viewerS.rawPrintln(CMLib.lister().build4ColTable(viewerS.mob(), finalList));
+				viewerS.getOutputFormatter().rawPrintln(CMLib.lister().build4ColTable(viewerS.mob(), finalList));
 			}
 			else
 			for(final Enumeration<ExpertiseDefinition> e=CMLib.expertises().definitions();e.hasMoreElements();)
@@ -4531,12 +4531,12 @@ public class ListCmd extends StdCommand
 			if((!F.exists())||(!F.canRead()))
 			{
 				if(S!=null)
-					S.safeRawPrintln(L("File not found: @x1",fileName));
+					S.getOutputFormatter().safeRawPrintln(L("File not found: @x1",fileName));
 				return;
 			}
 		}
 		if(S!=null)
-			S.safeRawPrintln(L("Searching..."));
+			S.getOutputFormatter().safeRawPrintln(L("Searching..."));
 
 		fileName = fileName.toLowerCase();
 		final Map<String,Set<Environmental>> found=new TreeMap<String,Set<Environmental>>();
@@ -4552,14 +4552,14 @@ public class ListCmd extends StdCommand
 					if(lfoundPath.endsWith(fileName) || fileName.endsWith(lfoundPath))
 					{
 						if(S!=null)
-							S.println(L("Found '@x1' on @x2 in room @x3.",foundPath,found.get(foundPath).iterator().next().Name(),CMLib.map().getExtendedRoomID(R)));
+							S.getOutputFormatter().println(L("Found '@x1' on @x2 in room @x3.",foundPath,found.get(foundPath).iterator().next().Name(),CMLib.map().getExtendedRoomID(R)));
 					}
 				}
 				found.clear();
 			}
 		}
 		if(S!=null)
-			S.safeRawPrintln(L("Done."));
+			S.getOutputFormatter().safeRawPrintln(L("Done."));
 	}
 
 	public void listLog(final MOB mob, final List<String> commands)
@@ -4572,7 +4572,7 @@ public class ListCmd extends StdCommand
 			String line=log.nextLine();
 			while((line!=null)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 			{
-				mob.session().safeRawPrintln(line);
+				mob.session().getOutputFormatter().safeRawPrintln(line);
 				if((pageBreak>0)&&(lineNum>=pageBreak))
 				{
 					if(!pause(mob.session()))
@@ -4654,7 +4654,7 @@ public class ListCmd extends StdCommand
 		{
 			if((lineNum>start)&&(lineNum<=end))
 			{
-				mob.session().safeRawPrintln(line);
+				mob.session().getOutputFormatter().safeRawPrintln(line);
 				if((pageBreak>0)&&(shownLineNum>=pageBreak))
 				{
 					if(!pause(mob.session()))
@@ -4800,7 +4800,7 @@ public class ListCmd extends StdCommand
 	{
 		if((sess==null)||(sess.isStopped()))
 			return false;
-		sess.rawCharsOut("<pause - enter>".toCharArray());
+		sess.getOutputFormatter().rawCharsOut("<pause - enter>".toCharArray());
 		try
 		{
 			String s=sess.blockingIn(10 * 60 * 1000, true);
@@ -4843,7 +4843,7 @@ public class ListCmd extends StdCommand
 				report.append(CMParms.toListString(row)).append("\n\r");
 			if(mob.session()==null)
 				return;
-			mob.session().rawPrint(report.toString());
+			mob.session().getOutputFormatter().rawPrint(report.toString());
 		}
 		catch(final Exception e)
 		{
@@ -5097,7 +5097,7 @@ public class ListCmd extends StdCommand
 			}
 		}
 		if(mob.session()!=null)
-			mob.session().rawPrint(commandList.toString());
+			mob.session().getOutputFormatter().rawPrint(commandList.toString());
 	}
 
 	public void listManufacturers(final MOB mob, final List<String> commands)
@@ -5143,7 +5143,7 @@ public class ListCmd extends StdCommand
 		}
 		str.append("\n\r");
 		if(mob.session()!=null)
-			mob.session().rawPrint(str.toString());
+			mob.session().getOutputFormatter().rawPrint(str.toString());
 	}
 
 	public void addEnumeratedStatCodes(final Enumeration<? extends Modifiable> e, final Set<String> allKnownFields, final StringBuffer allFieldsMsg)
@@ -5256,7 +5256,7 @@ public class ListCmd extends StdCommand
 		if(str.length()==0)
 			str.append(L("No electronics found.\n\r"));
 		if(mob.session()!=null)
-			mob.session().rawPrint(str.toString());
+			mob.session().getOutputFormatter().rawPrint(str.toString());
 	}
 
 	public void listShips(final MOB mob, final List<String> commands)
@@ -5286,7 +5286,7 @@ public class ListCmd extends StdCommand
 		if(str.length()==0)
 			str.append(L("No ships found.\n\r"));
 		if(mob.session()!=null)
-			mob.session().rawPrint(str.toString());
+			mob.session().getOutputFormatter().rawPrint(str.toString());
 	}
 
 	public void listAbilities(final MOB mob, final Session s, final List<String> commands, String title, int ofType)
@@ -5350,7 +5350,7 @@ public class ListCmd extends StdCommand
 						}
 						else
 						{
-							s.println("Unknown '"+str+"'");
+							s.getOutputFormatter().println("Unknown '"+str+"'");
 							return;
 						}
 					}
@@ -5360,15 +5360,15 @@ public class ListCmd extends StdCommand
 		if(wiki == WikiFlag.WIKILIST)
 		{
 			if(title.length()==0)
-				s.println("===Abilities===");
+				s.getOutputFormatter().println("===Abilities===");
 			else
 			if(domain == 0)
-				s.println("==="+title+"s===");
+				s.getOutputFormatter().println("==="+title+"s===");
 			else
-				s.println("==="+title+"===");
+				s.getOutputFormatter().println("==="+title+"===");
 			final XVector<Ability> sortedAs = new XVector<Ability>(enumA);
 			CMClass.sortEnvironmentalsByName(sortedAs);
-			s.wraplessPrintln(CMLib.lister().buildWikiList(sortedAs.elements(), ofType|domain).toString());
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().buildWikiList(sortedAs.elements(), ofType|domain).toString());
 		}
 		else
 		if(wiki == WikiFlag.WIKIHELP)
@@ -5538,12 +5538,12 @@ public class ListCmd extends StdCommand
 						+ "|Description="+wikiFix(helpStr,GOOD_WIKI_CHARS,false)
 						+ "}}\n\r");
 			}
-			s.wraplessPrintln(str.toString());
+			s.getOutputFormatter().wraplessPrintln(str.toString());
 		}
 		else
 		{
-			s.println("^H"+title+" Ability IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob, enumA, ofType|domain).toString());
+			s.getOutputFormatter().println("^H"+title+" Ability IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob, enumA, ofType|domain).toString());
 		}
 	}
 
@@ -5554,8 +5554,8 @@ public class ListCmd extends StdCommand
 		{
 			if(title.length()==0)
 				title="Behaviors";
-			s.println("==="+title+"s===");
-			s.wraplessPrintln(CMLib.lister().buildWikiList(CMClass.behaviors(), 0).toString());
+			s.getOutputFormatter().println("==="+title+"s===");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().buildWikiList(CMClass.behaviors(), 0).toString());
 		}
 		else
 		if(wiki == WikiFlag.WIKIHELP)
@@ -5628,12 +5628,12 @@ public class ListCmd extends StdCommand
 						+ "|Description="+wikiFix(helpStr,GOOD_WIKI_CHARS,false)
 						+ "}}\n\r");
 			}
-			s.wraplessPrintln(str.toString());
+			s.getOutputFormatter().wraplessPrintln(str.toString());
 		}
 		else
 		{
-			s.println("^H"+title+" Behavior IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob,
+			s.getOutputFormatter().println("^H"+title+" Behavior IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob,
 					new FilteredEnumeration<Behavior>(CMClass.behaviors(),new NameIdFilter<Behavior>(CMParms.combine(commands,1)))
 					).toString());
 		}
@@ -5709,7 +5709,7 @@ public class ListCmd extends StdCommand
 		}
 		final Session S=mob.session();
 		if(S!=null)
-			S.colorOnlyPrint(str.toString(), true);
+			S.getOutputFormatter().colorOnlyPrint(str.toString(), true);
 	}
 
 	public void listAreas(final MOB mob, final List<String> commands, final Filterer<Area> filter)
@@ -5928,7 +5928,7 @@ public class ListCmd extends StdCommand
 			str.append("\n\r");
 		}
 		if(s!=null)
-			s.colorOnlyPrint(str.toString(), true);
+			s.getOutputFormatter().colorOnlyPrint(str.toString(), true);
 	}
 
 	public void listSessions(final MOB mob, final List<String> commands)
@@ -6043,7 +6043,7 @@ public class ListCmd extends StdCommand
 			lines.append("\n\r");
 		}
 		if(!mob.isMonster())
-			mob.session().colorOnlyPrintln(lines.toString());
+			mob.session().getOutputFormatter().colorOnlyPrintln(lines.toString());
 	}
 
 	public void archonlist(final MOB mob, final List<String> commands)
@@ -6100,91 +6100,91 @@ public class ListCmd extends StdCommand
 			listCommands(mob,commands);
 			break;
 		case UNLINKEDEXITS:
-			s.wraplessPrintln(listUnlinkedExits(mob.session(), commands));
+			s.getOutputFormatter().wraplessPrintln(listUnlinkedExits(mob.session(), commands));
 			break;
 		case ITEMS:
-			s.println("^HBasic Item IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob,
+			s.getOutputFormatter().println("^HBasic Item IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob,
 					new FilteredEnumeration<Item>(CMClass.basicItems(),new NameIdFilter<Item>(CMParms.combine(commands,1)))
 					).toString());
 			break;
 		case ARMOR:
-			s.println("^HArmor Item IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob,
+			s.getOutputFormatter().println("^HArmor Item IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob,
 					new FilteredEnumeration<Armor>(CMClass.armor(),new NameIdFilter<Armor>(CMParms.combine(commands,1)))
 					).toString());
 			break;
 		case ENVRESOURCES:
-			s.wraplessPrintln(listEnvResources(mob.session(), rest));
+			s.getOutputFormatter().wraplessPrintln(listEnvResources(mob.session(), rest));
 			break;
 		case CRON:
-			s.wraplessPrintln(listCron(mob.session(), rest));
+			s.getOutputFormatter().wraplessPrintln(listCron(mob.session(), rest));
 			break;
 		case SELECT:
-			s.wraplessPrint(listMQL(mob, false, commands));
+			s.getOutputFormatter().wraplessPrint(listMQL(mob, false, commands));
 			break;
 		case DBCONNECTIONS:
-			s.wraplessPrint(listDB(mob, commands));
+			s.getOutputFormatter().wraplessPrint(listDB(mob, commands));
 			break;
 		case WEAPONS:
-			s.println("^HWeapon Item IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob,
+			s.getOutputFormatter().println("^HWeapon Item IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob,
 					new FilteredEnumeration<Weapon>(CMClass.weapons(),new NameIdFilter<Weapon>(CMParms.combine(commands,1)))
 					).toString());
 			break;
 		case MOBS:
-			s.println("^HMOB IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob,
+			s.getOutputFormatter().println("^HMOB IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob,
 					new FilteredEnumeration<MOB>(CMClass.mobTypes(),new NameIdFilter<MOB>(CMParms.combine(commands,1)))
 					).toString());
 			break;
 		case TESTS:
-			s.println("^HTest IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob,
+			s.getOutputFormatter().println("^HTest IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob,
 					new FilteredEnumeration<CMTest>(CMClass.tests(),new NameIdFilter<CMTest>(CMParms.combine(commands,1)))
 					).toString());
 			break;
 		case ROOMS:
-			s.println("^HRoom Locale IDs:^N");
-			s.wraplessPrintln(roomDetails(mob.session(), mob.location().getArea().getMetroMap(), mob.location(), rest).toString());
+			s.getOutputFormatter().println("^HRoom Locale IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(roomDetails(mob.session(), mob.location().getArea().getMetroMap(), mob.location(), rest).toString());
 			break;
 		case AREA:
 			if((commands.size()>2)&&(commands.get(1).equalsIgnoreCase("select:")))
 			{
 				commands.remove(0);
-				s.wraplessPrint(listMQL(mob, true, commands));
+				s.getOutputFormatter().wraplessPrint(listMQL(mob, true, commands));
 			}
 			else
-				s.wraplessPrintln(roomTypes(mob, mob.location().getArea().getMetroMap(), mob.location(), commands).toString());
+				s.getOutputFormatter().wraplessPrintln(roomTypes(mob, mob.location().getArea().getMetroMap(), mob.location(), commands).toString());
 			break;
 		case LOCALES:
-			s.println("^HRoom Class Locale IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob,
+			s.getOutputFormatter().println("^HRoom Class Locale IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob,
 					new FilteredEnumeration<Room>(CMClass.locales(),new NameIdFilter<Room>(CMParms.combine(commands,1)))
 					).toString());
-			s.println("^HDomain Locales include the following:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob, new IteratorEnumeration<String>(Arrays.asList(CMParms.combine(Room.DOMAIN_INDOORS_DESCS, Room.DOMAIN_OUTDOOR_DESCS)).iterator())).toString());
+			s.getOutputFormatter().println("^HDomain Locales include the following:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob, new IteratorEnumeration<String>(Arrays.asList(CMParms.combine(Room.DOMAIN_INDOORS_DESCS, Room.DOMAIN_OUTDOOR_DESCS)).iterator())).toString());
 			break;
 		case BEHAVIORS:
-			//s.println("^HBehavior IDs:^N");
+			//s.getOutputFormatter().println("^HBehavior IDs:^N");
 			listBehaviors(mob,s,commands,"Behaviors");
 			break;
 		case EXITS:
-			s.println("^HExit IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob,
+			s.getOutputFormatter().println("^HExit IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob,
 					new FilteredEnumeration<Exit>(CMClass.exits(),new NameIdFilter<Exit>(CMParms.combine(commands,1)))
 					).toString());
 			break;
 		case RACES:
-			s.println("^HRace IDs (Racial Category):^N");
-			s.wraplessPrintln(listRaces(s, CMClass.races(), rest).toString());
+			s.getOutputFormatter().println("^HRace IDs (Racial Category):^N");
+			s.getOutputFormatter().wraplessPrintln(listRaces(s, CMClass.races(), rest).toString());
 			break;
 		case CLASSES:
-			s.println("^HCharacter Class IDs:^N");
-			s.wraplessPrintln(listCharClasses(s, CMClass.charClasses(), commands).toString());
+			s.getOutputFormatter().println("^HCharacter Class IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(listCharClasses(s, CMClass.charClasses(), commands).toString());
 			break;
 		case STAFF:
-			s.wraplessPrintln(listSubOps(mob.session()).toString());
+			s.getOutputFormatter().wraplessPrintln(listSubOps(mob.session()).toString());
 			break;
 		case ABILITIES:
 			listAbilities(mob,s,commands,"",Ability.ALL_ACODES);
@@ -6202,7 +6202,7 @@ public class ListCmd extends StdCommand
 			listAbilities(mob,s,commands,"Trap",Ability.ACODE_TRAP);
 			break;
 		case PROPERTIES:
-			//s.println("^HProperty Ability IDs:^N");
+			//s.getOutputFormatter().println("^HProperty Ability IDs:^N");
 			listAbilities(mob,s,commands,"Properties",Ability.ACODE_PROPERTY);
 			break;
 		case THIEFSKILLS:
@@ -6212,28 +6212,28 @@ public class ListCmd extends StdCommand
 			listAbilities(mob,s,commands,"Common Skill",Ability.ACODE_COMMON_SKILL);
 			break;
 		case JOURNALS:
-			s.println(listJournals(mob.session()).toString());
+			s.getOutputFormatter().println(listJournals(mob.session()).toString());
 			break;
 		case COMMANDJOURNALS:
-			s.println(listCommandJournals(mob.session()).toString());
+			s.getOutputFormatter().println(listCommandJournals(mob.session()).toString());
 			break;
 		case SKILLS:
 			listAbilities(mob,s,commands,"Skill",Ability.ACODE_SKILL);
 			break;
 		case QUESTS:
-			s.println(listQuests(mob.session(),rest).toString());
+			s.getOutputFormatter().println(listQuests(mob.session(),rest).toString());
 			break;
 		case QUESTNAMES:
-			s.println(listQuestNames(mob.session(),rest).toString());
+			s.getOutputFormatter().println(listQuestNames(mob.session(),rest).toString());
 			break;
 		case QUESTWINNERS:
-			s.println(listQuestWinners(mob.session(),rest).toString());
+			s.getOutputFormatter().println(listQuestWinners(mob.session(),rest).toString());
 			break;
 		case DISEASES:
 			listAbilities(mob,s,commands,"Disease",Ability.ACODE_DISEASE);
 			break;
 		case TRACKINGFLAGS:
-			s.println(CMParms.toListString(TrackingLibrary.TrackingFlag.values()));
+			s.getOutputFormatter().println(CMParms.toListString(TrackingLibrary.TrackingFlag.values()));
 			break;
 		case POSTOFFICES:
 			mob.tell(listPostOffices(mob,s,commands).toString());
@@ -6263,44 +6263,44 @@ public class ListCmd extends StdCommand
 			listAbilities(mob,s,commands,"Language",Ability.ACODE_LANGUAGE);
 			break;
 		case TICKS:
-			s.println(listTicks(mob.session(), CMParms.combine(commands, 1)).toString());
+			s.getOutputFormatter().println(listTicks(mob.session(), CMParms.combine(commands, 1)).toString());
 			break;
 		case PLANES:
 		{
 			final PlanarAbility planeSet = (PlanarAbility)CMClass.getAbility("StdPlanarAbility");
-			s.println("^HPlanes of Existence:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob, new IteratorEnumeration<String>(planeSet.getAllPlaneKeys().iterator())).toString());
+			s.getOutputFormatter().println("^HPlanes of Existence:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob, new IteratorEnumeration<String>(planeSet.getAllPlaneKeys().iterator())).toString());
 			break;
 		}
 		case MAGIC:
-			s.println("^HMagic Item IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob,
+			s.getOutputFormatter().println("^HMagic Item IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob,
 					new FilteredEnumeration<MiscMagic>(CMClass.miscMagic(),new NameIdFilter<MiscMagic>(CMParms.combine(commands,1)))
 					).toString());
 			break;
 		case TECH:
-			s.println("^HTech Item IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob,
+			s.getOutputFormatter().println("^HTech Item IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob,
 					new FilteredEnumeration<Technical>(CMClass.tech(),new NameIdFilter<Technical>(CMParms.combine(commands,1)))
 					).toString());
 			break;
 		case CLANITEMS:
-			s.println("^HClan Item IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob,
+			s.getOutputFormatter().println("^HClan Item IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob,
 					new FilteredEnumeration<ClanItem>(CMClass.clanItems(),new NameIdFilter<ClanItem>(CMParms.combine(commands,1)))
 					).toString());
 			break;
 		case AREATYPES:
-			s.println("^HArea Type IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob,
+			s.getOutputFormatter().println("^HArea Type IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob,
 					new FilteredEnumeration<Area>(CMClass.areaTypes(),new NameIdFilter<Area>(CMParms.combine(commands,1)))
 					).toString());
 			break;
 		case COMMANDJOURNAL:
-			s.println(journalList(mob,mob.session(), listWord, rest).toString());
+			s.getOutputFormatter().println(journalList(mob,mob.session(), listWord, rest).toString());
 			break;
 		case REALESTATE:
-			s.wraplessPrintln(roomPropertyDetails(mob.session(), mob.location().getArea(), rest).toString());
+			s.getOutputFormatter().wraplessPrintln(roomPropertyDetails(mob.session(), mob.location().getArea(), rest).toString());
 			break;
 		case FILEUSE:
 			listFileUse(mob, s, CMParms.combine(commands, 1));
@@ -6312,7 +6312,7 @@ public class ListCmd extends StdCommand
 			if((protectedOnes!=null)&&(protectedOnes.size()>0))
 			for(int b=0;b<protectedOnes.size();b++)
 				str.append((b+1)+") "+(protectedOnes.get(b))+"\n\r");
-			s.wraplessPrintln(str.toString());
+			s.getOutputFormatter().wraplessPrintln(str.toString());
 			break;
 		}
 		case BANNED:
@@ -6322,12 +6322,12 @@ public class ListCmd extends StdCommand
 			if((banned!=null)&&(banned.size()>0))
 			for(int b=0;b<banned.size();b++)
 				str.append((b+1)+") "+(banned.get(b))+"\n\r");
-			s.wraplessPrintln(str.toString());
+			s.getOutputFormatter().wraplessPrintln(str.toString());
 			break;
 		}
 		case RACECATS:
-			s.println("^HRacial Categories:^N");
-			s.wraplessPrintln(listRaceCats(s, CMClass.races(), commands).toString());
+			s.getOutputFormatter().println("^HRacial Categories:^N");
+			s.getOutputFormatter().wraplessPrintln(listRaceCats(s, CMClass.races(), commands).toString());
 			break;
 		case LOG:
 			listLog(mob, commands);
@@ -6336,27 +6336,27 @@ public class ListCmd extends StdCommand
 			listUsers(mob.session(), mob, commands);
 			break;
 		case LINKAGES:
-			s.println(listLinkages(mob.session(), mob, rest).toString());
+			s.getOutputFormatter().println(listLinkages(mob.session(), mob, rest).toString());
 			break;
 		case REPORTS:
-			s.println(listReports(mob.session(), mob).toString());
+			s.getOutputFormatter().println(listReports(mob.session(), mob).toString());
 			break;
 		case THREAD:
-			s.println(listThread(mob.session(), mob, rest).toString());
+			s.getOutputFormatter().println(listThread(mob.session(), mob, rest).toString());
 			break;
 		case THREADS:
-			s.println(listThreads(mob.session(), mob,
+			s.getOutputFormatter().println(listThreads(mob.session(), mob,
 					CMParms.containsIgnoreCase(commands, "SHORT")||CMParms.containsIgnoreCase(commands, "ACTIVE"),
 					CMParms.containsIgnoreCase(commands, "EXTEND")).toString());
 			break;
 		case RESOURCES:
-			s.println(listResources(mob, CMParms.combine(commands, 1)));
+			s.getOutputFormatter().println(listResources(mob, CMParms.combine(commands, 1)));
 			break;
 		case ONEWAYDOORS:
-			s.wraplessPrintln(listOneWayDoors(mob.session(), commands));
+			s.getOutputFormatter().wraplessPrintln(listOneWayDoors(mob.session(), commands));
 			break;
 		case ORPHANS:
-			s.wraplessPrintln(listOrphans(mob.session(), commands));
+			s.getOutputFormatter().wraplessPrintln(listOrphans(mob.session(), commands));
 			break;
 		case CHANTS:
 			listAbilities(mob,s,commands,"Chant",Ability.ACODE_CHANT);
@@ -6365,84 +6365,84 @@ public class ListCmd extends StdCommand
 			listAbilities(mob,s,commands,"Super Power",Ability.ACODE_SUPERPOWER);
 			break;
 		case COMPONENTS:
-			s.wraplessPrintln(listComponents(mob.session()));
+			s.getOutputFormatter().wraplessPrintln(listComponents(mob.session()));
 			break;
 		case EXPERTISES:
-			s.wraplessPrintln(listExpertises(mob.session(),commands));
+			s.getOutputFormatter().wraplessPrintln(listExpertises(mob.session(),commands));
 			break;
 		case SOCIALS:
-			s.wraplessPrintln(listSocials(mob.session(),commands));
+			s.getOutputFormatter().wraplessPrintln(listSocials(mob.session(),commands));
 			break;
 		case FACTIONS:
-			s.wraplessPrintln(CMLib.factions().listFactions());
+			s.getOutputFormatter().wraplessPrintln(CMLib.factions().listFactions());
 			break;
 		case MATERIALS:
-			s.wraplessPrintln(listMaterials());
+			s.getOutputFormatter().wraplessPrintln(listMaterials());
 			break;
 		case OBJCOUNTERS:
-			s.println("\n\r^xCounter Report: NO LONGER AVAILABLE^.^N\n\r");
+			s.getOutputFormatter().println("\n\r^xCounter Report: NO LONGER AVAILABLE^.^N\n\r");
 			break;// +CMClass.getCounterReport()); break;
 		case POLLS:
 			listPolls(mob, commands);
 			break;
 		case CONTENTS:
-			s.wraplessPrintln(listContent(mob, commands).toString());
+			s.getOutputFormatter().wraplessPrintln(listContent(mob, commands).toString());
 			break;
 		case EXPIRES:
-			s.wraplessPrintln(roomExpires(mob.session(), mob.location().getArea().getProperMap(), mob.location()).toString());
+			s.getOutputFormatter().wraplessPrintln(roomExpires(mob.session(), mob.location().getArea().getProperMap(), mob.location()).toString());
 			break;
 		case TITLES:
-			s.wraplessPrintln(listTitles(mob.session()));
+			s.getOutputFormatter().wraplessPrintln(listTitles(mob.session()));
 			break;
 		case AWARDS:
-			s.wraplessPrintln(listAutoAwards(mob.session()));
+			s.getOutputFormatter().wraplessPrintln(listAutoAwards(mob.session()));
 			break;
 		case ACHIEVEMENTS:
-			s.wraplessPrintln(listAchievements(mob.session()));
+			s.getOutputFormatter().wraplessPrintln(listAchievements(mob.session()));
 			break;
 		case AREARESOURCES:
-			s.wraplessPrintln(roomResources(mob.session(), mob.location().getArea().getMetroMap(), mob.location()).toString());
+			s.getOutputFormatter().wraplessPrintln(roomResources(mob.session(), mob.location().getArea().getMetroMap(), mob.location()).toString());
 			break;
 		case CONQUERED:
-			s.wraplessPrintln(areaConquests(mob.session(), CMLib.map().areas()).toString());
+			s.getOutputFormatter().wraplessPrintln(areaConquests(mob.session(), CMLib.map().areas()).toString());
 			break;
 		case HOLIDAYS:
 		{
 			String areaName=null;
 			if(!CMParms.combine(commands, 1).equalsIgnoreCase("ALL"))
 				areaName=mob.location().getArea().Name().toUpperCase().trim();
-			s.wraplessPrintln(CMLib.quests().listHolidays(areaName));
+			s.getOutputFormatter().wraplessPrintln(CMLib.quests().listHolidays(areaName));
 			break;
 		}
 		case RECIPES:
-			s.wraplessPrintln(listRecipes(mob, CMParms.combine(commands, 1)));
+			s.getOutputFormatter().wraplessPrintln(listRecipes(mob, CMParms.combine(commands, 1)));
 			break;
 		case HELPFILEREQUESTS:
-			s.wraplessPrint(listHelpFileRequests(mob, CMParms.combine(commands, 1)));
+			s.getOutputFormatter().wraplessPrint(listHelpFileRequests(mob, CMParms.combine(commands, 1)));
 			break;
 		case SCRIPTS:
-			s.wraplessPrintln(listScripts(mob.session(), mob, commands).toString());
+			s.getOutputFormatter().wraplessPrintln(listScripts(mob.session(), mob, commands).toString());
 			break;
 		case ACCOUNTS:
 			listAccounts(mob.session(), mob, commands);
 			break;
 		case GOVERNMENTS:
-			s.wraplessPrintln(listClanGovernments(mob.session(), commands));
+			s.getOutputFormatter().wraplessPrintln(listClanGovernments(mob.session(), commands));
 			break;
 		case CLANS:
-			s.wraplessPrintln(listClans(mob.session(), commands));
+			s.getOutputFormatter().wraplessPrintln(listClans(mob.session(), commands));
 			break;
 		case DEBUGFLAG:
-			s.println("\n\r^xDebug Settings: ^?^.^N\n\r" + CMParms.toListString(new XVector<CMSecurity.DbgFlag>(CMSecurity.getDebugEnum())) + "\n\r");
+			s.getOutputFormatter().println("\n\r^xDebug Settings: ^?^.^N\n\r" + CMParms.toListString(new XVector<CMSecurity.DbgFlag>(CMSecurity.getDebugEnum())) + "\n\r");
 			break;
 		case DISABLEFLAG:
-			s.println("\n\r^xDisable Settings: ^?^.^N\n\r" + CMParms.toListString(new XVector<Object>(CMSecurity.getDisablesEnum())) + "\n\r");
+			s.getOutputFormatter().println("\n\r^xDisable Settings: ^?^.^N\n\r" + CMParms.toListString(new XVector<Object>(CMSecurity.getDisablesEnum())) + "\n\r");
 			break;
 		case ENABLEFLAG:
-			s.println("\n\r^xEnable Settings: ^?^.^N\n\r" + CMParms.toListString(new XVector<Object>(CMSecurity.getEnablesEnum())) + "\n\r");
+			s.getOutputFormatter().println("\n\r^xEnable Settings: ^?^.^N\n\r" + CMParms.toListString(new XVector<Object>(CMSecurity.getEnablesEnum())) + "\n\r");
 			break;
 		case ALLQUALIFYS:
-			s.wraplessPrintln(listAllQualifies(mob.session(), commands).toString());
+			s.getOutputFormatter().wraplessPrintln(listAllQualifies(mob.session(), commands).toString());
 			break;
 		case NEWS:
 			listNews(mob, commands);
@@ -6478,8 +6478,8 @@ public class ListCmd extends StdCommand
 			listAbilities(mob,s,commands,"Tech Skill",Ability.ACODE_TECH);
 			break;
 		case SOFTWARE:
-			s.println("^HSoftware Item IDs:^N");
-			s.wraplessPrintln(CMLib.lister().build3ColTable(mob, CMClass.tech(new Filterer<Technical>()
+			s.getOutputFormatter().println("^HSoftware Item IDs:^N");
+			s.getOutputFormatter().wraplessPrintln(CMLib.lister().build3ColTable(mob, CMClass.tech(new Filterer<Technical>()
 			{
 				@Override
 				public boolean passesFilter(final Technical obj)
@@ -6489,10 +6489,10 @@ public class ListCmd extends StdCommand
 			})).toString());
 			break;
 		case EXPIRED:
-			s.wraplessPrintln(listExpired(mob));
+			s.getOutputFormatter().wraplessPrintln(listExpired(mob));
 			break;
 		case SPACE:
-			s.wraplessPrintln(listSpace(mob, commands).toString());
+			s.getOutputFormatter().wraplessPrintln(listSpace(mob, commands).toString());
 			break;
 		case SQL:
 			listSql(mob, rest);
@@ -6504,23 +6504,23 @@ public class ListCmd extends StdCommand
 		{
 			final WikiFlag wiki=getWikiFlagRemoved(commands);
 			if(wiki == WikiFlag.NO)
-				s.wraplessPrintln(CMParms.toListString(Ability.DOMAIN.DESCS));
+				s.getOutputFormatter().wraplessPrintln(CMParms.toListString(Ability.DOMAIN.DESCS));
 			else
 			{
 				for(String domain : Ability.DOMAIN.DESCS)
 				{
 					domain = domain.toLowerCase();
 					final String domainName = CMStrings.capitalizeAllFirstLettersAndLower(domain.replaceAll("_"," "));
-					s.println("[["+domain+"(Domain)|"+domainName+"]]");
+					s.getOutputFormatter().println("[["+domain+"(Domain)|"+domainName+"]]");
 				}
 			}
 			break;
 		}
 		case ABILITYCODES:
-			s.wraplessPrintln(CMParms.toListString(Ability.ACODE.DESCS_));
+			s.getOutputFormatter().wraplessPrintln(CMParms.toListString(Ability.ACODE.DESCS_));
 			break;
 		case ABILITYFLAGS:
-			s.wraplessPrintln(CMParms.toListString(Ability.FLAG_DESCS));
+			s.getOutputFormatter().wraplessPrintln(CMParms.toListString(Ability.FLAG_DESCS));
 			break;
 		}
 	}

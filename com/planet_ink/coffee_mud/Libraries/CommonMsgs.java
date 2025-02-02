@@ -547,7 +547,7 @@ public class CommonMsgs extends StdLibrary implements CommonCommands
 							&&(M.playerStats() != null)
 							&&(M.playerStats().getAccount() == acct)
 							&&(target.session() != S))
-								S.println(L("\n\r^H@x1 has received a TELL.\n\r",target.name(M)));
+								S.getOutputFormatter().println(L("\n\r^H@x1 has received a TELL.\n\r",target.name(M)));
 						}
 					}
 
@@ -2059,15 +2059,15 @@ public class CommonMsgs extends StdLibrary implements CommonCommands
 			final Room mobLocR=mob.location();
 			if((awarenessA!=null)&&(mobLocR != null))
 			{
-				sess.colorOnlyPrintln("", true);
+				sess.getOutputFormatter().colorOnlyPrintln("", true);
 				final List<String> list=new Vector<String>();
 				awarenessA.invoke(mob, list, mobLocR, true, CMProps.getIntVar(CMProps.Int.AWARERANGE));
 				for(final String o : list)
 				{
 					sess.setIdleTimers();
-					sess.colorOnlyPrintln(o, true); // the zero turns off stack
+					sess.getOutputFormatter().colorOnlyPrintln(o, true); // the zero turns off stack
 				}
-				sess.colorOnlyPrintln("\n\r", true);
+				sess.getOutputFormatter().colorOnlyPrintln("\n\r", true);
 			}
 		}
 	}

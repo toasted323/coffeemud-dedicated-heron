@@ -189,7 +189,7 @@ public class Spell_KnowFate extends Spell
 					newVictiM.destroy();
 					arenaR.setArea(null);
 					arenaR.destroy();
-					fakeS.onlyPrint("--------------------------------------------\n\r");
+					fakeS.getOutputFormatter().onlyPrint("--------------------------------------------\n\r");
 				}
 				String addendum="";
 				if(draws>0)

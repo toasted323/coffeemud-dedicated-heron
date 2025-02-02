@@ -54,7 +54,7 @@ public class Languages extends Skills
 			return true;
 		msg.append(L("\n\r^HLanguages known:^? @x1\n\r",getAbilities(mob,mob,Ability.ACODE_LANGUAGE,-1,true,parseOutLevel(commands)).toString()));
 		if(!mob.isMonster())
-			mob.session().wraplessPrintln(msg.toString());
+			mob.session().getOutputFormatter().wraplessPrintln(msg.toString());
 		return false;
 	}
 

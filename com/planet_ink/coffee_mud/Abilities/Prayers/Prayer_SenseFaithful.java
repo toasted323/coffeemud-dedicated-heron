@@ -106,7 +106,7 @@ public class Prayer_SenseFaithful extends Prayer
 					{
 						if(mob.session()!=null)
 						{
-							mob.session().print(
+							mob.session().getOutputFormatter().print(
 								C.executeInternal(mob, 0, Boolean.FALSE, new Filterer<MOB>()
 								{
 									@Override

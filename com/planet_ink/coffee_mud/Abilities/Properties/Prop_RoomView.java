@@ -142,7 +142,7 @@ public class Prop_RoomView extends Property
 						public void run()
 						{
 							if(CMLib.flags().canBeSeenBy(R, mmsg.source()) && (mmsg.source().session()!=null))
-								mmsg.source().session().print(L("In @x1 you can see:",R.displayText(mmsg.source())));
+								mmsg.source().session().getOutputFormatter().print(L("In @x1 you can see:",R.displayText(mmsg.source())));
 							final CMMsg msg2=CMClass.getMsg(mmsg.source(), R, mmsg.tool(), mmsg.sourceCode(), null, mmsg.targetCode(), null, mmsg.othersCode(), null);
 							if((mmsg.source().isAttributeSet(MOB.Attrib.AUTOEXITS))
 							&&(CMProps.getIntVar(CMProps.Int.EXVIEW)!=CMProps.Int.EXVIEW_PARAGRAPH))

@@ -271,19 +271,19 @@ public class MOTD extends StdCommand
 					{
 						if(qQVec.size()>0)
 							buf.append(L("\n\r^HYou are on @x1 quest(s).  Enter QUESTS to see them!.^?^.\n\r",""+qQVec.size()));
-						session.wraplessPrintln("\n\r--------------------------------------\n\r"+buf.toString());
+						session.getOutputFormatter().wraplessPrintln("\n\r--------------------------------------\n\r"+buf.toString());
 						if (pause)
 						{
 							session.prompt(L("\n\rPress ENTER: "), 10000);
-							session.println("\n\r");
+							session.getOutputFormatter().println("\n\r");
 						}
 					}
 					else
 					if(qQVec.size()>0)
-						session.println(L("\n\r^HYou are on @x1 quest(s).  Enter QUESTS to see them!.^?^.\n\r",""+qQVec.size()));
+						session.getOutputFormatter().println(L("\n\r^HYou are on @x1 quest(s).  Enter QUESTS to see them!.^?^.\n\r",""+qQVec.size()));
 					else
 					if(parm.equals("AGAIN"))
-						session.println(L("No @x1 to re-read.",what));
+						session.getOutputFormatter().println(L("No @x1 to re-read.",what));
 
 					// check for new commandjournal postings that require a reply-to-self...
 					for(final Enumeration<JournalsLibrary.CommandJournal> e=CMLib.journals().commandJournals();e.hasMoreElements();)
@@ -358,13 +358,13 @@ public class MOTD extends StdCommand
 								&&(!session.isStopped()))
 								{
 									if((newPosts > 0) && (newReplies > 0))
-										session.println(L("The journal @x1 has @x2 new entries and @x3 replies for you.",sub,""+newPosts,""+newReplies));
+										session.getOutputFormatter().println(L("The journal @x1 has @x2 new entries and @x3 replies for you.",sub,""+newPosts,""+newReplies));
 									else
 									if(newPosts > 0)
-										session.println(L("The journal @x1 has @x2 new entries.",sub,""+newPosts));
+										session.getOutputFormatter().println(L("The journal @x1 has @x2 new entries.",sub,""+newPosts));
 									else
 									if(newReplies > 0)
-										session.println(L("The journal @x1 has @x2 new replies for you.",sub,""+newReplies));
+										session.getOutputFormatter().println(L("The journal @x1 has @x2 new replies for you.",sub,""+newReplies));
 								}
 							}
 							else
@@ -377,7 +377,7 @@ public class MOTD extends StdCommand
 								{
 									final String channelName = CMLib.channels().getChannel(cn).name();
 									final int lastIndex = CMLib.channels().getChannelQuePageEnd(cn, mob);
-									session.println(L("You missed the last @x1 message(s) on the @x2 channel.",""+(lastIndex-lowestIndex)+1,channelName));
+									session.getOutputFormatter().println(L("You missed the last @x1 message(s) on the @x2 channel.",""+(lastIndex-lowestIndex)+1,channelName));
 									/*
 									final Command C = CMClass.getCommand("Channel");
 									final List<String> cmd = new XVector<String>(channelName,"LAST",(""+(lastIndex-lowestIndex)));

@@ -69,7 +69,7 @@ public class ATopics extends StdCommand
 			Resources.submitResource(resName,topicBuffer);
 		}
 		if((mob!=null)&&(!mob.isMonster()))
-			mob.session().colorOnlyPrintln(CMLib.lang().L("@x1\n\r\n\rEnter @x2 (TOPIC NAME) for more information.",topicBuffer.toString(),helpName),false);
+			mob.session().getOutputFormatter().colorOnlyPrintln(CMLib.lang().L("@x1\n\r\n\rEnter @x2 (TOPIC NAME) for more information.",topicBuffer.toString(),helpName),false);
 	}
 
 	@Override
