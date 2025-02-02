@@ -534,7 +534,7 @@ public class CoffeeMudI3Bridge implements ImudServices, Serializable
 						final String xtra = fixColors(V2.elementAt(2).toString());
 						buf.append("["+CMStrings.padRight(nom,20)+"] "+xtra+" ("+idle+")\n\r");
 					}
-					smob.session().wraplessPrintln(buf.toString());
+					smob.session().getOutputFormatter().wraplessPrintln(buf.toString());
 					break;
 				}
 			}
@@ -556,7 +556,7 @@ public class CoffeeMudI3Bridge implements ImudServices, Serializable
 						final String nom = fixColors((String)V.elementAt(v));
 						buf.append("["+CMStrings.padRight(nom,20)+"]\n\r");
 					}
-					smob.session().wraplessPrintln(buf.toString());
+					smob.session().getOutputFormatter().wraplessPrintln(buf.toString());
 					smob.session().setPromptFlag(true);
 					break;
 				}

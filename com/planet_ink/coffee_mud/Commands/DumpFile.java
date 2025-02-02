@@ -109,9 +109,9 @@ public class DumpFile extends StdCommand
 				if (allFlag || S.mob().name().equalsIgnoreCase(targetName))
 				{
 					if (rawMode)
-						S.rawPrintln(fileText.toString());
+						S.getOutputFormatter().rawPrintln(fileText.toString());
 					else
-						S.colorOnlyPrintln(fileText.toString());
+						S.getOutputFormatter().colorOnlyPrintln(fileText.toString());
 					++numSessions;
 				}
 			}

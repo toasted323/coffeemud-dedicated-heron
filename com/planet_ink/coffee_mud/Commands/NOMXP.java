@@ -63,7 +63,7 @@ public class NOMXP extends StdCommand
 			||(mob.session().getClientTelnetMode(Session.TELNET_MXP)))
 			{
 				if(mob.session().getClientTelnetMode(Session.TELNET_MXP))
-					mob.session().rawOut("\033[3z \033[7z");
+					mob.session().getOutputFormatter().rawOut("\033[3z \033[7z");
 				mob.setAttribute(MOB.Attrib.MXP,false);
 				mob.session().changeTelnetMode(Session.TELNET_MXP,false);
 				mob.session().setClientTelnetMode(Session.TELNET_MXP,false);

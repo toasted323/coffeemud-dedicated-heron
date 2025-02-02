@@ -121,9 +121,9 @@ public class FactionList extends StdCommand
 		}
 		if(!mob.isMonster())
 			if(none)
-				mob.session().colorOnlyPrintln(L("\n\r^HNo factions apply.^?^N"));
+				mob.session().getOutputFormatter().colorOnlyPrintln(L("\n\r^HNo factions apply.^?^N"));
 			else
-				mob.session().colorOnlyPrintln(msg.toString());
+				mob.session().getOutputFormatter().colorOnlyPrintln(msg.toString());
 		return false;
 	}
 

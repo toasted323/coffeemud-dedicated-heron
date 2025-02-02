@@ -145,7 +145,7 @@ public class Thief_MakeBomb extends ThiefSkill implements RecipeDriven
 				buf.append(CMStrings.limit(T.requiresToSet(),restLen)+"\n\r");
 			}
 			if(mob.session()!=null)
-				mob.session().safeRawPrintln(buf.toString());
+				mob.session().getOutputFormatter().safeRawPrintln(buf.toString());
 			return true;
 		}
 		else

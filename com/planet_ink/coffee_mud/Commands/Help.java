@@ -105,7 +105,7 @@ public class Help extends StdCommand
 		}
 		else
 		if(!mob.isMonster())
-			mob.session().wraplessPrintln(helpText.toString());
+			mob.session().getOutputFormatter().wraplessPrintln(helpText.toString());
 		return false;
 	}
 

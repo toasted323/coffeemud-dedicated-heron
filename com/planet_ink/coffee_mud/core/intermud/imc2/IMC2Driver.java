@@ -137,7 +137,7 @@ public final class IMC2Driver extends Thread
 		if(name.equalsIgnoreCase("all"))
 		{
 			for(final Session S : CMLib.sessions().localOnlineIterable())
-				S.println(text);
+				S.getOutputFormatter().println(text);
 		}
 		else
 		{

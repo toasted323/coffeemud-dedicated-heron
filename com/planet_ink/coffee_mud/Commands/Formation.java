@@ -69,7 +69,7 @@ public class Formation extends StdCommand
 					str.append("\n\r");
 				}
 			}
-			mob.session().colorOnlyPrintln(str.toString());
+			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 		}
 		else
 		if(commands.size()==1)

@@ -65,7 +65,7 @@ public class ClanDues extends StdCommand
 					final Clan C=c.first;
 					found=true;
 					if(C.getDues()==0.0)
-						S.println(L("There are presently no dues for @x1.",C.name()));
+						S.getOutputFormatter().println(L("There are presently no dues for @x1.",C.name()));
 					else
 					{
 						final Pair<String,String> info = C.getPreferredBanking();
@@ -76,11 +76,11 @@ public class ClanDues extends StdCommand
 							if(rec.dues > 0.0)
 								badMembers.add("^H"+rec.name+"^N("+CMLib.beanCounter().nameCurrencyShort(curr, rec.dues)+")");
 						}
-						S.println(L("Dues are presently set at @x1 per year for @x2.",CMLib.beanCounter().nameCurrencyLong(curr, C.getDues()),C.name()));
+						S.getOutputFormatter().println(L("Dues are presently set at @x1 per year for @x2.",CMLib.beanCounter().nameCurrencyLong(curr, C.getDues()),C.name()));
 						if(badMembers.size()==0)
-							S.println(L("All members are current and paid-up on their dues."));
+							S.getOutputFormatter().println(L("All members are current and paid-up on their dues."));
 						else
-							S.println(L("The following members are behind in their dues: @x1.",CMLib.english().toEnglishStringList(badMembers)));
+							S.getOutputFormatter().println(L("The following members are behind in their dues: @x1.",CMLib.english().toEnglishStringList(badMembers)));
 					}
 				}
 			}
@@ -202,19 +202,19 @@ public class ClanDues extends StdCommand
 				final String currentDues;
 				if(C.getDues()==0.0)
 				{
-					S.println(L("There are presently no dues."));
+					S.getOutputFormatter().println(L("There are presently no dues."));
 					currentDues = "0";
 				}
 				else
 				{
 					final double bestDenom=CMLib.beanCounter().getBestDenomination(curr, C.getDues());
 					currentDues = (C.getDues()/bestDenom)+" "+CMLib.beanCounter().getDenominationName(curr, bestDenom);
-					S.println(L("Dues are presently set at @x1 per year.",CMLib.beanCounter().nameCurrencyLong(curr, C.getDues())));
+					S.getOutputFormatter().println(L("Dues are presently set at @x1 per year.",CMLib.beanCounter().nameCurrencyLong(curr, C.getDues())));
 				}
 				if(badMembers.size()==0)
-					S.println(L("All members are current and paid-up on their dues."));
+					S.getOutputFormatter().println(L("All members are current and paid-up on their dues."));
 				else
-					S.println(L("The following members are behind in their dues: @x1.",CMLib.english().toEnglishStringList(badMembers)));
+					S.getOutputFormatter().println(L("The following members are behind in their dues: @x1.",CMLib.english().toEnglishStringList(badMembers)));
 				S.prompt(new InputCallback(InputCallback.Type.PROMPT,"",0)
 				{
 					@Override
@@ -266,14 +266,14 @@ public class ClanDues extends StdCommand
 			&&(!skipChecks))
 			{
 				if(mob.session()!=null)
-					mob.session().println(L("'@x1' must be in the @x2 currency.",t,currName));
+					mob.session().getOutputFormatter().println(L("'@x1' must be in the @x2 currency.",t,currName));
 				return;
 			}
 			final Triad<String,Double,Long> triad =  CMLib.english().parseMoneyStringSDL(mob, t, curr);
 			if(triad == null)
 			{
 				if((mob.session()!=null)&&(!skipChecks))
-					mob.session().println(L("'@x1' is not a valid amount of @x2 currency.",t,currName));
+					mob.session().getOutputFormatter().println(L("'@x1' is not a valid amount of @x2 currency.",t,currName));
 				return;
 			}
 			amt = triad.second.doubleValue() * triad.third.longValue();

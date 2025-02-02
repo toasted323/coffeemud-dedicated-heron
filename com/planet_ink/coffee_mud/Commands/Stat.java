@@ -1992,7 +1992,7 @@ public class Stat  extends Skills
 			}
 		}
 		if(!mob.isMonster())
-			mob.session().wraplessPrintln(str.toString());
+			mob.session().getOutputFormatter().wraplessPrintln(str.toString());
 		return false;
 	}
 

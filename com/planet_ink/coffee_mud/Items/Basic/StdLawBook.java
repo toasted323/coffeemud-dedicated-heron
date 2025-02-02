@@ -136,7 +136,7 @@ public class StdLawBook extends StdItem
 							final StringBuffer str=new StringBuffer();
 							str.append("^HLaws of "+A.name()+"^?\n\r\n\r");
 							str.append(getFromTOC("TOC"));
-							mob.session().colorOnlyPrintln(str.toString());
+							mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 						}
 					}
 					else
@@ -317,7 +317,7 @@ public class StdLawBook extends StdItem
 			str.append(L("4. Sentence      : @x1\n\r",oldLaw[Law.BIT_SENTENCE]));
 			str.append(L("5. Justification : @x1\n\r",oldLaw[Law.BIT_WARNMSG]));
 			str.append(L("6. DELETE THIS CRIME\n\r"));
-			mob.session().colorOnlyPrintln(str.toString());
+			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			final String s=mob.session().choose(L("Enter a number to modify or RETURN: "),"123456\n","\n");
 			final int x=CMath.s_int(s);
 			if(x==0)
@@ -626,7 +626,7 @@ public class StdLawBook extends StdItem
 				str.append(CMStrings.padRight(""+(x+1)+". "+crime,20)+" "+shortLawDesc(set)+"\n\r");
 			}
 			str.append("A. ADD A NEW ONE\n\r");
-			mob.session().colorOnlyPrintln(str.toString());
+			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
 			String s=mob.session().prompt(L("\n\rEnter number to modify, A, or RETURN: "),"");
@@ -717,7 +717,7 @@ public class StdLawBook extends StdItem
 				str.append(CMStrings.padRight(""+(x+1)+". "+crime,20)+" "+shortLawDesc(set)+"\n\r");
 			}
 			str.append(L("A. ADD A NEW ONE\n\r"));
-			mob.session().colorOnlyPrintln(str.toString());
+			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
 			String s=mob.session().prompt(L("\n\rEnter number to modify, A, or RETURN: "),"");
@@ -833,7 +833,7 @@ public class StdLawBook extends StdItem
 				highest++;
 			}
 			str.append(L("A. ADD A NEW ONE\n\r"));
-			mob.session().colorOnlyPrintln(str.toString());
+			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
 			String s=mob.session().prompt(L("\n\rEnter number to modify, A, or RETURN: "),"");
@@ -960,7 +960,7 @@ public class StdLawBook extends StdItem
 				else
 					str.append("\n\r");
 			}
-			mob.session().colorOnlyPrintln(str.toString());
+			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
 			String s=mob.session().prompt(L("\n\rEnter a number to modify: "),"");
@@ -1067,7 +1067,7 @@ public class StdLawBook extends StdItem
 				highest++;
 			}
 			str.append(L("A. ADD A NEW ONE\n\r"));
-			mob.session().colorOnlyPrintln(str.toString());
+			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
 			String s=mob.session().prompt(L("\n\rEnter number to modify, A, or RETURN: "),"");
@@ -1172,7 +1172,7 @@ public class StdLawBook extends StdItem
 			str.append(L("6. ROBBING HOMES     @x1\n\r",""+shortLawDesc(theLaw.basicCrimes().get("PROPERTYROB"))));
 			str.append(L("7. PRISON BREAKING   @x1\n\r",""+shortLawDesc(theLaw.basicCrimes().get("PRISONBREAK"))));
 			str.append("\n\r");
-			mob.session().colorOnlyPrintln(str.toString());
+			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
 			final String s=mob.session().prompt(L("\n\rEnter number to modify or RETURN: "),"");
@@ -1258,7 +1258,7 @@ public class StdLawBook extends StdItem
 				else
 					str.append((5+v)+". RELEASE ROOM: Rooms called '"+s+"'.\n\r");
 			}
-			mob.session().colorOnlyPrintln(str.toString());
+			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
 			String s=mob.session().prompt(L("\n\rEnter 'A' to add a new release room, or enter a number to modify: "),"");
@@ -1346,7 +1346,7 @@ public class StdLawBook extends StdItem
 				else
 					str.append((5+v)+". JAIL ROOM: Rooms called '"+s+"'.\n\r");
 			}
-			mob.session().colorOnlyPrintln(str.toString());
+			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
 			String s=mob.session().prompt(L("\n\rEnter 'A' to add a new jail room, or enter a number to modify: "),"");

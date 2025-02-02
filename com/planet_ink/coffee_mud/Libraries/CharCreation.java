@@ -495,7 +495,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			{
 				final StringBuffer mxpText=Resources.getFileResource("text/mxp.txt",true);
 				if(mxpText!=null)
-					S.rawOut("\033[6z"+mxpText.toString()+"\n\r");
+					S.getOutputFormatter().rawOut("\033[6z"+mxpText.toString()+"\n\r");
 			}
 			else
 				mob.tell(L("MXP codes have been disabled for this session."));
@@ -503,7 +503,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		else
 		if(S.getClientTelnetMode(Session.TELNET_MXP))
 		{
-			S.rawOut("\033[7z\n\r"); // for mudlet mostly.
+			S.getOutputFormatter().rawOut("\033[7z\n\r"); // for mudlet mostly.
 			S.changeTelnetMode(Session.TELNET_MXP,false);
 			S.setClientTelnetMode(Session.TELNET_MXP,false);
 		}
@@ -629,7 +629,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			return false;
 		if(expiration<=System.currentTimeMillis())
 		{
-			session.println("\n\r"+CMProps.getVar(CMProps.Str.EXPCONTACTLINE)+"\n\r\n\r");
+			session.getOutputFormatter().println("\n\r"+CMProps.getVar(CMProps.Str.EXPCONTACTLINE)+"\n\r\n\r");
 			return true;
 		}
 		return false;
@@ -725,7 +725,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				+ "You can login by pointing your mud client at @x3 port(s): @x4.\n\r"
 				+ "After creating a character, you may use the PASSWORD command to change it once you are online.",
 				acct.getAccountName(),password,CMProps.getVar(CMProps.Str.MUDDOMAIN),CMProps.getVar(CMProps.Str.ALLMUDPORTS)));
-			session.println(L("Your account has been created.  You will receive an email with your password shortly."));
+			session.getOutputFormatter().println(L("Your account has been created.  You will receive an email with your password shortly."));
 			CMLib.s_sleep(2000);
 			session.stopSession(false,false,false);
 			Log.sysOut("Created account: "+acct.getAccountName());
@@ -747,7 +747,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			catch (final Exception ex)
 			{
 			}
-			session.println(null,null,null,"\n\r\n\r"+doneText.toString());
+			session.getOutputFormatter().println(null,null,null,"\n\r\n\r"+doneText.toString());
 		}
 		session.setAccount(acct);
 		Log.sysOut("Created account: "+acct.getAccountName());
@@ -889,7 +889,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			{
 			}
 			if((rejectText!=null)&&(rejectText.length()>0))
-				mob.session().println(rejectText.toString());
+				mob.session().getOutputFormatter().println(rejectText.toString());
 			CMLib.s_sleep(1000);
 			mob.session().stopSession(false,false,false);
 			return true;
@@ -902,13 +902,13 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 
 		if(CMSecurity.isBanned(login))
 		{
-			session.println(L("\n\rYou are unwelcome.  No one likes you here. Go away.\n\r\n\r"));
+			session.getOutputFormatter().println(L("\n\rYou are unwelcome.  No one likes you here. Go away.\n\r\n\r"));
 			session.stopSession(false,false,false);
 			return LoginResult.NO_LOGIN;
 		}
 		if((email!=null)&&CMSecurity.isBanned(email))
 		{
-			session.println(L("\n\rYou are unwelcome.  No one likes you here. Go away.\n\r\n\r"));
+			session.getOutputFormatter().println(L("\n\rYou are unwelcome.  No one likes you here. Go away.\n\r\n\r"));
 			session.stopSession(false,false,false);
 			return LoginResult.NO_LOGIN;
 		}
@@ -1139,7 +1139,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				if((s!=null) && s.equalsIgnoreCase("MSSP-REQUEST")
 				&&(!CMSecurity.isDisabled(CMSecurity.DisFlag.MSSP)))
 				{
-					session.rawOut(getMSSPPacket());
+					session.getOutputFormatter().rawOut(getMSSPPacket());
 					session.stopSession(false,false,false);
 					loginObj.reset=true;
 					loginObj.state=LoginState.LOGIN_START;
@@ -1183,10 +1183,10 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		loginObj.login=loginObj.login.trim();
 		if(loginObj.login.length()==0)
 		{
-			session.println("^w ^N");
-			session.println(L("^w* Enter an existing name to log in.^N"));
-			session.println(L("^w* Enter a new name to create @x1.^N",((CMProps.isUsingAccountSystem())?"an account":" a character")));
-			session.println(L("^w* Enter '*' to generate a random @x1 name.^N",((CMProps.isUsingAccountSystem())?"account":"character")));
+			session.getOutputFormatter().println("^w ^N");
+			session.getOutputFormatter().println(L("^w* Enter an existing name to log in.^N"));
+			session.getOutputFormatter().println(L("^w* Enter a new name to create @x1.^N",((CMProps.isUsingAccountSystem())?"an account":" a character")));
+			session.getOutputFormatter().println(L("^w* Enter '*' to generate a random @x1 name.^N",((CMProps.isUsingAccountSystem())?"account":"character")));
 			loginObj.state=LoginState.LOGIN_START;
 			if((Math.random()>0.5)&&(loginObj.attempt>0))
 				loginObj.attempt--;
@@ -1194,7 +1194,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		}
 		if(ogLogin.equalsIgnoreCase("MSSP-REQUEST")&&(!CMSecurity.isDisabled(CMSecurity.DisFlag.MSSP)))
 		{
-			session.rawOut(getMSSPPacket());
+			session.getOutputFormatter().rawOut(getMSSPPacket());
 			session.stopSession(false,false,false);
 			loginObj.reset=true;
 			loginObj.state=LoginState.LOGIN_START;
@@ -1238,7 +1238,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				}
 				else
 				{
-					session.println(L("\n\rAccount '@x1' does not exist.",CMStrings.capitalizeAndLower(loginObj.login)));
+					session.getOutputFormatter().println(L("\n\rAccount '@x1' does not exist.",CMStrings.capitalizeAndLower(loginObj.login)));
 					loginObj.player=null;
 				}
 			}
@@ -1269,7 +1269,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		{
 			if((loginObj.player.accountName()==null)||(loginObj.player.accountName().trim().length()==0))
 			{
-				session.println(L("\n\rThis mud is now using an account system.  Please create a new account "
+				session.getOutputFormatter().println(L("\n\rThis mud is now using an account system.  Please create a new account "
 								+ "and use the IMPORT command to add your character(s) to your account."));
 				session.promptPrint(L("Would you like to create your new master account and call it '@x1' (y/N)? ",loginObj.player.name()));
 				loginObj.state=LoginState.LOGIN_ACCTCONV_CONFIRM;
@@ -1277,7 +1277,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			}
 			else
 			{
-				session.println(L("\n\rThis mud uses an account system.  Your account name is `^H@x1^N`.\n\r"
+				session.getOutputFormatter().println(L("\n\rThis mud uses an account system.  Your account name is `^H@x1^N`.\n\r"
 								+ "Please use this account name when logging in.",loginObj.player.accountName()));
 			}
 		}
@@ -1351,7 +1351,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		catch (final Exception ex)
 		{
 		}
-		session.println(null,null,null,"\n\r\n\r"+introText.toString());
+		session.getOutputFormatter().println(null,null,null,"\n\r\n\r"+introText.toString());
 		final boolean emailPassword=((CMProps.getVar(CMProps.Str.EMAILREQ).toUpperCase().startsWith("PASS"))
 				 &&(CMProps.getVar(CMProps.Str.MAILBOX).length()>0));
 		if(!emailPassword)
@@ -1380,7 +1380,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		catch(final Exception ex)
 		{
 		}
-		session.println(null,null,null,emailIntro.toString());
+		session.getOutputFormatter().println(null,null,null,emailIntro.toString());
 		loginObj.state=LoginState.ACCTCREATE_EMAILPROMPT;
 		return null;
 	}
@@ -1401,13 +1401,13 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		if((emailReq||emailPassword)
 		&& ((newEmail==null)||(newEmail.trim().length()==0)||(!CMLib.smtp().isValidEmailAddress(newEmail))))
 		{
-			session.println(L("\n\rA valid email address is required.\n\r"));
+			session.getOutputFormatter().println(L("\n\rA valid email address is required.\n\r"));
 			loginObj.state=LoginState.ACCTCREATE_EMAILPROMPT;
 			return null;
 		}
 		loginObj.savedInput=newEmail;
 		if(emailPassword)
-			session.println(L("This email address will be used to send you a password."));
+			session.getOutputFormatter().println(L("This email address will be used to send you a password."));
 		if(emailReq||emailPassword)
 		{
 			session.promptPrint(L("Confirm that '@x1' is correct by re-entering.\n\rRe-enter: ",newEmail));
@@ -1431,7 +1431,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			finishCreateAccount(loginObj, loginObj.acct, loginObj.login, loginObj.password, newEmail, session);
 			return null;
 		}
-		session.println(L("\n\rThat email address combination was invalid.\n\r"));
+		session.getOutputFormatter().println(L("\n\rThat email address combination was invalid.\n\r"));
 		loginObj.state=LoginState.ACCTCREATE_EMAILPROMPT;
 		return null;
 	}
@@ -1441,7 +1441,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		final String password=loginObj.lastInput;
 		if(password.length()==0)
 		{
-			session.println(L("\n\rAborting account creation."));
+			session.getOutputFormatter().println(L("\n\rAborting account creation."));
 			loginObj.state=LoginState.LOGIN_START;
 		}
 		else
@@ -1482,7 +1482,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			{
 				if((otherSess!=session)&&(otherSess.isPendingLogin(otherLoginName)))
 				{
-					session.println(L("A previous login is still pending.  Please be patient."));
+					session.getOutputFormatter().println(L("A previous login is still pending.  Please be patient."));
 					session.stopSession(false, false, false);
 					loginObj.reset=true;
 					loginObj.state=LoginState.LOGIN_START;
@@ -1623,7 +1623,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		else
 		{
 			Log.sysOut("Failed login: "+loginObj.player.name());
-			session.println(L("\n\rInvalid password.\n\r"));
+			session.getOutputFormatter().println(L("\n\rInvalid password.\n\r"));
 			if((!session.isStopped())
 			&&(loginObj.player.email().length()>0)
 			&&(loginObj.player.email().indexOf('@')>0)
@@ -1640,7 +1640,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			loginObj.state=LoginState.LOGIN_START;
 			return null;
 		}
-		session.println("\n\r");
+		session.getOutputFormatter().println("\n\r");
 		return LoginResult.NORMAL_LOGIN;
 	}
 
@@ -1705,7 +1705,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		catch (final Exception ex)
 		{
 		}
-		session.println(null,null,null,"\n\r\n\r"+introText.toString());
+		session.getOutputFormatter().println(null,null,null,"\n\r\n\r"+introText.toString());
 		if(acct.isSet(PlayerAccount.AccountFlag.ACCOUNTMENUSOFF))
 		{
 			loginObj.state=LoginState.ACCTMENU_SHOWCHARS;
@@ -1803,7 +1803,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			}
 			buf.append("^.^N\n\r");
 		}
-		session.println(buf.toString());
+		session.getOutputFormatter().println(buf.toString());
 		buf.setLength(0);
 		loginObj.state=LoginState.ACCTMENU_PROMPT;
 		return null;
@@ -1833,7 +1833,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				(max==Integer.MAX_VALUE)?"Unlimited":(""+(max-loginObj.acct.numPlayers()))
 			};
 			final String accountMenuStr = CMStrings.replaceVariables(accountHelp.toString(), vars);
-			session.println(accountMenuStr);
+			session.getOutputFormatter().println(accountMenuStr);
 			buf.setLength(0);
 		}
 		loginObj.state=LoginState.ACCTMENU_PROMPT;
@@ -1884,7 +1884,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		}
 		else
 		{
-			session.println(L("Aborted."));
+			session.getOutputFormatter().println(L("Aborted."));
 			loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 		}
 		return null;
@@ -1926,7 +1926,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				(max==Integer.MAX_VALUE)?"Unlimited":(""+(max-loginObj.acct.numPlayers()))
 			};
 			final String accountHelpStr = CMStrings.replaceVariables(accountHelp.toString(), vars);
-			session.println(null,null,null,"\n\r\n\r"+accountHelpStr);
+			session.getOutputFormatter().println(null,null,null,"\n\r\n\r"+accountHelpStr);
 			loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 			return null;
 		}
@@ -1939,7 +1939,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		{
 			if((parms.length>1)&&(parms[parms.length-1].equalsIgnoreCase("<CONFIRMED>")))
 			{
-				session.println(L("Bye Bye!"));
+				session.getOutputFormatter().println(L("Bye Bye!"));
 				session.stopSession(false,false,false);
 				return LoginResult.NO_LOGIN;
 			}
@@ -1957,7 +1957,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			}
 			if(parms[1].length()==0)
 			{
-				session.println(L("Aborted."));
+				session.getOutputFormatter().println(L("Aborted."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -1990,13 +1990,13 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			{
 				if(acct.isSet(PlayerAccount.AccountFlag.ACCOUNTMENUSOFF))
 				{
-					session.println(L("Menus are back on."));
+					session.getOutputFormatter().println(L("Menus are back on."));
 					acct.setFlag(PlayerAccount.AccountFlag.ACCOUNTMENUSOFF, false);
 				}
 				else
 				if(!acct.isSet(PlayerAccount.AccountFlag.ACCOUNTMENUSOFF))
 				{
-					session.println(L("Menus are now off."));
+					session.getOutputFormatter().println(L("Menus are now off."));
 					acct.setFlag(PlayerAccount.AccountFlag.ACCOUNTMENUSOFF, true);
 				}
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
@@ -2019,12 +2019,12 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				if(acct.isSet(AccountFlag.ANSI))
 				{
 					if(acct.isSet(AccountFlag.ANSI16))
-						session.println(L("ANSI 16 color is now ON."));
+						session.getOutputFormatter().println(L("ANSI 16 color is now ON."));
 					else
-						session.println(L("ANSI 256 color is now ON."));
+						session.getOutputFormatter().println(L("ANSI 256 color is now ON."));
 				}
 				else
-					session.println(L("ANSI color is now OFF."));
+					session.getOutputFormatter().println(L("ANSI color is now OFF."));
 				session.setServerTelnetMode(Session.TELNET_ANSI,acct.isSet(AccountFlag.ANSI));
 				session.setClientTelnetMode(Session.TELNET_ANSI,acct.isSet(AccountFlag.ANSI));
 			}
@@ -2035,15 +2035,15 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				{
 					acct.setFlag(AccountFlag.ANSI16, !acct.isSet(AccountFlag.ANSI16));
 					if(acct.isSet(AccountFlag.ANSI16))
-						session.println(L("ANSI 16 color is now ON."));
+						session.getOutputFormatter().println(L("ANSI 16 color is now ON."));
 					else
-						session.println(L("ANSI 256 color is now ON."));
+						session.getOutputFormatter().println(L("ANSI 256 color is now ON."));
 				}
 				else
 				{
 					acct.setFlag(AccountFlag.ANSI, true);
 					acct.setFlag(AccountFlag.ANSI16, true);
-					session.println(L("ANSI 16 color is now ON."));
+					session.getOutputFormatter().println(L("ANSI 16 color is now ON."));
 				}
 				session.setServerTelnetMode(Session.TELNET_ANSI,acct.isSet(AccountFlag.ANSI));
 				session.setClientTelnetMode(Session.TELNET_ANSI,acct.isSet(AccountFlag.ANSI));
@@ -2057,15 +2057,15 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				{
 					acct.setFlag(AccountFlag.ANSI16, !acct.isSet(AccountFlag.ANSI16));
 					if(acct.isSet(AccountFlag.ANSI16))
-						session.println(L("ANSI 16 color is now ON."));
+						session.getOutputFormatter().println(L("ANSI 16 color is now ON."));
 					else
-						session.println(L("ANSI 256 color is now ON."));
+						session.getOutputFormatter().println(L("ANSI 256 color is now ON."));
 				}
 				else
 				{
 					acct.setFlag(AccountFlag.ANSI, true);
 					acct.setFlag(AccountFlag.ANSI16, false);
-					session.println(L("ANSI 256 color is now ON."));
+					session.getOutputFormatter().println(L("ANSI 256 color is now ON."));
 				}
 				session.setServerTelnetMode(Session.TELNET_ANSI,acct.isSet(AccountFlag.ANSI));
 				session.setClientTelnetMode(Session.TELNET_ANSI,acct.isSet(AccountFlag.ANSI));
@@ -2076,14 +2076,14 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			if((parms.length>1)&&(parms[1].equalsIgnoreCase("ON")))
 			{
 				if(acct.isSet(AccountFlag.ANSI))
-					session.println(L("ANSI color is already on."));
+					session.getOutputFormatter().println(L("ANSI color is already on."));
 				else
 				{
 					acct.setFlag(AccountFlag.ANSI, true);
 					if(acct.isSet(AccountFlag.ANSI16))
-						session.println(L("ANSI 16 color is now ON."));
+						session.getOutputFormatter().println(L("ANSI 16 color is now ON."));
 					else
-						session.println(L("ANSI 256 color is now ON."));
+						session.getOutputFormatter().println(L("ANSI 256 color is now ON."));
 					session.setServerTelnetMode(Session.TELNET_ANSI,acct.isSet(AccountFlag.ANSI));
 					session.setClientTelnetMode(Session.TELNET_ANSI,acct.isSet(AccountFlag.ANSI));
 				}
@@ -2092,11 +2092,11 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			if((parms.length>1)&&(parms[1].equalsIgnoreCase("OFF")))
 			{
 				if(!acct.isSet(AccountFlag.ANSI))
-					session.println(L("ANSI color is already off."));
+					session.getOutputFormatter().println(L("ANSI color is already off."));
 				else
 				{
 					acct.setFlag(AccountFlag.ANSI, false);
-					session.println(L("ANSI color is now OFF."));
+					session.getOutputFormatter().println(L("ANSI color is now OFF."));
 					session.setServerTelnetMode(Session.TELNET_ANSI,acct.isSet(AccountFlag.ANSI));
 					session.setClientTelnetMode(Session.TELNET_ANSI,acct.isSet(AccountFlag.ANSI));
 				}
@@ -2114,7 +2114,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			}
 			if(parms[1].length()==0)
 			{
-				session.println(L("Aborted."));
+				session.getOutputFormatter().println(L("Aborted."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2126,7 +2126,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			}
 			if((parms[2].length()==0)||(parms[2].length()>40))
 			{
-				session.println(L("Aborted."));
+				session.getOutputFormatter().println(L("Aborted."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2138,25 +2138,25 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			}
 			if(parms[3].length()==0)
 			{
-				session.println(L("Aborted."));
+				session.getOutputFormatter().println(L("Aborted."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
 			if(!parms[2].equals(parms[3]))
 			{
-				session.println(L("\n\rPasswords don't match.  Change cancelled."));
+				session.getOutputFormatter().println(L("\n\rPasswords don't match.  Change cancelled."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
 			if(!acct.matchesPassword(parms[1]))
 			{
-				session.println(L("\n\rThat's not your old password.  Change cancelled."));
+				session.getOutputFormatter().println(L("\n\rThat's not your old password.  Change cancelled."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
 			acct.setPassword(parms[2]);
 			CMLib.database().DBUpdateAccount(acct);
-			session.println(L("\n\rPassword changed!"));
+			session.getOutputFormatter().println(L("\n\rPassword changed!"));
 			loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 			return null;
 		}
@@ -2165,14 +2165,14 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			if(parms.length<2)
 			{
 				if(CMProps.getVar(CMProps.Str.EMAILREQ).equalsIgnoreCase("PASSWORD"))
-					session.println(L("\n\r** Changing your email address will cause a new password to be generated and emailed."));
+					session.getOutputFormatter().println(L("\n\r** Changing your email address will cause a new password to be generated and emailed."));
 				session.promptPrint(L("\n\rPlease enter a new email address: "));
 				loginObj.state=LoginState.ACCTMENU_ADDTOCOMMAND;
 				return LoginResult.INPUT_REQUIRED;
 			}
 			if((parms[1].length()==0)||(parms[1].indexOf('@')<0)||(parms[1].length()<6))
 			{
-				session.println(L("Aborted."));
+				session.getOutputFormatter().println(L("Aborted."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2184,13 +2184,13 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			}
 			if(parms[2].length()==0)
 			{
-				session.println(L("Aborted."));
+				session.getOutputFormatter().println(L("Aborted."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
 			if(!parms[1].equals(parms[2]))
 			{
-				session.println(L("\n\rEmail addresses don't match.  Change aborted."));
+				session.getOutputFormatter().println(L("\n\rEmail addresses don't match.  Change aborted."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2204,14 +2204,14 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 					+ "You can login by pointing your mud client at @x3 port(s): @x4.\n\r"
 					+ "After creating a character, you may use the PASSWORD command to change it once you are online.",
 					acct.getAccountName(),password,CMProps.getVar(CMProps.Str.MUDDOMAIN),CMProps.getVar(CMProps.Str.ALLMUDPORTS)));
-				session.println(L("Your account email address has been updated.  You will receive an email with your new password shortly."));
+				session.getOutputFormatter().println(L("Your account email address has been updated.  You will receive an email with your new password shortly."));
 				session.stopSession(false,false,false);
 				CMLib.s_sleep(1000);
 				CMLib.database().DBUpdateAccount(acct);
 				return LoginResult.NO_LOGIN;
 			}
 			CMLib.database().DBUpdateAccount(acct);
-			session.println(L("Email address changed."));
+			session.getOutputFormatter().println(L("Email address changed."));
 			loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 			return null;
 		}
@@ -2225,7 +2225,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			}
 			if(parms[1].length()==0)
 			{
-				session.println(L("Aborted."));
+				session.getOutputFormatter().println(L("Aborted."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2240,7 +2240,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			if(delPlayerChk==null)
 			{
 				acct.delPlayer(properName);
-				session.println(L("The character '@x1' is unknown.",CMStrings.capitalizeAndLower(parms[1])));
+				session.getOutputFormatter().println(L("The character '@x1' is unknown.",CMStrings.capitalizeAndLower(parms[1])));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2253,7 +2253,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 					CMLib.players().obliteratePlayer(M, true, CMSecurity.isDisabled(CMSecurity.DisFlag.DEATHCRY));
 				}
 				acct.delPlayer(delPlayer.name());
-				session.println(L("@x1 has been deleted.",delPlayer.name()));
+				session.getOutputFormatter().println(L("@x1 has been deleted.",delPlayer.name()));
 			}
 			else
 			{
@@ -2274,7 +2274,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			}
 			if(parms[1].length()==0)
 			{
-				session.println(L("Aborted."));
+				session.getOutputFormatter().println(L("Aborted."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2287,7 +2287,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			}
 			if(delPlayer==null)
 			{
-				session.println(L("The character '@x1' is unknown.",CMStrings.capitalizeAndLower(parms[1])));
+				session.getOutputFormatter().println(L("The character '@x1' is unknown.",CMStrings.capitalizeAndLower(parms[1])));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2300,7 +2300,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			final String password=parms[2];
 			if((password==null)||(password.trim().length()==0)||(password.length()>40))
 			{
-				session.println(L("Aborted."));
+				session.getOutputFormatter().println(L("Aborted."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2316,7 +2316,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 					M.playerStats().setLastUpdated(System.currentTimeMillis());
 					M.playerStats().setPassword(password);
 					CMLib.database().DBUpdatePlayer(M);
-					session.println(L("@x1 has been exported from your account.",delPlayer.name()));
+					session.getOutputFormatter().println(L("@x1 has been exported from your account.",delPlayer.name()));
 				}
 			}
 			else
@@ -2338,7 +2338,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			}
 			if(parms[1].length()==0)
 			{
-				session.println(L("Aborted."));
+				session.getOutputFormatter().println(L("Aborted."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2348,7 +2348,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			if((maxPlayersOnAccount<=acct.numPlayers())
 			&&(!acct.isSet(PlayerAccount.AccountFlag.NUMCHARSOVERRIDE)))
 			{
-				session.println(L("You may only have @x1 characters.  Please delete one to create another.",""+maxPlayersOnAccount));
+				session.getOutputFormatter().println(L("You may only have @x1 characters.  Please delete one to create another.",""+maxPlayersOnAccount));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2363,7 +2363,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			final String password=parms[2];
 			if((password==null)||(password.trim().length()==0))
 			{
-				session.println(L("Aborted."));
+				session.getOutputFormatter().println(L("Aborted."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2374,7 +2374,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				&&(newCharT.accountName().length()>0)
 				&&(!newCharT.accountName().equalsIgnoreCase(acct.getAccountName()))))
 			{
-				session.println(L("Character name or password is incorrect."));
+				session.getOutputFormatter().println(L("Character name or password is incorrect."));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2387,7 +2387,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 					M.playerStats().setAccount(acct);
 					CMLib.database().DBUpdateAccount(acct);
 					CMLib.database().DBUpdatePlayer(M);
-					session.println(L("@x1 has been imported into your account.",M.name()));
+					session.getOutputFormatter().println(L("@x1 has been imported into your account.",M.name()));
 				}
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 			}
@@ -2412,14 +2412,14 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			}
 			if(playMe == null)
 			{
-				session.println(L("'@x1' is an unknown character or command.  Use ? for help.",name));
+				session.getOutputFormatter().println(L("'@x1' is an unknown character or command.  Use ? for help.",name));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
 			final MOB realMOB=CMLib.players().getLoadPlayer(playMe.name());
 			if(realMOB==null)
 			{
-				session.println(L("Error loading character '@x1'.  Please contact the management.",name));
+				session.getOutputFormatter().println(L("Error loading character '@x1'.  Please contact the management.",name));
 				loginObj.state=LoginState.ACCTMENU_SHOWMENU;
 				return null;
 			}
@@ -2469,7 +2469,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			&&(!CMProps.isOnWhiteList(CMProps.WhiteList.LOGINS, realMOB.Name()))
 			&&(!acct.isSet(PlayerAccount.AccountFlag.MAXCONNSOVERRIDE)))
 			{
-				session.println(L("You may only have @x1 of your characters on at one time.",""+CMProps.getIntVar(CMProps.Int.MAXCONNSPERACCOUNT)));
+				session.getOutputFormatter().println(L("You may only have @x1 of your characters on at one time.",""+CMProps.getIntVar(CMProps.Int.MAXCONNSPERACCOUNT)));
 				return null;
 			}
 		}
@@ -2500,7 +2500,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		catch (final Exception ex)
 		{
 		}
-		session.println(null,null,null,"\n\r\n\r"+introText.toString());
+		session.getOutputFormatter().println(null,null,null,"\n\r\n\r"+introText.toString());
 		final String password=(loginObj.acct!=null)?loginObj.acct.getPasswordStr():"";
 
 		final boolean emailPassword=((CMProps.getVar(CMProps.Str.EMAILREQ).toUpperCase().startsWith("PASS"))
@@ -2525,7 +2525,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			password=loginObj.lastInput;
 			if((password.length()==0)||(password.length()>40))
 			{
-				session.println(L("\n\rYou must enter a password to continue."));
+				session.getOutputFormatter().println(L("\n\rYou must enter a password to continue."));
 				session.promptPrint(L("\n\rEnter a password: "));
 				loginObj.state=LoginState.CHARCR_PASSWORDDONE;
 				return LoginResult.INPUT_REQUIRED;
@@ -2582,7 +2582,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		catch(final Exception ex)
 		{
 		}
-		session.println(null,null,null,emailIntro.toString());
+		session.getOutputFormatter().println(null,null,null,emailIntro.toString());
 		loginObj.state=LoginState.CHARCR_EMAILPROMPT;
 		return null;
 	}
@@ -2603,14 +2603,14 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		if((emailReq||emailPassword)
 		&& ((newEmail==null)||(newEmail.trim().length()==0)||(!CMLib.smtp().isValidEmailAddress(newEmail))))
 		{
-			session.println(L("\n\rA valid email address is required.\n\r"));
+			session.getOutputFormatter().println(L("\n\rA valid email address is required.\n\r"));
 			loginObj.state=LoginState.CHARCR_EMAILPROMPT;
 			return null;
 		}
 
 		loginObj.savedInput=newEmail;
 		if(emailPassword)
-			session.println(L("This email address will be used to send you a password."));
+			session.getOutputFormatter().println(L("This email address will be used to send you a password."));
 		if(emailReq||emailPassword)
 		{
 			session.promptPrint(L("Confirm that '@x1' is correct by re-entering.\n\rRe-enter: ",newEmail));
@@ -2636,7 +2636,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			loginObj.state=LoginState.CHARCR_EMAILDONE;
 			return null;
 		}
-		session.println(L("\n\rThat email address combination was invalid.\n\r"));
+		session.getOutputFormatter().println(L("\n\rThat email address combination was invalid.\n\r"));
 		loginObj.state=LoginState.CHARCR_EMAILPROMPT;
 		return null;
 	}
@@ -2648,7 +2648,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		final PlayerAccount acct=loginObj.acct;
 		if((mob.playerStats().getEmail()!=null)&&CMSecurity.isBanned(mob.playerStats().getEmail()))
 		{
-			session.println(L("\n\rYou are unwelcome.  No one likes you here. Go away.\n\r\n\r"));
+			session.getOutputFormatter().println(L("\n\rYou are unwelcome.  No one likes you here. Go away.\n\r\n\r"));
 			if(mob==session.mob())
 				session.stopSession(false,false,false);
 			return LoginResult.NO_LOGIN;
@@ -2767,7 +2767,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		catch (final Exception ex)
 		{
 		}
-		session.println(null,null,null,introText.toString());
+		session.getOutputFormatter().println(null,null,null,introText.toString());
 		session.promptPrint(L("\n\r^!Please select from the following:^N @x1\n\r: ",selections.substring(1)));
 		loginObj.state=LoginState.CHARCR_THEMEPICKED;
 		return LoginResult.INPUT_REQUIRED;
@@ -2786,7 +2786,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			loginObj.theme=Area.THEME_TECHNOLOGY;
 		if(loginObj.theme<0)
 		{
-			session.println(L("\n\rThat is not a valid choice.\n\r"));
+			session.getOutputFormatter().println(L("\n\rThat is not a valid choice.\n\r"));
 			loginObj.state=LoginState.CHARCR_THEMESTART;
 		}
 		else
@@ -2872,7 +2872,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			catch (final Exception ex)
 			{
 			}
-			session.println(null,null,null,introText.toString());
+			session.getOutputFormatter().println(null,null,null,introText.toString());
 		}
 		final StringBuffer listOfRaces=new StringBuffer("[");
 		boolean tmpFirst = true;
@@ -2886,8 +2886,8 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			listOfRaces.append("^H"+R.name()+"^N");
 		}
 		listOfRaces.append("]");
-		session.println(L("\n\r^!Please choose from the following races (?):^N"));
-		session.print(listOfRaces.toString());
+		session.getOutputFormatter().println(L("\n\r^!Please choose from the following races (?):^N"));
+		session.getOutputFormatter().print(listOfRaces.toString());
 		session.promptPrint("\n\r: ");
 		loginObj.state=LoginState.CHARCR_RACEENTERED;
 		return LoginResult.INPUT_REQUIRED;
@@ -2899,7 +2899,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		MOB mob=loginObj.mob;
 
 		if(raceStr.trim().equalsIgnoreCase("?")||(raceStr.length()==0))
-			session.println(null,null,null,"\n\r"+new CMFile(Resources.buildResourcePath("text")+"races.txt",null,CMFile.FLAG_LOGERRORS).text().toString());
+			session.getOutputFormatter().println(null,null,null,"\n\r"+new CMFile(Resources.buildResourcePath("text")+"races.txt",null,CMFile.FLAG_LOGERRORS).text().toString());
 		else
 		{
 			Race newRace=CMClass.getRace(raceStr);
@@ -2935,7 +2935,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			{
 				final String str=CMLib.help().getHelpText(newRace.ID().toUpperCase(),mob,false);
 				if(str!=null)
-					session.println("\n\r^N"+str.toString()+"\n\r");
+					session.getOutputFormatter().println("\n\r^N"+str.toString()+"\n\r");
 				session.promptPrint(L("^!Is ^H@x1^N^! correct (Y/n)?^N",newRace.name()));
 				mob=setMOBClass(newRace.useRideClass() ? "StdRideable" : "StdMOB", loginObj, session);
 				mob.baseCharStats().setMyRace(newRace);
@@ -3000,7 +3000,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		{
 		}
 		if(genderIntro.toString().length()>0)
-			session.println(null,null,null,genderIntro.toString());
+			session.getOutputFormatter().println(null,null,null,genderIntro.toString());
 		session.promptPrint(L("\n\r^!What is your gender (@x1)?^N",str.toString()));
 		loginObj.state=LoginState.CHARCR_GENDERDONE;
 		return LoginResult.INPUT_REQUIRED;
@@ -3067,7 +3067,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			catch (final Exception ex)
 			{
 			}
-			session.println(null,null,null,"\n\r\n\r"+introText.toString());
+			session.getOutputFormatter().println(null,null,null,"\n\r\n\r"+introText.toString());
 
 			for(int i=0;i<CharStats.CODES.BASECODES().length;i++)
 				mob.baseCharStats().setStat(CharStats.CODES.BASECODES()[i],CMProps.getIntVar(CMProps.Int.BASEMINSTAT));
@@ -3136,14 +3136,14 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 							  +"^N/^w"+(max+RT.getStat(CharStats.CODES.toMAXBASE(i)))+"^N "+valDiff+"\n\r");
 			}
 			statstr.append("^w"+CMStrings.padRight(L("STATS TOTAL"),15)+"^N: ^w"+total+"^N/^w"+maxTotal+"^.^N");
-			session.println(statstr.toString());
+			session.getOutputFormatter().println(statstr.toString());
 			if((qualifyingClassListV.size()==0)&&(!CMSecurity.isDisabled(CMSecurity.DisFlag.CLASSES)))
 				qualifyingClassListV=classQualifies(mob,loginObj.theme);
 			if(!CMSecurity.isDisabled(CMSecurity.DisFlag.CLASSES)
 			&&(!mob.baseCharStats().getMyRace().classless())
 			&&(randomRoll || qualifyingClassListV.size()>0)
 			&&((qualifyingClassListV.size()!=1)||(!CMProps.getVar(CMProps.Str.MULTICLASS).startsWith("APP-"))))
-				session.println(L("\n\rThis would qualify you for ^H@x1^N.",buildQualifyingClassList(mob,qualifyingClassListV,"and")));
+				session.getOutputFormatter().println(L("\n\rThis would qualify you for ^H@x1^N.",buildQualifyingClassList(mob,qualifyingClassListV,"and")));
 			if(randomRoll)
 			{
 				session.promptPrint(L("^!Would you like to re-roll (y/N)?^N"));
@@ -3155,12 +3155,12 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				String promptStr;
 				if(loginObj.statPoints == 0)
 				{
-					session.println(L("\n\r^!You have no more points remaining.^N"));
+					session.getOutputFormatter().println(L("\n\r^!You have no more points remaining.^N"));
 					promptStr = L("^NEnter a Stat to remove points, ? for help, R for random roll, or ENTER to complete.^N\n\r: ^N");
 				}
 				else
 				{
-					session.println(L("\n\r^NYou have ^w@x1^N points remaining.^N",""+loginObj.statPoints));
+					session.getOutputFormatter().println(L("\n\r^NYou have ^w@x1^N points remaining.^N",""+loginObj.statPoints));
 					promptStr = L("^NEnter a Stat to add or remove points, ? for help, or R for random roll.^N\n\r: ^N");
 				}
 
@@ -3224,7 +3224,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		{
 			if(qualifyingClassListV.size()==0)
 			{
-				session.println(L("^rYou do not qualify for any classes.  Please modify your stats until you do.^N"));
+				session.getOutputFormatter().println(L("^rYou do not qualify for any classes.  Please modify your stats until you do.^N"));
 			}
 			else
 			{
@@ -3242,7 +3242,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			catch(final Exception ex)
 			{
 			}
-			session.println(null,null,null,"\n\r\n\r"+introText.toString());
+			session.getOutputFormatter().println(null,null,null,"\n\r\n\r"+introText.toString());
 			loginObj.state=LoginState.CHARCR_STATSTART;
 			return null;
 		}
@@ -3273,7 +3273,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 					statPointsChange=num;
 				else
 				{
-					session.println(L("^r'@x1' is not a positive or negative number.^N",numStr));
+					session.getOutputFormatter().println(L("^r'@x1' is not a positive or negative number.^N",numStr));
 					loginObj.state=LoginState.CHARCR_STATSTART;
 					return null;
 				}
@@ -3286,7 +3286,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			else
 			if(space>0)
 			{
-				session.println(L("^r'@x1' is not a positive or negative number.^N",prompt.substring(space+1)));
+				session.getOutputFormatter().println(L("^r'@x1' is not a positive or negative number.^N",prompt.substring(space+1)));
 				loginObj.state=LoginState.CHARCR_STATSTART;
 				return null;
 			}
@@ -3300,7 +3300,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			final int statCode = CharStats.CODES.findWhole(prompt, false);
 			if((statCode < 0)||(!validStats.contains(CMStrings.capitalizeAndLower(CharStats.CODES.NAME(statCode)))))
 			{
-				session.println(L("^r'@x1' is an unknown code.  Try one of these: @x2^N",prompt,CMParms.toListString(validStats)));
+				session.getOutputFormatter().println(L("^r'@x1' is an unknown code.  Try one of these: @x2^N",prompt,CMParms.toListString(validStats)));
 				loginObj.state=LoginState.CHARCR_STATSTART;
 				return null;
 			}
@@ -3335,9 +3335,9 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			if(loginObj.statPoints - pointsCost < 0)
 			{
 				if(loginObj.statPoints > 0)
-					session.println(L("^rYou need @x1 points to do that, but only have @x2 remaining.^N",""+pointsCost,""+loginObj.statPoints));
+					session.getOutputFormatter().println(L("^rYou need @x1 points to do that, but only have @x2 remaining.^N",""+pointsCost,""+loginObj.statPoints));
 				else
-					session.println(L("^rYou don't have enough remaining points to do that.^N"));
+					session.getOutputFormatter().println(L("^rYou don't have enough remaining points to do that.^N"));
 				loginObj.state=LoginState.CHARCR_STATSTART;
 				return null;
 			}
@@ -3348,14 +3348,14 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				{
 					if(CT.getStat(statCode) <= loginObj.baseStats.getStat(statCode))
 					{
-						session.println(L("^rYou can not lower '@x1 any further.^N",friendlyName));
+						session.getOutputFormatter().println(L("^rYou can not lower '@x1 any further.^N",friendlyName));
 						loginObj.state=LoginState.CHARCR_STATSTART;
 						return null;
 					}
 					else
 					if(CT.getStat(statCode)-statPointsChange < loginObj.baseStats.getStat(statCode))
 					{
-						session.println(L("^rYou can not lower '@x1 any further.^N",friendlyName));
+						session.getOutputFormatter().println(L("^rYou can not lower '@x1 any further.^N",friendlyName));
 						loginObj.state=LoginState.CHARCR_STATSTART;
 						return null;
 					}
@@ -3365,14 +3365,14 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 					final int max=CMProps.getIntVar(CMProps.Int.BASEMAXSTAT);
 					if(CT.getStat(statCode) >= max)
 					{
-						session.println(L("^rYou can not raise '@x1 any further.^N",friendlyName));
+						session.getOutputFormatter().println(L("^rYou can not raise '@x1 any further.^N",friendlyName));
 						loginObj.state=LoginState.CHARCR_STATSTART;
 						return null;
 					}
 					else
 					if(CT.getStat(statCode)+statPointsChange > max)
 					{
-						session.println(L("^rYou can not raise '@x1 any by that amount.^N",friendlyName));
+						session.getOutputFormatter().println(L("^rYou can not raise '@x1 any by that amount.^N",friendlyName));
 						loginObj.state=LoginState.CHARCR_STATSTART;
 						return null;
 					}
@@ -3476,7 +3476,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		}
 		if(!CMSecurity.isDisabled(CMSecurity.DisFlag.CLASSES)
 		&&!mob.baseCharStats().getMyRace().classless())
-			session.println(null,null,null,new CMFile(Resources.buildResourcePath("text")+"classes.txt",null,CMFile.FLAG_LOGERRORS).text().toString());
+			session.getOutputFormatter().println(null,null,null,new CMFile(Resources.buildResourcePath("text")+"classes.txt",null,CMFile.FLAG_LOGERRORS).text().toString());
 		loginObj.state=LoginState.CHARCR_CLASSSTART;
 		return null;
 	}
@@ -3487,8 +3487,8 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		mob.baseCharStats().setAllClassInfo("StdCharClass", "0");
 		final List<CharClass> qualClassesV=classQualifies(mob,loginObj.theme);
 		final String listOfClasses = buildQualifyingClassList(mob, qualClassesV, "or");
-		session.println(L("\n\r^!Please choose from the following Classes:"));
-		session.print("^N[" + listOfClasses + "^N]");
+		session.getOutputFormatter().println(L("\n\r^!Please choose from the following Classes:"));
+		session.getOutputFormatter().print("^N[" + listOfClasses + "^N]");
 		session.promptPrint("\n\r: ");
 		loginObj.state=LoginState.CHARCR_CLASSPICKED;
 		return LoginResult.INPUT_REQUIRED;
@@ -3500,7 +3500,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		final String ClassStr=loginObj.lastInput;
 		if(ClassStr.trim().equalsIgnoreCase("?"))
 		{
-			session.println(null,null,null,"\n\r"+new CMFile(Resources.buildResourcePath("text")+"classes.txt",null,CMFile.FLAG_LOGERRORS).text().toString());
+			session.getOutputFormatter().println(null,null,null,"\n\r"+new CMFile(Resources.buildResourcePath("text")+"classes.txt",null,CMFile.FLAG_LOGERRORS).text().toString());
 			loginObj.state=LoginState.CHARCR_CLASSSTART;
 			return null;
 		}
@@ -3533,7 +3533,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		{
 			final String str=CMLib.help().getHelpText(newClass.ID().toUpperCase(),mob,false,false);
 			if(str!=null)
-				session.println("\n\r^N"+str.toString()+"\n\r");
+				session.getOutputFormatter().println("\n\r^N"+str.toString()+"\n\r");
 			session.promptPrint(L("^NIs ^H@x1^N correct (Y/n)?",newClass.name()));
 			mob.baseCharStats().setCurrentClass(newClass);
 			mob.charStats().setCurrentClass(newClass);
@@ -3634,7 +3634,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			catch (final Exception ex)
 			{
 			}
-			session.println(null,null,null,"\n\r\n\r"+intro.toString());
+			session.getOutputFormatter().println(null,null,null,"\n\r\n\r"+intro.toString());
 		}
 		loginObj.lastInput="";
 		loginObj.state=LoginState.CHARCR_FACTIONPICK;
@@ -3777,7 +3777,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		final MOB mob=loginObj.mob;
 		final CMFile file = new CMFile(Resources.buildResourcePath("text")+"deities.txt",null,CMFile.FLAG_LOGERRORS);
 		if(file.exists() && file.canRead())
-			session.println(null,null,null,"\n\r"+file.text().toString());
+			session.getOutputFormatter().println(null,null,null,"\n\r"+file.text().toString());
 		else
 		{
 			final Command C=CMClass.getCommand("Deities");
@@ -3797,8 +3797,8 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		mob.baseCharStats().setWorshipCharID("");
 		final List<Deity> qualDeitiesV=deityQualifies(mob,loginObj.theme);
 		final String listOfDeities = buildQualifyingDeityList(mob, qualDeitiesV, "or");
-		session.println(L("\n\r^!Please choose from the following deities to serve:"));
-		session.print("^N[" + listOfDeities + "^N]");
+		session.getOutputFormatter().println(L("\n\r^!Please choose from the following deities to serve:"));
+		session.getOutputFormatter().print("^N[" + listOfDeities + "^N]");
 		session.promptPrint("\n\r: ");
 		loginObj.state=LoginState.CHARCR_DEITYPICKED;
 		return LoginResult.INPUT_REQUIRED;
@@ -3817,7 +3817,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		if(newDeity == null)
 		{
 			if(!deityStr.equalsIgnoreCase("?"))
-				session.println(L("'@x1' is not a valid deity.",deityStr));
+				session.getOutputFormatter().println(L("'@x1' is not a valid deity.",deityStr));
 			loginObj.state=LoginState.CHARCR_DEITYSTART;
 			return null;
 		}
@@ -3825,7 +3825,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 
 		final String str=CMLib.help().getHelpText(newDeity.Name(),mob,false,false);
 		if(str!=null)
-			session.println("\n\r^N"+str.toString()+"\n\r");
+			session.getOutputFormatter().println("\n\r^N"+str.toString()+"\n\r");
 		session.promptPrint(L("^NIs ^H@x1^N correct (Y/n)?",newDeity.name()));
 		loginObj.savedInput=newDeity.Name();
 		loginObj.state=LoginState.CHARCR_DEITYCONFIRM;
@@ -3894,7 +3894,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		catch (final Exception ex)
 		{
 		}
-		session.println(null,null,null,"\n\r\n\r"+introText.toString());
+		session.getOutputFormatter().println(null,null,null,"\n\r\n\r"+introText.toString());
 		loginObj.state=LoginState.CHARCR_FINISH;
 		return LoginResult.INPUT_REQUIRED;
 	}
@@ -3914,7 +3914,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				+ "You can login by pointing your mud client at @x3 port(s): @x4.\n\r"
 				+ "You may use the PASSWORD command to change it once you are online.",
 				mob.Name(),password,CMProps.getVar(CMProps.Str.MUDDOMAIN),CMProps.getVar(CMProps.Str.ALLMUDPORTS)));
-			session.println(L("Your character has been created.  You will receive an email with your password shortly."));
+			session.getOutputFormatter().println(L("Your character has been created.  You will receive an email with your password shortly."));
 			CMLib.s_sleep(1000);
 			if(mob==session.mob())
 				session.stopSession(false,false,false);
@@ -4121,19 +4121,19 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		switch(newCharNameCheck(login,session.getAddress(),skipAccountNameCheck))
 		{
 		case NO_NEW_PLAYERS:
-			session.println(L("\n\r'@x1' is not recognized.",CMStrings.capitalizeAndLower(login)));
+			session.getOutputFormatter().println(L("\n\r'@x1' is not recognized.",CMStrings.capitalizeAndLower(login)));
 			return false;
 		case BAD_USED_NAME:
-			session.println(L("\n\r'@x1' is not recognized.\n\rThat name is also not available for new players.\n\r  Choose another name (no spaces allowed)!\n\r",CMStrings.capitalizeAndLower(login)));
+			session.getOutputFormatter().println(L("\n\r'@x1' is not recognized.\n\rThat name is also not available for new players.\n\r  Choose another name (no spaces allowed)!\n\r",CMStrings.capitalizeAndLower(login)));
 			return false;
 		case NO_NEW_LOGINS:
-			session.println(L("\n\r'@x1' does not exist.\n\rThis server is not accepting new accounts.\n\r",CMStrings.capitalizeAndLower(login)));
+			session.getOutputFormatter().println(L("\n\r'@x1' does not exist.\n\rThis server is not accepting new accounts.\n\r",CMStrings.capitalizeAndLower(login)));
 			return false;
 		case CREATE_LIMIT_REACHED:
-			session.println(L("\n\rThat name is unrecognized.\n\rAlso, the maximum daily new player limit has already been reached for your location."));
+			session.getOutputFormatter().println(L("\n\rThat name is unrecognized.\n\rAlso, the maximum daily new player limit has already been reached for your location."));
 			return false;
 		default:
-			session.println(L("\n\r'@x1' is not recognized.",CMStrings.capitalizeAndLower(login)));
+			session.getOutputFormatter().println(L("\n\r'@x1' is not recognized.",CMStrings.capitalizeAndLower(login)));
 			return false;
 		case OK:
 			if(acct!=null)
@@ -4144,7 +4144,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				if((maxPlayersOnAccount<=acct.numPlayers())
 				&&(!acct.isSet(PlayerAccount.AccountFlag.NUMCHARSOVERRIDE)))
 				{
-					session.println(L("You may only have @x1 characters.  Please retire one to create another.",""+maxPlayersOnAccount));
+					session.getOutputFormatter().println(L("You may only have @x1 characters.  Please retire one to create another.",""+maxPlayersOnAccount));
 					return false;
 				}
 			}
@@ -4167,19 +4167,19 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		switch(newAccountNameCheck(login,session.getAddress()))
 		{
 		case NO_NEW_PLAYERS:
-			session.println(L("\n\r'@x1' is not recognized.",CMStrings.capitalizeAndLower(login)));
+			session.getOutputFormatter().println(L("\n\r'@x1' is not recognized.",CMStrings.capitalizeAndLower(login)));
 			return false;
 		case BAD_USED_NAME:
-			session.println(L("\n\r'@x1' is not recognized.\n\rThat name is also not available for new accounts.\n\r  Choose another name (no spaces allowed)!\n\r",CMStrings.capitalizeAndLower(login)));
+			session.getOutputFormatter().println(L("\n\r'@x1' is not recognized.\n\rThat name is also not available for new accounts.\n\r  Choose another name (no spaces allowed)!\n\r",CMStrings.capitalizeAndLower(login)));
 			return false;
 		case NO_NEW_LOGINS:
-			session.println(L("\n\r'@x1' does not exist.\n\rThis server is not accepting new accounts.\n\r",CMStrings.capitalizeAndLower(login)));
+			session.getOutputFormatter().println(L("\n\r'@x1' does not exist.\n\rThis server is not accepting new accounts.\n\r",CMStrings.capitalizeAndLower(login)));
 			return false;
 		case CREATE_LIMIT_REACHED:
-			session.println(L("\n\rThat name is unrecognized.\n\rAlso, the maximum daily new account limit has already been reached for your location."));
+			session.getOutputFormatter().println(L("\n\rThat name is unrecognized.\n\rAlso, the maximum daily new account limit has already been reached for your location."));
 			return false;
 		default:
-			session.println(L("\n\r'@x1' is not recognized.",CMStrings.capitalizeAndLower(login)));
+			session.getOutputFormatter().println(L("\n\r'@x1' is not recognized.",CMStrings.capitalizeAndLower(login)));
 			return false;
 		case OK:
 		{
@@ -4188,7 +4188,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 				final int max = numAccountsAllowed(acct);
 				if(max<=acct.numPlayers())
 				{
-					session.println(L("You may only have @x1 characters.  Please retire one to create another.",""+max));
+					session.getOutputFormatter().println(L("You may only have @x1 characters.  Please retire one to create another.",""+max));
 					return false;
 				}
 			}
@@ -4292,7 +4292,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		}
 		if((pstats.getEmail()!=null)&&CMSecurity.isBanned(pstats.getEmail()))
 		{
-			session.println(L("\n\rYou are unwelcome.  No one likes you here. Go away.\n\r\n\r"));
+			session.getOutputFormatter().println(L("\n\rYou are unwelcome.  No one likes you here. Go away.\n\r\n\r"));
 			session.stopSession(false,false,false);
 			return LoginResult.NO_LOGIN;
 		}
@@ -4341,7 +4341,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		&&(!CMProps.isOnWhiteList(CMProps.WhiteList.IPSCONN, session.getAddress()))
 		&&(!CMProps.isOnWhiteList(CMProps.WhiteList.LOGINS, login)))
 		{
-			session.println(L("The maximum player limit has already been reached for your IP address."));
+			session.getOutputFormatter().println(L("The maximum player limit has already been reached for your IP address."));
 			return LoginResult.NO_LOGIN;
 		}
 
@@ -4388,7 +4388,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 			if(mob.playerStats()==null)
 			{
 				Log.errOut("CharCreation",login+" is not a player! FAIL!");
-				session.println(L("Error occurred trying to login as this player. Please contact your technical support."));
+				session.getOutputFormatter().println(L("Error occurred trying to login as this player. Please contact your technical support."));
 				return LoginResult.NO_LOGIN;
 			}
 			mob.setSession(session);
@@ -5061,7 +5061,7 @@ public class CharCreation extends StdLibrary implements CharCreationLibrary
 		}
 		catch(final Exception e)
 		{
-			session.println(L("\n\r\n\rI'm sorry, but something bad happened. You'll need to re-log.\n\r\n\r"));
+			session.getOutputFormatter().println(L("\n\r\n\rI'm sorry, but something bad happened. You'll need to re-log.\n\r\n\r"));
 			Log.errOut(e);
 		}
 		loginObj.reset=true;

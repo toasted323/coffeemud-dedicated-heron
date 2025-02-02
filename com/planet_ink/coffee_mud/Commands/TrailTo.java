@@ -244,7 +244,7 @@ public class TrailTo extends StdCommand
 		}
 		else
 		if(!mob.isMonster())
-			mob.session().safeRawPrintln(trailTo(mob.location(),commands,mob.session()));
+			mob.session().getOutputFormatter().safeRawPrintln(trailTo(mob.location(),commands,mob.session()));
 		return false;
 	}
 

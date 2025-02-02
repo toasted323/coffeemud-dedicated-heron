@@ -330,7 +330,7 @@ public class Alias extends StdCommand
 			@Override
 			public void showPrompt()
 			{
-				session.safeRawPrintln(L("\n\rEnter a value for alias '@x1'.  Use ~ to separate commands. Prefix with noecho to turn off command echo.", aliasName));
+				session.getOutputFormatter().safeRawPrintln(L("\n\rEnter a value for alias '@x1'.  Use ~ to separate commands. Prefix with noecho to turn off command echo.", aliasName));
 				session.promptPrint(": ");
 			}
 

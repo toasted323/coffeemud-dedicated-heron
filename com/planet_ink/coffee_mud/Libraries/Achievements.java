@@ -9419,7 +9419,7 @@ public class Achievements extends StdLibrary implements AchievementLibrary
 				final String err = evaluateAchievement(agent, achievementRow, false);
 				if((err != null)&&(err.trim().length()>0)&&(mob.session()!=null))
 				{
-					mob.session().println(L("^HERRORS: ^r@x1^N",err));
+					mob.session().getOutputFormatter().println(L("^HERRORS: ^r@x1^N",err));
 				}
 				else
 				if(showFlag<-900)
@@ -9444,7 +9444,7 @@ public class Achievements extends StdLibrary implements AchievementLibrary
 					else
 					if((err != null)&&(err.trim().length()>0)&&(mob.session()!=null))
 					{
-						mob.session().println(L("^HCorrect errors first or enter CANCEL: ^r@x1^N",err));
+						mob.session().getOutputFormatter().println(L("^HCorrect errors first or enter CANCEL: ^r@x1^N",err));
 						showFlag=-1;
 						continue;
 					}

@@ -83,7 +83,7 @@ public class Wealth extends Inventory
 			mob.tell(L("You have no money on you."));
 		else
 		if(!mob.isMonster())
-			mob.session().wraplessPrintln(msg.toString());
+			mob.session().getOutputFormatter().wraplessPrintln(msg.toString());
 		return false;
 	}
 

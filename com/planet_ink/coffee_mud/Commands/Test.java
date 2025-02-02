@@ -232,20 +232,20 @@ public class Test extends StdCommand
 			commands.remove(0); // remove 'id'
 			for(final CMTest T : tests)
 			{
-				S.print(CMStrings.padRight(T.name(), longest)+": ");
+				S.getOutputFormatter().print(CMStrings.padRight(T.name(), longest)+": ");
 				T.cleanupTest();
 				try
 				{
 					final String result = T.doTest(mob, metaFlags, what, commands);
 					if(result == null)
-						S.println("Passed");
+						S.getOutputFormatter().println("Passed");
 					else
-						S.println(result);
+						S.getOutputFormatter().println(result);
 				}
 				catch(final Throwable t)
 				{
 					Log.errOut(t);
-					S.println(t.getMessage());
+					S.getOutputFormatter().println(t.getMessage());
 				}
 				T.cleanupTest();
 			}

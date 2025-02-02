@@ -1597,9 +1597,9 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 			return;
 		}
 		final String addModeMessage=L("^ZYou are now in Add Text mode.\n\r^ZEnter an empty line to exit.^.^N");
-		sess.println(L("^HCoffeeMud Message Maker^N"));
+		sess.getOutputFormatter().println(L("^HCoffeeMud Message Maker^N"));
 		if(autoAdd)
-			sess.println(addModeMessage);
+			sess.getOutputFormatter().println(addModeMessage);
 		sess.prompt(new InputCallback(InputCallback.Type.PROMPT,"",0)
 		{
 			final MOB mob=M;
@@ -1724,7 +1724,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 					{
 						if((this.input==null)||(this.input.trim().length()==0))
 						{
-							sess.println(L("(aborted)"));
+							sess.getOutputFormatter().println(L("(aborted)"));
 							state=MsgMkrState.MENU;
 							break;
 						}
@@ -1752,7 +1752,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 					{
 						if((this.input==null)||(this.input.trim().length()==0))
 						{
-							sess.println(L("(aborted)"));
+							sess.getOutputFormatter().println(L("(aborted)"));
 							state=MsgMkrState.MENU;
 							break;
 						}
@@ -1762,7 +1762,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 							final int ln=CMath.isInteger(this.input)?CMath.s_int(this.input):-1;
 							if((ln<0)||(ln>=vbuf.size()))
 							{
-								sess.println(L("'@x1' is not a valid line number.",this.input));
+								sess.getOutputFormatter().println(L("'@x1' is not a valid line number.",this.input));
 								state=MsgMkrState.MENU;
 							}
 							else
@@ -1778,7 +1778,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 					{
 						final int ln=CMath.isInteger(param1)?CMath.s_int(param1):-1;
 						if((ln<0)||(ln>=vbuf.size()))
-							sess.println(L("'@x1' is not a valid line number.",param1));
+							sess.getOutputFormatter().println(L("'@x1' is not a valid line number.",param1));
 						else
 							vbuf.set(ln,param2);
 						state=MsgMkrState.MENU;
@@ -1796,10 +1796,10 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 						{
 							final int ln=CMath.s_int(line);
 							vbuf.remove(ln);
-							sess.println(L("Line @x1 deleted.",""+ln));
+							sess.getOutputFormatter().println(L("Line @x1 deleted.",""+ln));
 						}
 						else
-							sess.println(L("'@x1' is not a valid line number.",""+line));
+							sess.getOutputFormatter().println(L("'@x1' is not a valid line number.",""+line));
 						state=MsgMkrState.MENU;
 					}
 					else
@@ -1817,7 +1817,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 						vbuf.add(s);
 					if(newDoc.length>1)
 					{
-						sess.println(L("\n\r^HNew text successfully imported.^N"));
+						sess.getOutputFormatter().println(L("\n\r^HNew text successfully imported.^N"));
 					}
 					state=MsgMkrState.MENU;
 					break;
@@ -1828,7 +1828,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 					{
 						if((this.input==null)||(this.input.trim().length()==0))
 						{
-							sess.println(L("(aborted)"));
+							sess.getOutputFormatter().println(L("(aborted)"));
 							state=MsgMkrState.MENU;
 							break;
 						}
@@ -1838,7 +1838,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 							final int ln=CMath.isInteger(this.input)?CMath.s_int(this.input):-1;
 							if((ln<0)||(ln>=vbuf.size()))
 							{
-								sess.println(L("'@x1' is not a valid line number.",this.input));
+								sess.getOutputFormatter().println(L("'@x1' is not a valid line number.",this.input));
 								state=MsgMkrState.MENU;
 							}
 							else
@@ -1854,7 +1854,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 					{
 						final int ln=CMath.isInteger(param1)?CMath.s_int(param1):-1;
 						if((ln<0)||(ln>=vbuf.size()))
-							sess.println(L("'@x1' is not a valid line number.",param1));
+							sess.getOutputFormatter().println(L("'@x1' is not a valid line number.",param1));
 						else
 							vbuf.add(ln,param2);
 						state=MsgMkrState.MENU;
@@ -1864,7 +1864,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 					{
 						final int ln=CMath.isInteger(param1)?CMath.s_int(param1):-1;
 						if((ln<0)||(ln>=vbuf.size()))
-							sess.println(L("'@x1' is not a valid line number.",param1));
+							sess.getOutputFormatter().println(L("'@x1' is not a valid line number.",param1));
 						else
 							vbuf.add(ln,"");
 						state=MsgMkrState.EDITPROMPT;
@@ -1911,13 +1911,13 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 						case 'R':
 						{
 							if(vbuf.size()==0)
-								sess.println(L("The file is empty!"));
+								sess.getOutputFormatter().println(L("The file is empty!"));
 							else
 							{
 								if((param1!=null) && (param2!=null))
 								{
 									if(param1.length()==0)
-										sess.println(L("(aborted)"));
+										sess.getOutputFormatter().println(L("(aborted)"));
 									else
 									for(int i=0;i<vbuf.size();i++)
 										vbuf.set(i,CMStrings.replaceAll(vbuf.get(i),param1,param2));
@@ -1930,14 +1930,14 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 						case 'E':
 						{
 							if(vbuf.size()==0)
-								sess.println(L("The file is empty!"));
+								sess.getOutputFormatter().println(L("The file is empty!"));
 							else
 							{
 								if((param1!=null) && (param2!=null))
 								{
 									final int ln=CMath.isInteger(param1)?CMath.s_int(param1):-1;
 									if((ln<0)||(ln>=vbuf.size()))
-										sess.println(L("'@x1' is not a valid line number.",param1));
+										sess.getOutputFormatter().println(L("'@x1' is not a valid line number.",param1));
 									else
 										vbuf.set(ln,param2);
 								}
@@ -1949,7 +1949,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 						case 'D':
 						{
 							if(vbuf.size()==0)
-								sess.println(L("The file is empty!"));
+								sess.getOutputFormatter().println(L("The file is empty!"));
 							else
 							{
 								if(paramAll!=null)
@@ -1959,10 +1959,10 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 									{
 										final int ln=CMath.s_int(line);
 										vbuf.remove(ln);
-										sess.println(L("Line @x1 deleted.",""+ln));
+										sess.getOutputFormatter().println(L("Line @x1 deleted.",""+ln));
 									}
 									else
-										sess.println(L("'@x1' is not a valid line number.",""+line));
+										sess.getOutputFormatter().println(L("'@x1' is not a valid line number.",""+line));
 								}
 								else
 									state=MsgMkrState.DELPROMPT;
@@ -1970,10 +1970,10 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 							break;
 						}
 						case '?':
-							sess.println(getMsgMkrHelp(sess));
+							sess.getOutputFormatter().println(getMsgMkrHelp(sess));
 							break;
 						case 'A':
-							sess.println(addModeMessage);
+							sess.getOutputFormatter().println(addModeMessage);
 							state=MsgMkrState.INPUT;
 							break;
 						case 'W':
@@ -1990,20 +1990,20 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 							final StringBuffer list=new StringBuffer(messageTitle+"\n\r");
 							for(int v=0;v<vbuf.size();v++)
 								list.append(CMLib.coffeeFilter().colorOnlyFilter("^X"+CMStrings.padRight(""+v,3)+")^.^N ",sess)+vbuf.get(v)+"\n\r");
-							sess.rawPrint(list.toString());
+							sess.getOutputFormatter().rawPrint(list.toString());
 							break;
 						}
 						case 'I':
 						{
 							if(vbuf.size()==0)
-								sess.println(L("The file is empty!"));
+								sess.getOutputFormatter().println(L("The file is empty!"));
 							else
 							{
 								if((param1!=null) && (param2!=null))
 								{
 									final int ln=CMath.isInteger(param1)?CMath.s_int(param1):-1;
 									if((ln<0)||(ln>=vbuf.size()))
-										sess.println(L("'@x1' is not a valid line number.",param1));
+										sess.getOutputFormatter().println(L("'@x1' is not a valid line number.",param1));
 									else
 										vbuf.add(ln,param2);
 								}
@@ -2033,7 +2033,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 		mob.tell(L("^HCoffeeMud Message Maker^N"));
 		boolean menuMode=!autoAdd;
 		if(autoAdd)
-			sess.println(addModeMessage);
+			sess.getOutputFormatter().println(addModeMessage);
 		while((mob.session()!=null)&&(!sess.isStopped()))
 		{
 			sess.setAfkFlag(false);
@@ -2167,7 +2167,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 					final StringBuffer list=new StringBuffer(messageTitle+"\n\r");
 					for(int v=0;v<vbuf.size();v++)
 						list.append(CMLib.coffeeFilter().colorOnlyFilter("^X"+CMStrings.padRight(""+v,3)+")^.^N ",sess)+vbuf.get(v)+"\n\r");
-					sess.rawPrint(list.toString());
+					sess.getOutputFormatter().rawPrint(list.toString());
 					break;
 				}
 				case 'I':

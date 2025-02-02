@@ -2147,7 +2147,7 @@ public class CMAbleParms extends StdLibrary implements AbilityParameters
 							if(error==null)
 								return str;
 						}
-						mob.session().println(L("'@x1' is not an amount of material, a component key, or custom component list@x2.  Please use ? for help.",str,(error==null?"":"("+error+")")));
+						mob.session().getOutputFormatter().println(L("'@x1' is not an amount of material, a component key, or custom component list@x2.  Please use ? for help.",str,(error==null?"":"("+error+")")));
 					}
 					return str;
 				}

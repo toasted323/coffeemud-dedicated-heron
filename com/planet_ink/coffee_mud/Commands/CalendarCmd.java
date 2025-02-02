@@ -627,13 +627,13 @@ public class CalendarCmd extends StdCommand
 										data.append("<PERIOD>"+n+" "+P.name()+"</PERIOD>");
 								}
 								entry.data(data.toString());
-								S.println("Event created.");
+								S.getOutputFormatter().println("Event created.");
 								CMLib.database().DBWriteJournal("SYSTEM_CALENDAR", entry);
 								CMLib.journals().resetCalendarEvents();
 								return;
 							}
 						}
-						S.println(L("Unable to create event."));
+						S.getOutputFormatter().println(L("Unable to create event."));
 					}
 				}
 			};
@@ -681,7 +681,7 @@ public class CalendarCmd extends StdCommand
 						||(CMath.s_int(split[0])<1)
 						||(CMath.s_int(split[0])>999))
 						{
-							S.println(L("@x1 is not a valid repeat period.",s));
+							S.getOutputFormatter().println(L("@x1 is not a valid repeat period.",s));
 							if(repeatCallback[0] != null)
 								S.prompt(repeatCallback[0]);
 							return;
@@ -698,7 +698,7 @@ public class CalendarCmd extends StdCommand
 						}
 						if((timeP==null)||(timeP==TimePeriod.ALLTIME))
 						{
-							S.println(L("@x1 is not a valid repeat period. Try @x2",split[1],
+							S.getOutputFormatter().println(L("@x1 is not a valid repeat period. Try @x2",split[1],
 									CMLib.english().toEnglishStringList(TimePeriod.class, false)));
 							if(repeatCallback[0] != null)
 								S.prompt(repeatCallback[0]);
@@ -738,7 +738,7 @@ public class CalendarCmd extends StdCommand
 						||(CMath.s_int(s)<1)
 						||(CMath.s_int(s)>(9999)))
 						{
-							S.println(L("@x1 is not a valid number of hours.",s));
+							S.getOutputFormatter().println(L("@x1 is not a valid number of hours.",s));
 							if(durationCallback[0] != null)
 								S.prompt(durationCallback[0]);
 							return;
@@ -774,7 +774,7 @@ public class CalendarCmd extends StdCommand
 
 					protected void showError(final Session S, final InputCallback C, final String msg, final String... args)
 					{
-						S.println(L(msg,args));
+						S.getOutputFormatter().println(L(msg,args));
 						if(C != null)
 							S.prompt(C);
 						return;

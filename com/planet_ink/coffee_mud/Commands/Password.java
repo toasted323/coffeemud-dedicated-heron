@@ -77,7 +77,7 @@ public class Password extends StdCommand
 					final String old = this.input;
 					if(old.length()==0)
 					{
-						sess.println(L("Old password not entered."));
+						sess.getOutputFormatter().println(L("Old password not entered."));
 						return;
 					}
 					sess.prompt(new InputCallback(InputCallback.Type.PROMPT)
@@ -98,7 +98,7 @@ public class Password extends StdCommand
 							final String nep = this.input;
 							if(nep.length()==0)
 							{
-								sess.println(L("New password not entered."));
+								sess.getOutputFormatter().println(L("New password not entered."));
 								return;
 							}
 							sess.prompt(new InputCallback(InputCallback.Type.PROMPT)

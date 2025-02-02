@@ -1044,7 +1044,7 @@ public class StdBoardable extends StdPortal implements PrivateProperty, Boardabl
 				@Override
 				public void showPrompt()
 				{
-					session.println(L("\n\rEnter a new name for your "+noun_word+": "));
+					session.getOutputFormatter().println(L("\n\rEnter a new name for your "+noun_word+": "));
 				}
 
 				@Override
@@ -1074,7 +1074,7 @@ public class StdBoardable extends StdPortal implements PrivateProperty, Boardabl
 					||(!CMLib.login().isOkName(this.input.trim(),true))
 					||(CMLib.tech().getMakeRegisteredKeys().contains(this.input.trim())))
 					{
-						session.println(L("^ZThat is not a permitted name.^N"));
+						session.getOutputFormatter().println(L("^ZThat is not a permitted name.^N"));
 						session.prompt(namer[0].reset());
 						return;
 					}
