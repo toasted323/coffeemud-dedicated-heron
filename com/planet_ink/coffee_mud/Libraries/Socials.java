@@ -346,9 +346,9 @@ public class Socials extends StdLibrary implements SocialsList
 		}
 		final String numStr = (showNumber == 0)?"   ":(showNumber+". ");
 		if(me.targetName().equals("<T-NAME>"))
-			mob.session().safeRawPrintln(L("@x1Others/Target Effect type: @x2",numStr,actionDesc));
+			mob.session().getOutputFormatter().safeRawPrintln(L("@x1Others/Target Effect type: @x2",numStr,actionDesc));
 		else
-			mob.session().safeRawPrintln(L("@x1Others Effect type: @x2",numStr,actionDesc));
+			mob.session().getOutputFormatter().safeRawPrintln(L("@x1Others Effect type: @x2",numStr,actionDesc));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
 		String newName=mob.session().choose(L("Change W)ords, M)ovement (w/noise), S)ound, V)isual, H)ands, Q)uiet move: "),L("WMSVHQ"),"");
@@ -384,7 +384,7 @@ public class Socials extends StdLibrary implements SocialsList
 			}
 		}
 		else
-			mob.session().println(L("(no change)"));
+			mob.session().getOutputFormatter().println(L("(no change)"));
 	}
 
 	protected void modifySocialTargetCode(final MOB mob, final Social me, final int showNumber, final int showFlag)
@@ -393,7 +393,7 @@ public class Socials extends StdLibrary implements SocialsList
 		if((showFlag>0)&&(showFlag!=showNumber))
 			return;
 		final String numStr = (showNumber == 0)?"   ":(showNumber+". ");
-		mob.session().safeRawPrintln(L("@x1Target Effect type: @x2",numStr,
+		mob.session().getOutputFormatter().safeRawPrintln(L("@x1Target Effect type: @x2",numStr,
 				((me.getTargetCode()==CMMsg.MSG_HANDS)?"HANDS":
 					((me.getTargetCode()==CMMsg.MSG_OK_VISUAL)?"VISUAL ONLY"
 							:((me.getTargetCode()==CMMsg.MSG_SPEAK)?"HEARING WORDS":
@@ -428,7 +428,7 @@ public class Socials extends StdLibrary implements SocialsList
 			}
 		}
 		else
-			mob.session().println(L("(no change)"));
+			mob.session().getOutputFormatter().println(L("(no change)"));
 	}
 
 	protected void modifySocialSourceCode(final MOB mob, final Social me, final int showNumber, final int showFlag)
@@ -456,7 +456,7 @@ public class Socials extends StdLibrary implements SocialsList
 			break;
 		}
 		final String numStr = (showNumber == 0)?"   ":(showNumber+". ");
-		mob.session().safeRawPrintln(L("@x1Your action type: @x2",numStr,actionDesc));
+		mob.session().getOutputFormatter().safeRawPrintln(L("@x1Your action type: @x2",numStr,actionDesc));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
 		String newName=mob.session().choose(L("Change W)ords, M)ovement (small), S)ound, L)arge Movement, Q)uiet Move: "),L("WMSLQ"),"");
@@ -483,7 +483,7 @@ public class Socials extends StdLibrary implements SocialsList
 			}
 		}
 		else
-			mob.session().println(L("(no change)"));
+			mob.session().getOutputFormatter().println(L("(no change)"));
 	}
 
 
@@ -571,7 +571,7 @@ public class Socials extends StdLibrary implements SocialsList
 				else
 				if(selection<0)
 				{
-					mob.session().safeRawPrintln(str.toString());
+					mob.session().getOutputFormatter().safeRawPrintln(str.toString());
 					s=mob.session().prompt(L("\n\rSelect an option or RETURN: "),"");
 					if(!CMath.isInteger(s))
 					{
@@ -593,7 +593,7 @@ public class Socials extends StdLibrary implements SocialsList
 					{
 						newOne=mob.session().prompt(L("\n\rNew target (?): "),"").toUpperCase().trim();
 						if(newOne.equals("?"))
-							mob.session().rawPrintln(L("Choices:\n\r <T-NAME> (MOBTARGET),\n\r <I-NAME> (ITEMTARGET),\n\r"
+							mob.session().getOutputFormatter().rawPrintln(L("Choices:\n\r <T-NAME> (MOBTARGET),\n\r <I-NAME> (ITEMTARGET),\n\r"
 													+ " <V-NAME> (INVTARGET),\n\r <T-NAME> (EQUIPTARGET),\n\r"
 													+ " NONE,\n\r ALL,\n\r SELF"));
 					}
@@ -725,7 +725,7 @@ public class Socials extends StdLibrary implements SocialsList
 					{
 						changesMade=true;
 						socials.remove(soc);
-						mob.session().rawOut(L("\n\rSocial variation '@x1' deleted.\n\r",soc.Name()));
+						mob.session().getOutputFormatter().rawOut(L("\n\rSocial variation '@x1' deleted.\n\r",soc.Name()));
 						showFlag=-1;
 						ok=true;
 					}

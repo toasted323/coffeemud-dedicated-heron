@@ -130,7 +130,7 @@ public class ClanQual extends StdCommand
 					@Override
 					public void showPrompt()
 					{
-						session.println(L("Your qualifications will be as follows: @x1\n\r", CMLib.masking().maskDesc(qualMask)));
+						session.getOutputFormatter().println(L("Your qualifications will be as follows: @x1\n\r", CMLib.masking().maskDesc(qualMask)));
 						session.promptPrint(L("Is this correct (Y/n)?"));
 					}
 

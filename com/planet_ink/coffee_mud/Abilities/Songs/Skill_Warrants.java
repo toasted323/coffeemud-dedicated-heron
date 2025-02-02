@@ -132,7 +132,7 @@ public class Skill_Warrants extends BardSkill
 					}
 				}
 				if(!mob.isMonster())
-					mob.session().colorOnlyPrintln(buf.toString());
+					mob.session().getOutputFormatter().colorOnlyPrintln(buf.toString());
 			}
 		}
 		else

@@ -410,7 +410,7 @@ public class Shell extends StdCommand
 					msg.append("\n\r");
 			}
 			if(mob.session()!=null)
-				mob.session().colorOnlyPrintln(msg.toString());
+				mob.session().getOutputFormatter().colorOnlyPrintln(msg.toString());
 			break;
 		}
 		case COPY: // copy
@@ -655,8 +655,8 @@ public class Shell extends StdCommand
 				}
 				if(mob.session()!=null)
 				{
-					mob.session().colorOnlyPrintln(L("\n\r^xFile /@x1^.^N\n\r",CF.getVFSPathAndName()));
-					mob.session().rawPrint(CF.text().toString());
+					mob.session().getOutputFormatter().colorOnlyPrintln(L("\n\r^xFile /@x1^.^N\n\r",CF.getVFSPathAndName()));
+					mob.session().getOutputFormatter().rawPrint(CF.text().toString());
 				}
 			}
 			break;
@@ -774,7 +774,7 @@ public class Shell extends StdCommand
 				}
 			}
 			if(mob.session()!=null)
-				mob.session().colorOnlyPrintln(msg.toString());
+				mob.session().getOutputFormatter().colorOnlyPrintln(msg.toString());
 			return false;
 		}
 		case SEARCHTEXT: // searchtext
@@ -791,7 +791,7 @@ public class Shell extends StdCommand
 				mob.tell(L("^xError: no files found!^N"));
 				return false;
 			}
-			mob.session().print(L("\n\rSearching..."));
+			mob.session().getOutputFormatter().print(L("\n\rSearching..."));
 			substring=substring.toUpperCase();
 			final Vector<CMFile> dirs2=new Vector<CMFile>();
 			for (final CMFile dir : dirs)
@@ -839,7 +839,7 @@ public class Shell extends StdCommand
 				msg.append("\n\r");
 			}
 			if(mob.session()!=null)
-				mob.session().colorOnlyPrintln(msg.toString());
+				mob.session().getOutputFormatter().colorOnlyPrintln(msg.toString());
 			return false;
 		}
 		case EDIT: // edit
@@ -1120,7 +1120,7 @@ public class Shell extends StdCommand
 					}
 					str.append(d.text);
 				}
-				mob.session().colorOnlyPrintln(str.toString());
+				mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			}
 			mob.tell(L("^HDONE."));
 			return false;

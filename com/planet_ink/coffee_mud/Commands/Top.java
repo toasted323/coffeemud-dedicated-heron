@@ -233,7 +233,7 @@ public class Top extends StdCommand
 			str=topAccounts.toString();
 		}
 		if(mob.session()!=null)
-			mob.session().print(str.toString());
+			mob.session().getOutputFormatter().print(str.toString());
 		return false;
 	}
 

@@ -75,7 +75,7 @@ public class HelpList extends StdCommand
 		if(!mob.isMonster())
 		{
 			final String matchText = CMLib.lister().build4ColTable(mob,matches).toString();
-			mob.session().wraplessPrintln(L("^xHelp File Matches:^.^?\n\r^N@x1",matchText.replace('_',' ')));
+			mob.session().getOutputFormatter().wraplessPrintln(L("^xHelp File Matches:^.^?\n\r^N@x1",matchText.replace('_',' ')));
 		}
 		return false;
 	}

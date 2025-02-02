@@ -541,7 +541,7 @@ public class StdBook extends StdItem implements Book
 								}
 								subject[0]=subj;
 								final String messageTitle="The contents of this chapter";
-								mob.session().println(L("\n\rEnter the contents of this chapter:"));
+								mob.session().getOutputFormatter().println(L("\n\rEnter the contents of this chapter:"));
 								final List<String> vbuf=new ArrayList<String>();
 								if(message[0]!=null)
 									vbuf.addAll(CMParms.parseAny(message[0],"\\n",false));

@@ -93,7 +93,7 @@ public class MXP extends StdCommand
 					{
 						final StringBuffer mxpText=Resources.getFileResource("text/mxp.txt",true);
 						if(mxpText!=null)
-							mob.session().rawOut("\033[6z\n\r"+mxpText.toString()+"\n\r");
+							mob.session().getOutputFormatter().rawOut("\033[6z\n\r"+mxpText.toString()+"\n\r");
 						mob.tell(L("MXP codes enabled.\n\r"));
 					}
 				}

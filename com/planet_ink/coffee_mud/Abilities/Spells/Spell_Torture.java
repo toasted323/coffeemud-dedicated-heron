@@ -104,7 +104,7 @@ public class Spell_Torture extends Spell
 			for(final Session S : CMLib.sessions().localOnlineIterable())
 			{
 				if(S.mob()!=null)
-					S.println(mob,null,null,text());
+					S.getOutputFormatter().println(mob,null,null,text());
 			}
 			setMiscText("");
 			return;

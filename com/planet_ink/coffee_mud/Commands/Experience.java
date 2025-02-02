@@ -83,7 +83,7 @@ public class Experience extends StdCommand
 			return false;
 		}
 		if(!mob.isMonster())
-			mob.session().wraplessPrintln(msg.toString());
+			mob.session().getOutputFormatter().wraplessPrintln(msg.toString());
 		return false;
 	}
 

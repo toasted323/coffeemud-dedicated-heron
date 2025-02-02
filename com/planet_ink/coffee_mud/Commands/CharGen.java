@@ -272,7 +272,7 @@ public class CharGen extends StdCommand
 			{
 				if(sess.isStopped())
 					return avgMob;
-				sess.print(".");
+				sess.getOutputFormatter().print(".");
 			}
 			final MOB mob2=levelMOBup(level,C, player);
 			addHimIn(avgMob,mob2);
@@ -589,7 +589,7 @@ public class CharGen extends StdCommand
 							{
 								lastPct+=5;
 								if(mob.session()!=null)
-									mob.session().print(".");
+									mob.session().getOutputFormatter().print(".");
 							}
 							final Behavior B1=CMClass.getBehavior(classSet.get(charClassDex).second);
 							B1.setParms(C.ID()+" NOSTAT NOCOMBATSTAT");
@@ -1496,9 +1496,9 @@ public class CharGen extends StdCommand
 		}
 
 		if(C!=null)
-			mob.session().print(L("\n\rAverage @x1...",C.name()));
+			mob.session().getOutputFormatter().print(L("\n\rAverage @x1...",C.name()));
 		else
-			mob.session().print(L("\n\rAverage MOB stats, across all classes..."));
+			mob.session().getOutputFormatter().print(L("\n\rAverage MOB stats, across all classes..."));
 
 		MOB avgMob=null;
 		if(C!=null)
@@ -1506,7 +1506,7 @@ public class CharGen extends StdCommand
 		else
 			avgMob=AverageAllClassMOB(mob,level, 20, 40, createPlayer);
 
-		mob.session().println("\n\r");
+		mob.session().getOutputFormatter().println("\n\r");
 
 		if(avgMob!=null)
 		{
@@ -1516,7 +1516,7 @@ public class CharGen extends StdCommand
 			{
 				final StringBuilder msg=CMLib.commands().getScore(avgMob);
 				if(!mob.isMonster())
-					mob.session().wraplessPrintln(msg.toString());
+					mob.session().getOutputFormatter().wraplessPrintln(msg.toString());
 				avgMob.destroy();
 			}
 		}

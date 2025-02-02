@@ -63,7 +63,7 @@ public class Randomnames extends StdTest
 		for(int i=0;i<num;i++)
 			str.append(CMLib.login().generateRandomName(3, 8)).append(", ");
 		if(mob.session()!=null)
-			mob.session().rawPrint(str.toString()+"\n");
+			mob.session().getOutputFormatter().rawPrint(str.toString()+"\n");
 		return null;
 	}
 }

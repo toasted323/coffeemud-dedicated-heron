@@ -168,7 +168,7 @@ public class Thief_Peek extends ThiefSkill
 				if(msg2.length()==0)
 					mob.tell(L("@x1 is carrying:\n\rNothing!\n\r",target.charStats().HeShe()));
 				else
-					mob.session().wraplessPrintln(L("@x1 is carrying:\n\r@x2",target.charStats().HeShe(),msg2.toString()));
+					mob.session().getOutputFormatter().wraplessPrintln(L("@x1 is carrying:\n\r@x2",target.charStats().HeShe(),msg2.toString()));
 			}
 		}
 		return success;

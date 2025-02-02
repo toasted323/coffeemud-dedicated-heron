@@ -391,7 +391,7 @@ public class Score extends Affect
 			return false;
 		}
 		if(!mob.isMonster())
-			mob.session().wraplessPrintln(msg.toString());
+			mob.session().getOutputFormatter().wraplessPrintln(msg.toString());
 		return false;
 	}
 

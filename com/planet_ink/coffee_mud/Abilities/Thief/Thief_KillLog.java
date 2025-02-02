@@ -289,7 +289,7 @@ public class Thief_KillLog extends ThiefSkill
 				str.append(CMStrings.padRight(CMStrings.removeColors(one[0]),cols[0])+CMStrings.padRight(one[1],cols[1])+pct+"%\n\r");
 			}
 			if(mob.session()!=null)
-				mob.session().safeRawPrintln(str.toString());
+				mob.session().getOutputFormatter().safeRawPrintln(str.toString());
 			return true;
 		}
 		mob.tell(L("You failed to recall your log."));

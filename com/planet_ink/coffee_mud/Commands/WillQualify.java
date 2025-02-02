@@ -340,7 +340,7 @@ public class WillQualify extends Skills
 		final String raceID = mob.baseCharStats().getMyRace().ID();
 		msg.append(getQualifiedAbilities(mob,mob,C.ID(),raceID,minLevel,level,"", types, notypes, uniqueOnly));
 		if(!mob.isMonster())
-			mob.session().wraplessPrintln(msg.toString());
+			mob.session().getOutputFormatter().wraplessPrintln(msg.toString());
 		return false;
 	}
 }

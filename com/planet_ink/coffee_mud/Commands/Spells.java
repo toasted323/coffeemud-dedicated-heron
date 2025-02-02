@@ -62,7 +62,7 @@ public class Spells extends Skills
 		final StringBuffer msg=new StringBuffer("");
 		msg.append(L("\n\r^HYour @x1spells:^? @x2",domainName[0].replace('_',' '),getAbilities(mob,mob,Ability.ACODE_SPELL,domain[0],true,level[0]).toString()));
 		if(!mob.isMonster())
-			mob.session().wraplessPrintln(msg.toString()+"\n\r");
+			mob.session().getOutputFormatter().wraplessPrintln(msg.toString()+"\n\r");
 		return false;
 	}
 

@@ -21,9 +21,7 @@ import com.jcraft.jzlib.*;
 import com.planet_ink.coffee_mud.core.Log;
 
 import com.planet_ink.coffee_mud.io.interfaces.*;
-import com.planet_ink.coffee_mud.io.DefaultInputHandler;
-import com.planet_ink.coffee_mud.io.DefaultOutputHandler;
-import com.planet_ink.coffee_mud.io.DefaultOutputFormatter;
+import com.planet_ink.coffee_mud.io.*;
 
 import java.io.*;
 import java.util.*;
@@ -49,6 +47,7 @@ import java.nio.charset.Charset;
    limitations under the License.
 
    CHANGES:
+   2025-02 toasted323: Remove output methods from Session interface
    2025-02 toasted323: Extract OutputFormatter from DefaultSession
    2025-02 toasted323: Move I/O handlers and interfaces to dedicated package
    2025-02 toasted323: Remove low-level stream handling leftovers from DefaultSession
@@ -259,7 +258,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 	{
 		if(mcpKey[0] != null)
 		{
-			rawPrintln("#$#"+packageCommand+" "+mcpKey[0]+" "+parms);
+			outputFormatter.rawPrintln("#$#"+packageCommand+" "+mcpKey[0]+" "+parms);
 			return true;
 		}
 		return false;
@@ -466,9 +465,9 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 								setStatus(SessionStatus.HANDSHAKE_DONE);
 							else
 							{
-								rawOut("\n\033[6z\n\033[6z<SUPPORT IMAGE IMAGE.URL>\n");
+								outputFormatter.rawOut("\n\033[6z\n\033[6z<SUPPORT IMAGE IMAGE.URL>\n");
 								rawout.flush();
-								rawOut("\n\033[6z\n\033[6z<SUPPORT>\n");
+								outputFormatter.rawOut("\n\033[6z\n\033[6z<SUPPORT>\n");
 								rawout.flush();
 								setStatus(SessionStatus.HANDSHAKE_MXPPAUSE);
 							}
@@ -484,7 +483,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 						case HANDSHAKE_DONE:
 						{
 							if(introTextStr!=null)
-								print(introTextStr);
+								outputFormatter.print(introTextStr);
 							if(outputHandler!=null)
 							{
 								if((getClientTelnetMode(Session.TELNET_MXP))
@@ -510,7 +509,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 											if(choices.size()>0)
 												introFilename=choices.get(CMLib.dice().roll(1,choices.size(),-1));
 										}
-										println("\n\r\n\r\n\r^<IMAGE '"+introFilename+"' URL='"+paths[0]+"' H=400 W=400^>\n\r\n\r");
+										outputFormatter.println("\n\r\n\r\n\r^<IMAGE '"+introFilename+"' URL='"+paths[0]+"' H=400 W=400^>\n\r\n\r");
 									}
 								}
 							}
@@ -1095,12 +1094,12 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 		if(truefalse)
 		{
 			afkTime=System.currentTimeMillis();
-			println("\n\rYou are now listed as AFK.");
+			outputFormatter.println("\n\rYou are now listed as AFK.");
 		}
 		else
 		{
 			afkMessage=null;
-			println("\n\rYou are no longer AFK.");
+			outputFormatter.println("\n\rYou are no longer AFK.");
 			final MOB mob=this.mob;
 			final PlayerStats pStats=(mob==null)?null:mob.playerStats();
 			if((pStats != null)&&(mob!=null))
@@ -1161,22 +1160,6 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 	}
 
 	@Override
-	public void rawCharsOut(final char[] chars)
-	{
-		outputFormatter.rawCharsOut(chars);
-	}
-
-	public void rawCharsOut(final String c) {
-		if (c != null)
-			rawCharsOut(c.toCharArray());
-	}
-
-	public void rawCharsOut(final char c) {
-		final char[] cs = {c};
-		rawCharsOut(cs);
-	}
-
-	@Override
 	public void snoopSupportPrint(final String msg, final boolean noCache)
 	{
 		try
@@ -1199,144 +1182,12 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 				else
 					msgColored=msg;
 				for(int s=0;s<snoops.size();s++)
-					snoops.get(s).onlyPrint(preFix+msgColored,noCache);
+					snoops.get(s).getOutputFormatter().onlyPrint(preFix+msgColored,noCache);
 			}
 		}
 		catch (final IndexOutOfBoundsException x)
 		{
 		}
-	}
-
-	@Override
-	public void onlyPrint(final String msg)
-	{
-		outputFormatter.onlyPrint(msg);
-	}
-
-	@Override
-	public void onlyPrint(String msg, final boolean noCache)
-	{
-		outputFormatter.onlyPrint(msg, noCache);
-	}
-
-	@Override
-	public void rawOut(final String msg)
-	{
-		outputFormatter.rawOut(msg);
-	}
-
-	@Override
-	public void rawPrint(final String msg)
-	{
-		outputFormatter.rawPrint(msg);
-	}
-
-	@Override
-	public void safeRawPrint(final String msg)
-	{
-		outputFormatter.safeRawPrint(msg);
-	}
-
-	@Override
-	public void print(final String msg)
-	{
-		outputFormatter.print(msg);
-	}
-
-	@Override
-	public void rawPrintln(final String msg)
-	{
-		outputFormatter.rawPrintln(msg);
-	}
-
-	@Override
-	public void safeRawPrintln(final String msg)
-	{
-		outputFormatter.safeRawPrintln(msg);
-	}
-
-	@Override
-	public void stdPrint(final String msg)
-	{
-		outputFormatter.stdPrint(msg);
-	}
-
-	@Override
-	public void print(final Physical src, final Environmental trg, final Environmental tol, final String msg)
-	{
-		outputFormatter.print(src, trg, tol, msg);
-	}
-
-	@Override
-	public void stdPrint(final Physical src, final Environmental trg, final Environmental tol, final String msg)
-	{
-		outputFormatter.stdPrint(src, trg, tol, msg);
-	}
-
-	@Override
-	public void println(final String msg)
-	{
-		outputFormatter.println(msg);
-	}
-
-	@Override
-	public void wraplessPrintln(final String msg)
-	{
-		outputFormatter.wraplessPrintln(msg);
-	}
-
-	@Override
-	public void wraplessPrint(final String msg)
-	{
-		outputFormatter.wraplessPrint(msg);
-	}
-
-	@Override
-	public void colorOnlyPrintln(final String msg)
-	{
-		outputFormatter.colorOnlyPrintln(msg);
-	}
-
-	@Override
-	public void colorOnlyPrintln(final String msg, final boolean noCache)
-	{
-		outputFormatter.colorOnlyPrintln(msg, noCache);
-	}
-
-	@Override
-	public void colorOnlyPrint(final String msg)
-	{
-		outputFormatter.colorOnlyPrint(msg);
-	}
-
-	@Override
-	public void colorOnlyPrint(final String msg, final boolean noCache)
-	{
-	 	outputFormatter.colorOnlyPrint(msg, noCache);
-	}
-
-	@Override
-	public boolean addSessionFilter(final SessionFilter filter)
-	{
-		return outputFormatter.addSessionFilter(filter);
-	}
-
-	@Override
-	public void stdPrintln(final String msg)
-	{
-		outputFormatter.stdPrintln(msg);
-	}
-
-	@Override
-	public void println(final Physical src, final Environmental trg, final Environmental tol, final String msg)
-	{
-		outputFormatter.println(src, trg, tol, msg);
-	}
-
-	@Override
-	public void stdPrintln(final Physical src, final Environmental trg, final Environmental tol, final String msg)
-	{
-		outputFormatter.stdPrintln(src, trg, tol, msg);
 	}
 
 	@Override
@@ -1397,7 +1248,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 	public void promptPrint(final String msg)
 	{
 		lastWasPrompt.set(true);
-		print(msg);
+		outputFormatter.print(msg);
 		if(promptSuffix.length>0)
 		{
 			try
@@ -1491,7 +1342,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 					else
 					if(terminalType.startsWith("GIVE-WINTIN.NET-A-CHANCE"))
 					{
-						rawOut("\n\r\n\r**** Your MUD Client is Broken! Please use another!!****\n\r\n\r");
+						outputFormatter.rawOut("\n\r\n\r**** Your MUD Client is Broken! Please use another!!****\n\r\n\r");
 						CMLib.s_sleep(1000);
 						rawout.close();
 					}
@@ -1689,7 +1540,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 						final Command C=CMClass.getCommand("Shutdown");
 						l="";
 						setKillFlag(true);
-						rawCharsOut("\n\n\033[1z<Executing Shutdown...\n\n".toCharArray());
+						outputFormatter.rawCharsOut("\n\n\033[1z<Executing Shutdown...\n\n".toCharArray());
 						M.setSession(this);
 						if(C!=null)
 							C.execute(M,cmd,0);
@@ -1907,7 +1758,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 			break;
 		}
 		case TELNET_AYT:
-			rawCharsOut(" \b");
+			outputFormatter.rawCharsOut(" \b");
 			break;
 		default:
 			return;
@@ -1995,7 +1846,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 							lastWasLF = false;
 						lastWasCR = false;
 						if (getClientTelnetMode(TELNET_ECHO))
-							rawCharsOut(""+(char)13+(char)10);  // CR
+							outputFormatter.rawCharsOut(""+(char)13+(char)10);  // CR
 						break;
 					}
 					case 13:
@@ -2010,7 +1861,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 							lastWasCR = false;
 						lastWasLF = false;
 						if (getClientTelnetMode(TELNET_ECHO))
-							rawCharsOut(""+(char)13+(char)10);  // CR
+							outputFormatter.rawCharsOut(""+(char)13+(char)10);  // CR
 						break;
 					}
 					case 27:
@@ -2037,7 +1888,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 					if(appendInputFlag)
 						input.append((char)c);
 					if (getClientTelnetMode(TELNET_ECHO))
-						rawCharsOut((char)c);
+						outputFormatter.rawCharsOut((char)c);
 					if(!appendInputFlag)
 						return c;
 				}
@@ -2105,7 +1956,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 				{
 					if(now > nextPingAtTime)
 					{
-						rawCharsOut(PINGCHARS);
+						outputFormatter.rawCharsOut(PINGCHARS);
 						nextPingAtTime=now +PINGTIMEOUT;
 					}
 					CMLib.s_sleep(100); // if they entered nothing, make sure we dont do a busy poll
@@ -2799,7 +2650,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 				if(lastInput==null)
 				{
 					if((System.currentTimeMillis()-outputHandler.getLastWriteTime())>PINGTIMEOUT)
-						rawCharsOut(PINGCHARS);
+						outputFormatter.rawCharsOut(PINGCHARS);
 					return;
 				}
 				if(!killFlag)
@@ -3011,7 +2862,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 			if(input==null)
 			{
 				if((System.currentTimeMillis()-outputHandler.getLastWriteTime())>PINGTIMEOUT)
-					rawCharsOut(PINGCHARS);
+					outputFormatter.rawCharsOut(PINGCHARS);
 			}
 			else
 			{
@@ -3052,7 +2903,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 
 						lastStart=System.currentTimeMillis();
 						if(echoOn)
-							rawPrintln(CMParms.combineQuoted(parsedInput,0));
+							outputFormatter.rawPrintln(CMParms.combineQuoted(parsedInput,0));
 						final List<List<String>> MORE_CMDS=CMLib.lang().preCommandParser(parsedInput);
 						for(int m=0;m<MORE_CMDS.size();m++)
 							mob.enqueCommand(MORE_CMDS.get(m),metaFlags,0);
@@ -3086,14 +2937,14 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 					final int minsIdle=(int)(getIdleMillis()/60000);
 					if(minsIdle>=CMath.s_int(V.firstElement()))
 					{
-						println(CMLib.lang().L("\n\r^ZYou are being logged out!^?"));
+						outputFormatter.println(CMLib.lang().L("\n\r^ZYou are being logged out!^?"));
 						stopSession(true,true,false);
 					}
 					else
 					if(minsIdle>=CMath.s_int(V.lastElement()))
 					{
 						final int remain=CMath.s_int(V.firstElement())-minsIdle;
-						println(mob(),null,null,CMLib.lang().L("\n\r^ZIf you don't do something, you will be logged out in @x1 minute(s)!^?",""+remain));
+						outputFormatter.println(mob(),null,null,CMLib.lang().L("\n\r^ZIf you don't do something, you will be logged out in @x1 minute(s)!^?",""+remain));
 					}
 				}
 
@@ -3522,5 +3373,10 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 	@Override
 	public Integer getLastSeenRoomHash() {
 		return lastRoomHash;
+	}
+
+	@Override
+	public OutputFormatter getOutputFormatter() {
+		return outputFormatter;
 	}
 }
