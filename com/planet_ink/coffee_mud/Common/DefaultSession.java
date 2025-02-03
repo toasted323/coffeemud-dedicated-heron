@@ -47,6 +47,7 @@ import java.nio.charset.Charset;
    limitations under the License.
 
    CHANGES:
+   2025-02 toasted323: Implement shutdown process for OutputFormatter
    2025-02 toasted323: Remove output methods from Session interface
    2025-02 toasted323: Extract OutputFormatter from DefaultSession
    2025-02 toasted323: Move I/O handlers and interfaces to dedicated package
@@ -2217,23 +2218,27 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 			try
 			{
 				Log.sysOut("Disconnect: "+finalMsg+getAddress()+" ("+CMLib.time().date2SmartEllapsedTime(getMillisOnline(),true)+")");
-				inputHandler.shutdown();
+				outputFormatter.shutdown();
 				setStatus(SessionStatus.LOGOUT7);
-				outputHandler.shutdown();
+				inputHandler.shutdown();
 				setStatus(SessionStatus.LOGOUT8);
-				sock.shutdownInput();
+				outputHandler.shutdown();
 				setStatus(SessionStatus.LOGOUT9);
-				sock.shutdownOutput();
+				sock.shutdownInput();
 				setStatus(SessionStatus.LOGOUT10);
-				sock.close();
+				sock.shutdownOutput();
 				setStatus(SessionStatus.LOGOUT11);
+				sock.close();
+				setStatus(SessionStatus.LOGOUT12);
 			}
 			catch(final IOException | IndexOutOfBoundsException e)
 			{
+				Log.warnOut("DefaultSession", "closeSocks: Error during session shutdown: " + e.getMessage());
 			} finally
 			{
 				this.outputHandler = null;
 				this.inputHandler = null;
+				this.outputFormatter = null;
 				this.sock=null;
 				this.socketShutdownLock.set(false);
 			}

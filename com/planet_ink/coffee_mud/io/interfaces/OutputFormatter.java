@@ -5,6 +5,8 @@ import com.planet_ink.coffee_mud.MOBS.interfaces.MOB;
 import com.planet_ink.coffee_mud.core.interfaces.Environmental;
 import com.planet_ink.coffee_mud.core.interfaces.Physical;
 
+import java.io.IOException;
+
 public interface OutputFormatter {
 
 	/**
@@ -262,4 +264,11 @@ public interface OutputFormatter {
 	 * @return true if a prompt is needed, false otherwise.
 	 */
 	boolean getNeedPrompt();
+
+	/**
+	 * Closes the output handler and releases any associated resources.
+	 *
+	 * @throws IOException If an error occurs during closing.
+	 */
+	void shutdown() throws IOException;
 }
