@@ -71,6 +71,7 @@ import com.planet_ink.coffee_mud.io.interfaces.OutputTranslator;
    limitations under the License.
 
    CHANGES:
+   2025-02 toasted323: Implement shutdown process for OutputFormatter
    2025-02 toasted323: Remove output methods from Session interface
    2024-12 toasted323: ensure any exit changes observed by the player are sent via gmcp too
    2024-12 toasted323: mapping from ships
@@ -1151,6 +1152,11 @@ public class VFShell
 		@Override
 		public boolean getNeedPrompt() {
 			return false;
+		}
+
+		@Override
+		public void shutdown() throws IOException {
+			// do nothing
 		}
 	}
 }

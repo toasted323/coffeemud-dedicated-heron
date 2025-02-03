@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class DefaultOutputFormatter implements OutputFormatter {
 
 	private OutputHandler handler;
-	private final OutputFormattingContext formattingContext;
+	private OutputFormattingContext formattingContext;
 	private SnoopManager snoopManager;
 	private IOExceptionHandler exceptionHandler;
 	private OutputTranslator translator;
@@ -403,6 +403,38 @@ public class DefaultOutputFormatter implements OutputFormatter {
 		}
 		else {
 			Log.errOut("IOManager", "handleException: Unhandled exception: " + e.getMessage());
+		}
+	}
+
+	@Override
+	public void shutdown() throws IOException {
+		try {
+			needPrompt = false;
+
+			textFilters.clear();
+
+			synchronized (onlyPrint_cacheLock) {
+				prevMsgs.clear();
+				if (curPrevMsg != null) {
+					curPrevMsg.setLength(0);
+				}
+			}
+
+			resetSpamStack();
+
+			inputProvider = null;
+			mob = null;
+			session = null;
+			exceptionHandler = null;
+			translator = null;
+			snoopManager = null;
+			formattingContext = null;
+			handler = null;
+
+			Log.sysOut("DefaultOutputFormatter", "shutdown: Output formatter shut down successfully.");
+		} catch (Exception e) {
+			Log.errOut("DefaultOutputFormatter", "shutdown: Error during shutdown: " + e.getMessage());
+			throw new IOException("Error during OutputFormatter shutdown", e);
 		}
 	}
 }
