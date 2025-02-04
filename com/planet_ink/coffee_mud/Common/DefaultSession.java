@@ -22,6 +22,8 @@ import com.planet_ink.coffee_mud.core.Log;
 
 import com.planet_ink.coffee_mud.io.interfaces.*;
 import com.planet_ink.coffee_mud.io.*;
+import com.planet_ink.coffee_mud.session.DefaultCommandManager;
+import com.planet_ink.coffee_mud.session.interfaces.*;
 
 import java.io.*;
 import java.util.*;
@@ -62,7 +64,7 @@ import java.nio.charset.Charset;
    2024-12 toasted323: Mapping from ships
 */
 
-public class DefaultSession implements Session, OutputFormattingContext, SnoopManager, BlockingInputProvider
+public class DefaultSession implements Session, CommandManagerContext, OutputFormattingContext, SnoopManager, BlockingInputProvider
 {
 	protected static final int		SOTIMEOUT		= 300;
 	protected static final int		PINGTIMEOUT  	= 30000;
@@ -123,8 +125,6 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 	protected byte[]		 promptSuffix		 = new byte[0];
 	protected ColorState	 currentColor		 = null;
 	protected ColorState	 lastColor			 = null;
-	protected long			 lastStart			 = System.currentTimeMillis();
-	protected long			 lastStop			 = System.currentTimeMillis();
 	protected long			 lastLoopTop		 = System.currentTimeMillis();
 	protected long			 nextMsdpPing		 = System.currentTimeMillis();
 	protected long			 userLoginTime		 = System.currentTimeMillis();
@@ -133,7 +133,6 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 	protected long			 lastPKFight		 = 0;
 	protected long			 lastNPCFight		 = 0;
 	protected long			 lastBlahCheck		 = 0;
-	protected long			 milliTotal			 = 0;
 	protected long			 tickTotal			 = 0;
 	protected long			 lastKeystroke		 = 0;
 	protected volatile long	 lastIACIn		 	 = System.currentTimeMillis();
@@ -155,6 +154,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 	private OutputHandler outputHandler = null;
 	private DefaultOutputFormatter outputFormatter;
 	private IOExceptionHandler exceptionHandler;
+	private CommandManager commandManager;
 
 
 	@Override
@@ -234,7 +234,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 	@Override
 	public long getStartTime()
 	{
-		return this.lastStart;
+		return commandManager.getProcessingStartTimeMillis();
 	}
 
 	@Override
@@ -265,6 +265,25 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 		return false;
 	}
 
+	private CommandManager createCommandManager() {
+		InputParser inputParser = input -> CMParms.parse(input);
+
+		PlayerAliasExpander aliasExpander = (rawAliasDefinition, parsedInput, executableCommands, doEcho) ->
+				CMLib.utensils().deAlias(rawAliasDefinition, parsedInput, executableCommands, doEcho);
+
+		CommandTranslator commandTranslator = CMLib.lang()::preCommandParser;
+
+		PlayerCommandMetaFlags metaFlagsProvider = this::metaFlags;
+
+		return new DefaultCommandManager(
+				this,
+				inputParser,
+				outputFormatter,
+				aliasExpander,
+				commandTranslator,
+				metaFlagsProvider
+		);
+	}
 
 	@Override
 	public void initializeSession(final Socket s, final String groupName, final String introTextStr)
@@ -343,19 +362,11 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 			final Charset inputCharSet=Charset.forName(CMProps.getVar(CMProps.Str.CHARSETINPUT));
 			final Charset outputCharSet=Charset.forName(CMProps.getVar(CMProps.Str.CHARSETOUTPUT));
 
-			OutputTranslator cmLibTranslator = new OutputTranslator() {
-				@Override
-				public String translate(String message) {
-					return CMLib.lang().finalTranslation(message);
-				}
-			};
+			OutputTranslator cmLibTranslator = message -> CMLib.lang().finalTranslation(message);
 
-			exceptionHandler = new IOExceptionHandler() {
-				@Override
-				public void handleException(Exception e) {
-					Log.errOut("DefaultSession", "handleException: I/O Exception: " + e.getMessage());
-					setKillFlag(true);
-				}
+			exceptionHandler = e -> {
+				Log.errOut("DefaultSession", "handleException: I/O Exception: " + e.getMessage());
+				setKillFlag(true);
 			};
 
 			if((sock == null)||(!sock.isConnected()))
@@ -365,7 +376,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 				rawout=new BufferedOutputStream(new ByteArrayOutputStream());
 				outputHandler = new DefaultOutputHandler(rawout, outputCharSet, writeLock, debugStrOutput, debugStrOutput);
 				outputFormatter = new DefaultOutputFormatter(outputHandler, this,this, exceptionHandler);
-
+				commandManager = createCommandManager();
 				return;
 			}
 
@@ -379,6 +390,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 			outputFormatter.setBlockingInputProvider(this);
 			outputFormatter.setSession(this);
 			outputFormatter.setMob(this.mob);
+			commandManager = createCommandManager();
 
 			if(!mcpDisabled)
 			{
@@ -861,7 +873,7 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 	@Override
 	public long getTotalMillis()
 	{
-		return milliTotal;
+		return commandManager.getTotalProcessingTimeMillis();
 	}
 
 	@Override
@@ -1064,7 +1076,8 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 			   |(((mob!=null)&&(mob.soulMate()!=null))?MUDCmdProcessor.METAFLAG_POSSESSED:0);
 	}
 
-	protected void setPreviousCmd(final List<String> cmds)
+	@Override
+	public void setPreviousCmd(final List<String> cmds)
 	{
 		if(cmds==null)
 			return;
@@ -2849,172 +2862,124 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 		return CMLib.lang().fullSessionTranslation(str, xs);
 	}
 
-	public void mainLoop()
-	{
-		final Socket sock=this.sock;
-		try
-		{
+	public void mainLoop() {
+		final Socket sock = this.sock;
+		try {
 			setInputLoopTime();
-			waiting=true;
-			String input;
-			if(suspendCommandLine)
-			{
-				input=null;
-				return;
-			}
-			else
-				input=readlineContinue();
-			if(input==null)
-			{
-				if((System.currentTimeMillis()-outputHandler.getLastWriteTime())>PINGTIMEOUT)
-					outputFormatter.rawCharsOut(PINGCHARS);
-			}
-			else
-			{
-				lastKeystroke=System.currentTimeMillis();
-				if(input.trim().length()>0)
-					prevMsgs.add(input);
-				if(this.afkMessage==null)
-					setAfkFlag(false);
-				List<String> parsedInput=CMParms.parse(input);
-				final MOB mob=mob();
-				if((parsedInput.size()>0)&&(mob!=null))
-				{
-					waiting=false;
-					final String firstWord=parsedInput.get(0);
-					final PlayerStats pStats=mob.playerStats();
-					final String rawAliasDefinition=(pStats!=null)?pStats.getAlias(firstWord):"";
-					final List<List<String>> executableCommands=new LinkedList<List<String>>();
-					boolean echoOn=false;
-					if(rawAliasDefinition.length()>0)
-					{
-						parsedInput.remove(0);
-						final boolean[] echo = new boolean[1];
-						CMLib.utensils().deAlias(rawAliasDefinition, parsedInput, executableCommands, echo);
-						echoOn = echo[0];
-					}
-					else
-						executableCommands.add(parsedInput);
-					final double curActions = mob.actions();
-					mob.setActions(0.0);
-					int metaFlags = metaFlags();
-					if(executableCommands.size()>1)
-						metaFlags |= MUDCmdProcessor.METAFLAG_INORDER;
-					for(final Iterator<List<String>> i=executableCommands.iterator();i.hasNext();)
-					{
-						parsedInput=i.next();
-						setPreviousCmd(parsedInput);
-						milliTotal+=(lastStop-lastStart);
 
-						lastStart=System.currentTimeMillis();
-						if(echoOn)
-							outputFormatter.rawPrintln(CMParms.combineQuoted(parsedInput,0));
-						final List<List<String>> MORE_CMDS=CMLib.lang().preCommandParser(parsedInput);
-						for(int m=0;m<MORE_CMDS.size();m++)
-							mob.enqueCommand(MORE_CMDS.get(m),metaFlags,0);
-						lastStop=System.currentTimeMillis();
-					}
-					mob.setActions(curActions);
+			waiting = true;
+
+			if (suspendCommandLine)
+				return;
+
+			// Read input from the user
+			String input = readlineContinue();
+			if (input != null) {
+				lastKeystroke = System.currentTimeMillis();
+				if (input.trim().length() > 0)
+					prevMsgs.add(input);
+				if (this.afkMessage == null)
+					setAfkFlag(false);
+
+				final MOB mob = mob();
+				if (mob != null) {
+					waiting = false;
+					commandManager.handleInput(input, mob.playerStats(), mob);
 				}
 				setPromptFlag(true);
 			}
-			if(mob==null)
-			{
-				if(loginSession != null)
+			else {
+				// If no input and timeout reached, send a ping
+				if ((System.currentTimeMillis() - outputHandler.getLastWriteTime()) > PINGTIMEOUT)
+					outputFormatter.rawCharsOut(PINGCHARS);
+			}
+
+			// Check if the character has logged out
+			if (mob == null) {
+				if (loginSession != null)
 					loginSession.logoutLoginSession();
 				setStatus(SessionStatus.LOGIN);
 				return;
 			}
-			while((!killFlag)&&(mob!=null)&&(mob.dequeCommand()))
-			{
+
+			// Process queued commands for the mob
+			while ((mob != null) && (mob.dequeCommand()) && (!killFlag)) {
 			}
 
-			final MOB mob=mob();
-			if(((System.currentTimeMillis()-lastBlahCheck)>=60000)
-			&&(mob!=null))
-			{
-				lastBlahCheck=System.currentTimeMillis();
-				final Vector<String> V=CMParms.parse(CMProps.getVar(CMProps.Str.IDLETIMERS));
-				if((V.size()>0)
-				&&(!CMSecurity.isAllowed(mob(),mob().location(),CMSecurity.SecFlag.IDLEOK))
-				&&(CMath.s_int(V.firstElement())>0))
-				{
-					final int minsIdle=(int)(getIdleMillis()/60000);
-					if(minsIdle>=CMath.s_int(V.firstElement()))
-					{
+			// Periodic idle checks (every 60 seconds)
+			final MOB mob = mob();
+			if ((mob != null) && ((System.currentTimeMillis() - lastBlahCheck) >= 60000)) {
+				lastBlahCheck = System.currentTimeMillis();
+				final Vector<String> V = CMParms.parse(CMProps.getVar(CMProps.Str.IDLETIMERS));
+				if ((V.size() > 0)
+						&& (!CMSecurity.isAllowed(mob(), mob().location(), CMSecurity.SecFlag.IDLEOK))
+						&& (CMath.s_int(V.firstElement()) > 0)) {
+					// Log out if idle time exceeded
+					final int minsIdle = (int) (getIdleMillis() / 60000);
+					if (minsIdle >= CMath.s_int(V.firstElement())) {
 						outputFormatter.println(CMLib.lang().L("\n\r^ZYou are being logged out!^?"));
-						stopSession(true,true,false);
+						stopSession(true, true, false);
 					}
-					else
-					if(minsIdle>=CMath.s_int(V.lastElement()))
-					{
-						final int remain=CMath.s_int(V.firstElement())-minsIdle;
-						outputFormatter.println(mob(),null,null,CMLib.lang().L("\n\r^ZIf you don't do something, you will be logged out in @x1 minute(s)!^?",""+remain));
+					else if (minsIdle >= CMath.s_int(V.lastElement())) {
+						// Warn about impending logout
+						final int remain = CMath.s_int(V.firstElement()) - minsIdle;
+						outputFormatter.println(mob(), null, null, CMLib.lang().L("\n\r^ZIf you don't do something, you will be logged out in @x1 minute(s)!^?", "" + remain));
 					}
 				}
 
-				if(!isAfk())
-				{
-					if(getIdleMillis()>=600000)
-					{
+				// Set AFK flag if idle for 10 minutes
+				if (!isAfk()) {
+					if (getIdleMillis() >= 600000) {
 						setAfkFlag(true);
-						if((mob.isPlayer())&&(CMProps.getIntVar(CMProps.Int.RP_GOAFK)!=0))
+						if ((mob.isPlayer()) && (CMProps.getIntVar(CMProps.Int.RP_GOAFK) != 0))
 							CMLib.leveler().postRPExperience(mob, "GOAFK:", null, "", CMProps.getIntVar(CMProps.Int.RP_GOAFK), false);
 					}
 				}
-				else
-				if((getIdleMillis()>=10800000)&&(!isStopped())&&CMLib.flags().isInTheGame(mob(), true))
-				{
-					if((!CMLib.flags().isSleeping(mob))
-					&&(mob().fetchEffect("Disease_Blahs")==null)
-					&&(!CMSecurity.isDisabled(CMSecurity.DisFlag.AUTODISEASE)))
-					{
-						final Ability A=CMClass.getAbility("Disease_Blahs");
-						if((A!=null)&&(!CMSecurity.isAbilityDisabled(A.ID())))
-							A.invoke(mob,mob,true,0);
+				else if ((getIdleMillis() >= 10800000) && (!isStopped()) && CMLib.flags().isInTheGame(mob(), true)) {
+					// Apply "blahs" or "narcolepsy" effect if AFK for 3 hours
+					if ((!CMLib.flags().isSleeping(mob))
+							&& (mob().fetchEffect("Disease_Blahs") == null)
+							&& (!CMSecurity.isDisabled(CMSecurity.DisFlag.AUTODISEASE))) {
+						final Ability A = CMClass.getAbility("Disease_Blahs");
+						if ((A != null) && (!CMSecurity.isAbilityDisabled(A.ID())))
+							A.invoke(mob, mob, true, 0);
 					}
-					else
-					if((CMLib.flags().isSleeping(mob))
-					&&(mob().fetchEffect("Disease_Narcolepsy")==null)
-					&&(!CMSecurity.isDisabled(CMSecurity.DisFlag.AUTODISEASE)))
-					{
-						final Ability A=CMClass.getAbility("Disease_Narcolepsy");
-						if((A!=null)&&(!CMSecurity.isAbilityDisabled(A.ID())))
-							A.invoke(mob,mob,true,0);
+					else if ((CMLib.flags().isSleeping(mob))
+							&& (mob().fetchEffect("Disease_Narcolepsy") == null)
+							&& (!CMSecurity.isDisabled(CMSecurity.DisFlag.AUTODISEASE))) {
+						final Ability A = CMClass.getAbility("Disease_Narcolepsy");
+						if ((A != null) && (!CMSecurity.isAbilityDisabled(A.ID())))
+							A.invoke(mob, mob, true, 0);
 					}
 				}
 			}
-			if((needPrompt)&&(waiting))
-			{
-				if((mob!=null)&&(mob.isInCombat()))
-				{
-					if(((System.currentTimeMillis()-promptLastShown)>=CMProps.getTickMillis())
-					||(input!=null))
-					{
+
+			// Show prompt if needed
+			if ((needPrompt) && (waiting)) {
+				if ((mob != null) && (mob.isInCombat())) {
+					if (((System.currentTimeMillis() - promptLastShown) >= CMProps.getTickMillis())
+							|| (input != null)) {
 						showPrompt();
 						setPromptFlag(false);
 					}
 				}
-				else
-				{
+				else {
 					showPrompt();
 					setPromptFlag(false);
 				}
 			}
-		}
-		catch(final SocketException e)
-		{
-			if(!Log.isMaskedErrMsg(e.getMessage())&&((!killFlag)||((sock!=null)&&sock.isConnected())))
+		} catch (final SocketException e) {
+			// Handle socket exceptions
+			if (!Log.isMaskedErrMsg(e.getMessage()) && ((!killFlag) || ((sock != null) && sock.isConnected())))
 				errorOut(e);
 			setStatus(SessionStatus.LOGOUT);
 			preLogout(mob);
 			setStatus(SessionStatus.LOGOUT1);
-		}
-		catch(final Exception t)
-		{
-			if((!Log.isMaskedErrMsg(t.getMessage()))
-			&&((!killFlag)
-				||(sock!=null&&sock.isConnected())))
+		} catch (final Exception t) {
+			// Handle other exceptions
+			if ((!Log.isMaskedErrMsg(t.getMessage()))
+					&& ((!killFlag)
+					|| (sock != null && sock.isConnected())))
 				errorOut(t);
 			setStatus(SessionStatus.LOGOUT);
 			preLogout(mob);
@@ -3255,6 +3220,8 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 		case TERMTYPE:
 			return getTerminalType();
 		case TOTALMILLIS:
+			// TODO Review actual usage vs getter usage
+			// FIXME totalmillis is a duration measure, unclear logic.
 			return CMLib.time().date2String(System.currentTimeMillis() - getTotalMillis());
 		case TOTALTICKS:
 			return "" + getTotalTicks();
@@ -3312,7 +3279,9 @@ public class DefaultSession implements Session, OutputFormattingContext, SnoopMa
 			terminalType = val;
 			break;
 		case TOTALMILLIS:
-			milliTotal = System.currentTimeMillis() - CMLib.time().string2Millis(val);
+			// FIXME totalmillis is a duration measure, unclear logic.
+			// milliTotal = System.currentTimeMillis() - CMLib.time().string2Millis(val);
+			Log.warnOut("DefaultSession", "setStat: Attempt to set deprecated TOTALMILLIS stat. This operation is no longer supported.");
 			break;
 		case TOTALTICKS:
 			tickTotal = CMath.s_int(val);
