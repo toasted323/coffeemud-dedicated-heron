@@ -3,10 +3,10 @@ plugins {
     id 'jacoco'
 }
 
-group = 'io.github.toasted323.coffeemud-dedicated-heron'
+group = "io.github.toasted323.${project.name}"
 version = 'dev'
 
-def artifactName = System.getenv('ARTIFACT_NAME') ?: 'coffeemud-dedicated-heron'
+def artifactName = System.getenv('ARTIFACT_NAME') ?: project.name
 def artifactVersion = System.getenv('ARTIFACT_VERSION') ?: version
 
 description = '''
@@ -130,9 +130,11 @@ jar {
         into('guides')
     }
 
-    //eachFile { FileCopyDetails details ->
-    //    println "Including file: ${details.file}"
-    //}
+    /*
+    eachFile { FileCopyDetails details ->
+        println "Including file: ${details.file}"
+    }
+    */
 }
 
 clean {
