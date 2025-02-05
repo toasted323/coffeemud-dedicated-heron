@@ -29,6 +29,10 @@ import com.planet_ink.coffee_mud.core.interfaces.CMObject;
 import com.planet_ink.coffee_mud.core.interfaces.Environmental;
 import com.planet_ink.coffee_mud.core.interfaces.Physical;
 import com.planet_ink.coffee_mud.core.interfaces.Tickable;
+import com.planet_ink.coffee_mud.io.interfaces.BlockingInputProvider;
+import com.planet_ink.coffee_mud.io.interfaces.OutputFormatter;
+import com.planet_ink.coffee_mud.io.interfaces.OutputTranslator;
+
 /*
    Copyright 2024 github.com/toasted323
    Copyright 2008-2024 Bo Zimmerman
@@ -46,11 +50,14 @@ import com.planet_ink.coffee_mud.core.interfaces.Tickable;
    limitations under the License.
 
    CHANGES:
+   2025-02 toasted323: Implement shutdown process for OutputFormatter
+   2025-02 toasted323: Remove output methods from Session interface
    2024-12 toasted323: ensure any exit changes observed by the player are sent via gmcp too
    2024-12 toasted323: mapping from ships
 */
 public class FakeSession implements Session
 {
+	OutputFormatter 				outputFormatter = new FakeOutputFormatter();
 	protected CMFile				theFile		= null;
 	protected ByteArrayOutputStream	bout		= null;
 	protected MOB					mob			= null;
@@ -143,12 +150,6 @@ public class FakeSession implements Session
 	}
 
 	@Override
-	public boolean addSessionFilter(final SessionFilter filter)
-	{
-		return false;
-	}
-
-	@Override
 	public int getGroupID()
 	{
 		return Thread.currentThread().getThreadGroup().getName().charAt(0);
@@ -234,175 +235,9 @@ public class FakeSession implements Session
 	}
 
 	@Override
-	public void onlyPrint(String msg, final boolean noCache)
-	{
-		if(stripSnoop)
-			msg = CMStrings.replaceAll(msg, stripStr, "");
-		if(stripCRLF)
-			msg = CMStrings.deleteAllofAny(msg, COLOR_CRLF);
-		if (theFile != null)
-		{
-			synchronized (theFile)
-			{
-				theFile.saveText(msg, true);
-			}
-		}
-		if (bout != null)
-		{
-			synchronized (bout)
-			{
-				try
-				{
-					bout.write(msg.getBytes());
-				}
-				catch (final Exception e)
-				{
-					Log.errOut("FakeSession", e);
-				}
-			}
-		}
-	}
-
-	@Override
-	public void onlyPrint(final String msg)
-	{
-		onlyPrint(msg, false);
-	}
-
-	@Override
-	public void rawOut(final String msg)
-	{
-		onlyPrint(msg, false);
-	}
-
-	@Override
-	public void rawPrintln(final String msg)
-	{
-		onlyPrint(msg + "\n", false);
-	}
-
-	@Override
-	public void safeRawPrintln(final String msg)
-	{
-		onlyPrint(msg + "\n", false);
-	}
-
-	public void rawPrintln(final String msg, final int pageBreak)
-	{
-		onlyPrint(msg + "\n", false);
-	}
-
-	@Override
-	public void rawPrint(final String msg)
-	{
-		onlyPrint(msg, false);
-	}
-
-	@Override
-	public void safeRawPrint(final String msg)
-	{
-		onlyPrint(msg, false);
-	}
-
-	public void rawPrint(final String msg, final int pageBreak)
-	{
-		onlyPrint(msg, false);
-	}
-
-	@Override
-	public void stdPrint(final String msg)
-	{
-		onlyPrint(msg, false);
-	}
-
-	@Override
-	public void stdPrint(final Physical Source, final Environmental Target, final Environmental Tool, final String msg)
-	{
-		onlyPrint(msg, false);
-	}
-
-	@Override
-	public void stdPrintln(final String msg)
-	{
-		onlyPrint(msg + "\n", false);
-	}
-
-	@Override
-	public void stdPrintln(final Physical Source, final Environmental Target, final Environmental Tool, final String msg)
-	{
-		onlyPrint(msg + "\n", false);
-	}
-
-	@Override
-	public void rawCharsOut(final char[] c)
-	{
-		onlyPrint(new String(c), false);
-	}
-
-	@Override
-	public void print(final String msg)
-	{
-		onlyPrint(msg, false);
-	}
-
-	@Override
 	public void promptPrint(final String msg)
 	{
-		onlyPrint(msg, false);
-	}
-
-	@Override
-	public void print(final Physical Source, final Environmental Target, final Environmental Tool, final String msg)
-	{
-		onlyPrint(msg, false);
-	}
-
-	@Override
-	public void println(final String msg)
-	{
-		onlyPrint(msg + "\n", false);
-	}
-
-	@Override
-	public void println(final Physical Source, final Environmental Target, final Environmental Tool, final String msg)
-	{
-		onlyPrint(msg + "\n", false);
-	}
-
-	@Override
-	public void wraplessPrintln(final String msg)
-	{
-		onlyPrint(msg + "\n", false);
-	}
-
-	@Override
-	public void wraplessPrint(final String msg)
-	{
-		onlyPrint(msg, false);
-	}
-
-	@Override
-	public void colorOnlyPrintln(final String msg, final boolean noCache)
-	{
-		onlyPrint(msg + "\n", false);
-	}
-
-	@Override
-	public void colorOnlyPrint(final String msg, final boolean noCache)
-	{
-		onlyPrint(msg, false);
-	}
-
-	@Override
-	public void colorOnlyPrintln(final String msg)
-	{
-		onlyPrint(msg + "\n", false);
-	}
-
-	@Override
-	public void colorOnlyPrint(final String msg)
-	{
-		onlyPrint(msg, false);
+		getOutputFormatter().onlyPrint(msg, false);
 	}
 
 	@Override
@@ -419,7 +254,7 @@ public class FakeSession implements Session
 	@Override
 	public String prompt(final String Message, final String Default)
 	{
-		onlyPrint(Message, false);
+		getOutputFormatter().onlyPrint(Message, false);
 		final String msg = readlineContinue();
 		if (msg.length() == 0)
 			return Default;
@@ -470,7 +305,7 @@ public class FakeSession implements Session
 	@Override
 	public String choose(final String Message, final String Choices, final String Default)
 	{
-		onlyPrint(Message, false);
+		getOutputFormatter().onlyPrint(Message, false);
 		final String msg = readlineContinue();
 		if (msg.length() == 0)
 			return Default;
@@ -595,14 +430,6 @@ public class FakeSession implements Session
 			stripStr = COLOR_IMP3+((mob==null)?"?":mob.Name())+":"+COLOR_NORM+" ";
 		}
 	}
-
-	@Override
-	public String getLastSeenRoomID() {
-		return CMLib.map().getExtendedRoomID(mob.location());
-	}
-
-	@Override
-	public Integer getLastSeenRoomHash() { return null;}
 
 	@Override
 	public void setAccount(final PlayerAccount account)
@@ -836,5 +663,213 @@ public class FakeSession implements Session
 	public boolean autoLogin(final String name, final String password)
 	{
 		return false;
+	}
+
+	@Override
+	public String getLastSeenRoomID() {
+		return CMLib.map().getExtendedRoomID(mob.location());
+	}
+
+	@Override
+	public Integer getLastSeenRoomHash() { return null;}
+
+	@Override
+	public OutputFormatter getOutputFormatter() {
+		return outputFormatter;
+	}
+
+	private class FakeOutputFormatter implements OutputFormatter {
+
+		@Override
+		public void setTranslator(OutputTranslator translator) {
+			// do nothing
+		}
+
+		@Override
+		public void setBlockingInputProvider(BlockingInputProvider provider) {
+			// do nothing
+		}
+
+		@Override
+		public void setSession(Session session) {
+			// do nothing
+		}
+
+		@Override
+		public void setMob(MOB mob) {
+			// do nothing
+		}
+
+		@Override
+		public void rawCharsOut(final char[] c) {
+			onlyPrint(new String(c), false);
+		}
+
+		@Override
+		public void rawOut(final String msg) {
+			onlyPrint(msg, false);
+		}
+
+		@Override
+		public void onlyPrint(final String msg) {
+			onlyPrint(msg, false);
+		}
+
+		@Override
+		public void onlyPrint(String msg, final boolean noCache) {
+			if(stripSnoop)
+				msg = CMStrings.replaceAll(msg, stripStr, "");
+			if(stripCRLF)
+				msg = CMStrings.deleteAllofAny(msg, COLOR_CRLF);
+			if (theFile != null) {
+				synchronized (theFile) {
+					theFile.saveText(msg, true);
+				}
+			}
+			if (bout != null) {
+				synchronized (bout) {
+					try {
+						bout.write(msg.getBytes());
+					} catch (final Exception e) {
+						Log.errOut("FakeSession", e);
+					}
+				}
+			}
+		}
+
+		@Override
+		public void resetSpamStack() {
+			// do nothing
+		}
+
+		/*
+		 * Raw Print Methods
+		 */
+
+		@Override
+		public void rawPrint(final String msg) {
+			onlyPrint(msg, false);
+		}
+
+		@Override
+		public void rawPrintln(final String msg) {
+			onlyPrint(msg + "\n", false);
+		}
+
+		@Override
+		public void safeRawPrint(final String msg) {
+			onlyPrint(msg, false);
+		}
+
+		@Override
+		public void safeRawPrintln(final String msg) {
+			onlyPrint(msg + "\n", false);
+		}
+
+		/*
+		 * Standard Print Methods
+		 */
+
+		@Override
+		public void print(final String msg) {
+			onlyPrint(msg, false);
+		}
+
+		@Override
+		public void println(final String msg) {
+			onlyPrint(msg + "\n", false);
+		}
+
+		@Override
+		public void stdPrint(final String msg) {
+			onlyPrint(msg, false);
+		}
+
+		@Override
+		public void stdPrintln(final String msg) {
+			onlyPrint(msg + "\n", false);
+		}
+
+		/*
+		 * Contextual Print Methods
+		 */
+
+		@Override
+		public void print(final Physical Source, final Environmental Target, final Environmental Tool, final String msg) {
+			onlyPrint(msg, false);
+		}
+
+		@Override
+		public void println(final Physical Source, final Environmental Target, final Environmental Tool, final String msg) {
+			onlyPrint(msg + "\n", false);
+		}
+
+		@Override
+		public void stdPrint(final Physical Source, final Environmental Target, final Environmental Tool, final String msg) {
+			onlyPrint(msg, false);
+		}
+
+		@Override
+		public void stdPrintln(final Physical Source, final Environmental Target, final Environmental Tool, final String msg) {
+			onlyPrint(msg + "\n", false);
+		}
+
+		/*
+		 * Wrapless Print Methods
+		 */
+
+		@Override
+		public void wraplessPrint(final String msg) {
+			onlyPrint(msg, false);
+		}
+
+		@Override
+		public void wraplessPrintln(final String msg) {
+			onlyPrint(msg + "\n", false);
+		}
+
+		/*
+		 * Color-Only Print Methods
+		 */
+
+		@Override
+		public void colorOnlyPrint(final String msg) {
+			onlyPrint(msg, false);
+		}
+
+		@Override
+		public void colorOnlyPrint(final String msg, final boolean noCache) {
+			onlyPrint(msg, false);
+		}
+
+		@Override
+		public void colorOnlyPrintln(final String msg) {
+			onlyPrint(msg + "\n", false);
+		}
+
+		@Override
+		public void colorOnlyPrintln(final String msg, final boolean noCache) {
+			onlyPrint(msg + "\n", false);
+		}
+
+		@Override
+		public boolean addSessionFilter(SessionFilter filter) {
+			return false;
+		}
+
+		@Override
+		public void setNeedPrompt(boolean value) {
+			// do nothing
+		}
+
+		@Override
+		public boolean getNeedPrompt() {
+			return false;
+		}
+
+		@Override
+		public void shutdown() throws IOException {
+			// do nothing
+		}
 	}
 }

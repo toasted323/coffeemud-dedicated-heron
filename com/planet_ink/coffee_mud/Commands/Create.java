@@ -974,8 +974,8 @@ public class Create extends StdCommand
 			areaType=mob.session().prompt(L("Enter an area type to create (default=@x1): ",defaultArea),defaultArea);
 			if(CMClass.getAreaType(areaType)==null)
 			{
-				mob.session().println(L("Invalid area type! Valid ones are:"));
-				mob.session().println(CMLib.lister().build3ColTable(mob,CMClass.areaTypes()).toString());
+				mob.session().getOutputFormatter().println(L("Invalid area type! Valid ones are:"));
+				mob.session().getOutputFormatter().println(CMLib.lister().build3ColTable(mob,CMClass.areaTypes()).toString());
 				areaType="";
 			}
 		}
@@ -1137,7 +1137,7 @@ public class Create extends StdCommand
 			mob.tell(L("You have failed to specify the proper fields.\n\rFormat: CREATE EXPERTISE [EXPERTISE ID]=[PARAMETERS] as follows: \n\r"));
 			final String inst=CMLib.expertises().getExpertiseInstructions();
 			if(mob.session()!=null)
-				mob.session().wraplessPrintln(inst.toString());
+				mob.session().getOutputFormatter().wraplessPrintln(inst.toString());
 			mob.location().showOthers(mob,null,CMMsg.MSG_OK_ACTION,L("<S-NAME> flub(s) a spell.."));
 			return;
 		}
@@ -1181,7 +1181,7 @@ public class Create extends StdCommand
 					+ "Format: CREATE AUTOAWARD [PLAYER MASK]:[DATE MASK]::[PROPS] as follows: \n\r"));
 			final String inst = CMLib.awards().getAutoAwardInstructions(CMLib.awards().getAutoPropsFilename());
 			if(mob.session()!=null)
-				mob.session().wraplessPrintln(inst);
+				mob.session().getOutputFormatter().wraplessPrintln(inst);
 			mob.location().showOthers(mob,null,CMMsg.MSG_OK_ACTION,L("<S-NAME> flub(s) a spell.."));
 			return;
 		}
@@ -1198,7 +1198,7 @@ public class Create extends StdCommand
 			mob.tell(L("You have failed to specify the proper fields.\n\rFormat: CREATE TITLE [TITLE]=([MAX]:)[ZAPPER MASK] as follows: \n\r"));
 			final String inst = CMLib.awards().getAutoAwardInstructions(CMLib.awards().getAutoTitleFilename());
 			if(mob.session()!=null)
-				mob.session().wraplessPrintln(inst);
+				mob.session().getOutputFormatter().wraplessPrintln(inst);
 			mob.location().showOthers(mob,null,CMMsg.MSG_OK_ACTION,L("<S-NAME> flub(s) a spell.."));
 			return;
 		}

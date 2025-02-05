@@ -414,7 +414,7 @@ public class StdCraftBroker extends StdShopKeeper implements CraftBroker
 						{
 							budgetRemaining = budgetRemaining - Math.round(paid);
 							if (mySession != null)
-								mySession.stdPrintln(msg.source(), msg.target(), msg.tool(), msg.targetMessage());
+								mySession.getOutputFormatter().stdPrintln(msg.source(), msg.target(), msg.tool(), msg.targetMessage());
 						}
 						for(int i=0;i<numberSold;i++)
 							A=(Ability)shop.removeStock("$"+A.name()+"$", mob);
@@ -479,7 +479,7 @@ public class StdCraftBroker extends StdShopKeeper implements CraftBroker
 								return;
 						}
 						if (mySession != null)
-							mySession.stdPrintln(msg.source(), msg.target(), msg.tool(), msg.targetMessage());
+							mySession.getOutputFormatter().stdPrintln(msg.source(), msg.target(), msg.tool(), msg.targetMessage());
 						if (!CMath.bset(msg.targetMajor(), CMMsg.MASK_OPTIMIZE))
 							mob.location().recoverRoomStats();
 					}

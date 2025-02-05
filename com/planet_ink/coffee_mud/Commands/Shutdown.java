@@ -70,7 +70,7 @@ public class Shutdown extends StdCommand implements Tickable
 	{
 		final String str = getDisplayableShutdownTimeRemaining();
 		for(final Session S : CMLib.sessions().allIterable())
-		  S.colorOnlyPrintln(str);
+		  S.getOutputFormatter().colorOnlyPrintln(str);
 	}
 
 	@Override
@@ -162,7 +162,7 @@ public class Shutdown extends StdCommand implements Tickable
 				final Calendar C=CMLib.time().string2TimeFuture(atWhat);
 				if(C==null)
 				{
-					mob.session().println(L("'@x1' is not a valid time.",atWhat));
+					mob.session().getOutputFormatter().println(L("'@x1' is not a valid time.",atWhat));
 					return false;
 				}
 				if((!mob.session().confirm(L("Shutdown @x1 at @x2 (y/N)?",CMProps.getVar(CMProps.Str.MUDNAME),CMLib.time().date2String(C)),"N")))
@@ -225,7 +225,7 @@ public class Shutdown extends StdCommand implements Tickable
 			public void run()
 			{
 				for(final Session S : CMLib.sessions().allIterable())
-					S.colorOnlyPrintln(L("\n\r\n\r^Z@x1 is now @x2!^.^?\n\r",CMProps.getVar(CMProps.Str.MUDNAME),(keepItDown?"shutting down":"restarting")));
+					S.getOutputFormatter().colorOnlyPrintln(L("\n\r\n\r^Z@x1 is now @x2!^.^?\n\r",CMProps.getVar(CMProps.Str.MUDNAME),(keepItDown?"shutting down":"restarting")));
 				if(keepItDown)
 					Log.errOut("CommandProcessor",mob.Name()+" starts system shutdown...");
 				else

@@ -147,7 +147,7 @@ public class Skills extends StdCommand
 				}
 				line.append("^?\n\r");
 				if(mob.session()!=null)
-					mob.session().wraplessPrintln(line.toString());
+					mob.session().getOutputFormatter().wraplessPrintln(line.toString());
 			}
 			return true;
 		}
@@ -246,7 +246,7 @@ public class Skills extends StdCommand
 			if(domains.toString().endsWith(", "))
 				domains=new StringBuffer(domains.substring(0,domains.length()-2));
 			if(!mob.isMonster())
-				mob.session().wraplessPrintln(domains.toString()+"\n\r");
+				mob.session().getOutputFormatter().wraplessPrintln(domains.toString()+"\n\r");
 		}
 		else
 		if(qual.length()>0)
@@ -340,7 +340,7 @@ public class Skills extends StdCommand
 			if(types.toString().endsWith(", "))
 				types=new StringBuffer(types.substring(0,types.length()-2));
 			if(!mob.isMonster())
-				mob.session().wraplessPrintln(types.toString()+"\n\r");
+				mob.session().getOutputFormatter().wraplessPrintln(types.toString()+"\n\r");
 		}
 		else
 		if(qual.length()>0)
@@ -518,7 +518,7 @@ public class Skills extends StdCommand
 		if((domain[0]>=0)||(qual.length()==0))
 			msg.append(L("\n\r^HYour @x1skills:^? @x2",domainName[0].replace('_',' '),getAbilities(mob,mob,V,mask,true,level[0]).toString()));
 		if(!mob.isMonster())
-			mob.session().wraplessPrintln(msg.toString());
+			mob.session().getOutputFormatter().wraplessPrintln(msg.toString());
 		return false;
 	}
 

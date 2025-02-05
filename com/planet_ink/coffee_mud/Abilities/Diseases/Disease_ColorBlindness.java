@@ -138,7 +138,7 @@ public class Disease_ColorBlindness extends Disease implements Session.SessionFi
 				if((S != null)
 				&&(affected.fetchEffect(ID())==this))
 				{
-					S.addSessionFilter(this);
+					S.getOutputFormatter().addSessionFilter(this);
 					checked=true;
 				}
 			}

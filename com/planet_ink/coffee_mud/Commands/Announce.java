@@ -72,7 +72,7 @@ public class Announce extends StdCommand
 				break;
 			}
 		}
-		S.stdPrintln(Message.toString());
+		S.getOutputFormatter().stdPrintln(Message.toString());
 	}
 
 	@Override

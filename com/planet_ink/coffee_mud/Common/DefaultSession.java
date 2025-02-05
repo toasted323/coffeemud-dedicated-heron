@@ -1,4 +1,5 @@
 package com.planet_ink.coffee_mud.Common;
+
 import com.planet_ink.coffee_mud.core.interfaces.*;
 import com.planet_ink.coffee_mud.core.threads.CMRunnable;
 import com.planet_ink.coffee_mud.core.*;
@@ -17,16 +18,20 @@ import com.planet_ink.coffee_mud.MOBS.interfaces.*;
 import com.planet_ink.coffee_mud.MOBS.interfaces.MOB.Attrib;
 import com.jcraft.jzlib.*;
 
+import com.planet_ink.coffee_mud.core.Log;
+
+import com.planet_ink.coffee_mud.io.interfaces.*;
+import com.planet_ink.coffee_mud.io.*;
+
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.net.*;
 import java.nio.charset.Charset;
 
 /*
-   Copyright 2024 github.com/toasted323
+   Copyright 2025 github.com/toasted323
    Copyright 2005-2024 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,10 +47,22 @@ import java.nio.charset.Charset;
    limitations under the License.
 
    CHANGES:
-   2024-12 toasted323: ensure any exit changes observed by the player are sent via gmcp too
-   2024-12 toasted323: mapping from ships
+   2025-02 toasted323: Implement shutdown process for OutputFormatter
+   2025-02 toasted323: Remove output methods from Session interface
+   2025-02 toasted323: Extract OutputFormatter from DefaultSession
+   2025-02 toasted323: Move I/O handlers and interfaces to dedicated package
+   2025-02 toasted323: Remove low-level stream handling leftovers from DefaultSession
+   2025-02 toasted323: Implement shutdown methods in IO handlers
+   2025-02 toasted323: Extract write timing logic into OutputHandler
+   2025-02 toasted323: Extract char-level I/O methods into Input- and OutputHandler interfaces
+   2025-02 toasted323: Remove unused OutputStream parameter from rawBytesOut
+   2025-02 toasted323: Introduce lightweight termination mechanism for Input- and OutputHandler
+   2025-02 toasted323: Introduced Input- and OutputHandler interfaces for standardized byte I/O operations
+   2024-12 toasted323: Ensure any exit changes observed by the player are sent via gmcp too
+   2024-12 toasted323: Mapping from ships
 */
-public class DefaultSession implements Session
+
+public class DefaultSession implements Session, OutputFormattingContext, SnoopManager, BlockingInputProvider
 {
 	protected static final int		SOTIMEOUT		= 300;
 	protected static final int		PINGTIMEOUT  	= 30000;
@@ -64,7 +81,7 @@ public class DefaultSession implements Session
 	protected final Map<String,String>	mcpKeyPairs		= new TreeMap<String,String>();
 	protected final boolean		 		mcpDisabled		= CMSecurity.isDisabled(DisFlag.MCP);
 	protected final Map<String,float[]>	mcpSupported	= new TreeMap<String,float[]>();
-	protected final AtomicBoolean 		sockObj 		= new AtomicBoolean(false);
+	protected final AtomicBoolean socketShutdownLock = new AtomicBoolean(false);
 	protected final LinkedList<List<String>>history		= new LinkedList<List<String>>();
 
 	private volatile Thread  runThread 			 = null;
@@ -74,10 +91,6 @@ public class DefaultSession implements Session
 	protected volatile long  lastStateChangeMs	 = System.currentTimeMillis();
 	protected int   		 snoopSuspensionStack= 0;
 	protected Socket 	 	 sock				 = null;
-	protected SesInputStream charWriter;
-	protected int			 inMaxBytesPerChar	 = 1;
-	protected BufferedReader in;
-	protected PrintWriter	 out;
 	protected InputStream    rawin;
 	protected OutputStream   rawout;
 	protected MOB   		 mob;
@@ -91,11 +104,8 @@ public class DefaultSession implements Session
 	protected boolean   	 waiting			 = false;
 	protected String[]  	 clookup			 = null;
 	protected String		 lastColorStr		 = "";
-	protected String		 lastStr			 = null;
-	protected int			 spamStack			 = 0;
 	protected List<Session>	 snoops				 = new Vector<Session>();
 	protected List<String>	 prevMsgs			 = new Vector<String>();
-	protected StringBuffer	 curPrevMsg			 = null;
 	protected boolean		 lastWasCR			 = false;
 	protected boolean		 lastWasLF			 = false;
 	protected boolean		 suspendCommandLine	 = false;
@@ -104,7 +114,6 @@ public class DefaultSession implements Session
 	protected String		 terminalType		 = "UNKNOWN";
 	protected int			 terminalWidth		 = -1;
 	protected int			 terminalHeight		 = -1;
-	protected long			 writeStartTime		 = 0;
 	protected boolean		 bNextByteIs255		 = false;
 	protected boolean		 connectionComplete	 = false;
 	protected ReentrantLock  writeLock 			 = new ReentrantLock(true);
@@ -130,7 +139,6 @@ public class DefaultSession implements Session
 	protected volatile long	 lastIACIn		 	 = System.currentTimeMillis();
 	protected long			 promptLastShown	 = 0;
 	protected char 			 threadGroupChar	 = '\0';
-	protected volatile long  lastWriteTime		 = System.currentTimeMillis();
 	protected boolean		 debugStrInput		 = false;
 	protected boolean		 debugStrOutput		 = false;
 	protected boolean		 debugBinOutput		 = false;
@@ -139,10 +147,15 @@ public class DefaultSession implements Session
 
 	protected final Stack<ColorState>	markedColors	= new Stack<ColorState>();
 	protected AtomicBoolean				lastWasPrompt	= new AtomicBoolean(false);
-	protected List<SessionFilter>		textFilters		= new Vector<SessionFilter>(3);
 	protected volatile InputCallback	inputCallback	= null;
 	protected String 					lastSeenRoomID 	= null;
 	protected Integer 					lastRoomHash 	= null;
+
+	private InputHandler inputHandler = null;
+	private OutputHandler outputHandler = null;
+	private DefaultOutputFormatter outputFormatter;
+	private IOExceptionHandler exceptionHandler;
+
 
 	@Override
 	public String ID()
@@ -246,11 +259,12 @@ public class DefaultSession implements Session
 	{
 		if(mcpKey[0] != null)
 		{
-			rawPrintln("#$#"+packageCommand+" "+mcpKey[0]+" "+parms);
+			outputFormatter.rawPrintln("#$#"+packageCommand+" "+mcpKey[0]+" "+parms);
 			return true;
 		}
 		return false;
 	}
+
 
 	@Override
 	public void initializeSession(final Socket s, final String groupName, final String introTextStr)
@@ -326,24 +340,51 @@ public class DefaultSession implements Session
 				}, 0, 1, 1);
 			}
 
+			final Charset inputCharSet=Charset.forName(CMProps.getVar(CMProps.Str.CHARSETINPUT));
+			final Charset outputCharSet=Charset.forName(CMProps.getVar(CMProps.Str.CHARSETOUTPUT));
+
+			OutputTranslator cmLibTranslator = new OutputTranslator() {
+				@Override
+				public String translate(String message) {
+					return CMLib.lang().finalTranslation(message);
+				}
+			};
+
+			exceptionHandler = new IOExceptionHandler() {
+				@Override
+				public void handleException(Exception e) {
+					Log.errOut("DefaultSession", "handleException: I/O Exception: " + e.getMessage());
+					setKillFlag(true);
+				}
+			};
+
 			if((sock == null)||(!sock.isConnected()))
 			{
-				rawout=new BufferedOutputStream(new ByteArrayOutputStream());
 				rawin=new BufferedInputStream(new ByteArrayInputStream(new byte[0]));
-				in=new BufferedReader(new InputStreamReader(rawin));
-				out=new PrintWriter(new OutputStreamWriter(rawout));
+				inputHandler = new DefaultInputHandler(rawin, inputCharSet, debugStrInput, debugBinInput);
+				rawout=new BufferedOutputStream(new ByteArrayOutputStream());
+				outputHandler = new DefaultOutputHandler(rawout, outputCharSet, writeLock, debugStrOutput, debugStrOutput);
+				outputFormatter = new DefaultOutputFormatter(outputHandler, this,this, exceptionHandler);
+
 				return;
 			}
 
 			sock.setSoTimeout(SOTIMEOUT);
-			rawout=new BufferedOutputStream(sock.getOutputStream());
 			rawin=new BufferedInputStream(sock.getInputStream());
+			inputHandler = new DefaultInputHandler(rawin, inputCharSet, debugStrInput, debugBinInput);
+			rawout=new BufferedOutputStream(sock.getOutputStream());
+			outputHandler = new DefaultOutputHandler(rawout, outputCharSet, writeLock, debugStrOutput, debugStrOutput);
+			outputFormatter = new DefaultOutputFormatter(outputHandler, this,this, exceptionHandler);
+			outputFormatter.setTranslator(cmLibTranslator);
+			outputFormatter.setBlockingInputProvider(this);
+			outputFormatter.setSession(this);
+			outputFormatter.setMob(this.mob);
+
 			if(!mcpDisabled)
 			{
-				rawBytesOut(rawout,("\n\r#$#mcp version: 2.1 to: 2.1\n\r").getBytes(CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
+				rawBytesOut(("\n\r#$#mcp version: 2.1 to: 2.1\n\r").getBytes(CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
 			}
-			rawBytesOut(rawout,("\n\rConnecting to "+CMProps.getVar(CMProps.Str.MUDNAME)+"...\n\r").getBytes("US-ASCII"));
-			//rawout.flush(); rawBytesOut already flushes
+			rawBytesOut(("\n\rConnecting to "+CMProps.getVar(CMProps.Str.MUDNAME)+"...\n\r").getBytes("US-ASCII"));
 
 			setServerTelnetMode(TELNET_ANSI,true);
 			setClientTelnetMode(TELNET_ANSI,true);
@@ -366,17 +407,12 @@ public class DefaultSession implements Session
 			changeTelnetMode(rawout,TELNET_NAWS,true);
 			//changeTelnetMode(rawout,TELNET_BINARY,true);
 			if(mightSupportTelnetMode(TELNET_GA))
-				rawBytesOut(rawout,TELNETGABYTES);
-			//rawout.flush(); rawBytesOut already flushes
+				rawBytesOut(TELNETGABYTES);
 			if((!CMSecurity.isDisabled(CMSecurity.DisFlag.MSSP))
 			&&(mightSupportTelnetMode(TELNET_MSSP)))
 				changeTelnetMode(rawout,TELNET_MSSP,true);
 
-			final Charset charSet=Charset.forName(CMProps.getVar(CMProps.Str.CHARSETINPUT));
-			inMaxBytesPerChar=(int)Math.round(Math.ceil(charSet.newEncoder().maxBytesPerChar()));
-			charWriter=new SesInputStream(inMaxBytesPerChar);
-			in=new BufferedReader(new InputStreamReader(charWriter,charSet));
-			out=new PrintWriter(new OutputStreamWriter(rawout,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
+
 			//final DefaultSession me = this;
 			prompt(new TickingCallback(250)
 			{
@@ -388,14 +424,8 @@ public class DefaultSession implements Session
 				{
 					try
 					{
-						if(out!=null)
-						{
-							out.flush();
-							rawout.flush();
-						}
-						else
-						{
-							killFlag=true;
+						if(outputHandler==null) {
+							setKillFlag(true);
 							return false;
 						}
 						switch(status)
@@ -404,7 +434,6 @@ public class DefaultSession implements Session
 						{
 							if((!terminalType.equals("ANSI"))&&(getClientTelnetMode(TELNET_ECHO)))
 								changeTelnetModeBackwards(rawout,TELNET_ECHO,false);
-							//rawout.flush(); rawBytesOut already flushes
 							setStatus(SessionStatus.HANDSHAKE_MCCP);
 							break;
 						}
@@ -417,13 +446,12 @@ public class DefaultSession implements Session
 								if(getClientTelnetMode(TELNET_COMPRESS2))
 								{
 									negotiateTelnetMode(rawout,TELNET_COMPRESS2);
-									//rawout.flush(); rawBytesOut already flushes
 									if(getClientTelnetMode(TELNET_COMPRESS2))
 									{
 										final ZOutputStream zOut=new ZOutputStream(rawout, JZlib.Z_DEFAULT_COMPRESSION);
 										rawout=zOut;
+										outputHandler.resetByteStream(rawout);
 										zOut.setFlushMode(JZlib.Z_SYNC_FLUSH);
-										out = new PrintWriter(new OutputStreamWriter(zOut,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
 										if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 											Log.debugOut("MCCP compression started");
 									}
@@ -438,9 +466,9 @@ public class DefaultSession implements Session
 								setStatus(SessionStatus.HANDSHAKE_DONE);
 							else
 							{
-								rawOut("\n\033[6z\n\033[6z<SUPPORT IMAGE IMAGE.URL>\n");
+								outputFormatter.rawOut("\n\033[6z\n\033[6z<SUPPORT IMAGE IMAGE.URL>\n");
 								rawout.flush();
-								rawOut("\n\033[6z\n\033[6z<SUPPORT>\n");
+								outputFormatter.rawOut("\n\033[6z\n\033[6z<SUPPORT>\n");
 								rawout.flush();
 								setStatus(SessionStatus.HANDSHAKE_MXPPAUSE);
 							}
@@ -456,11 +484,9 @@ public class DefaultSession implements Session
 						case HANDSHAKE_DONE:
 						{
 							if(introTextStr!=null)
-								print(introTextStr);
-							if(out!=null)
+								outputFormatter.print(introTextStr);
+							if(outputHandler!=null)
 							{
-								out.flush();
-								rawout.flush();
 								if((getClientTelnetMode(Session.TELNET_MXP))
 								&&((mxpSupportSet.contains("+IMAGE.URL"))
 									||((mxpSupportSet.contains("+IMAGE"))&&(!mxpSupportSet.contains("-IMAGE.URL")))))
@@ -484,12 +510,7 @@ public class DefaultSession implements Session
 											if(choices.size()>0)
 												introFilename=choices.get(CMLib.dice().roll(1,choices.size(),-1));
 										}
-										println("\n\r\n\r\n\r^<IMAGE '"+introFilename+"' URL='"+paths[0]+"' H=400 W=400^>\n\r\n\r");
-										if(out!=null)
-										{
-											out.flush();
-											rawout.flush();
-										}
+										outputFormatter.println("\n\r\n\r\n\r^<IMAGE '"+introFilename+"' URL='"+paths[0]+"' H=400 W=400^>\n\r\n\r");
 									}
 								}
 							}
@@ -502,7 +523,7 @@ public class DefaultSession implements Session
 								fakeInput=new StringBuffer(collectedInput.toString());
 							return false;
 						}
-						return (out!=null);
+						return (outputHandler!=null);
 					}
 					catch(final Exception e)
 					{
@@ -528,11 +549,9 @@ public class DefaultSession implements Session
 
 	protected void compress2Off() throws IOException
 	{
-		out.flush();
 		changeTelnetMode(rawout,TELNET_COMPRESS2,false);
-		//rawout.flush(); rawBytesOut already flushes
 		rawout=new BufferedOutputStream(sock.getOutputStream());
-		out = new PrintWriter(new OutputStreamWriter(rawout,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
+		outputHandler.resetByteStream(rawout);
 		CMLib.s_sleep(50);
 		changeTelnetMode(rawout,TELNET_COMPRESS2,false);
 		if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
@@ -569,12 +588,12 @@ public class DefaultSession implements Session
 		if(optionCode==TELNET_TERMTYPE)
 		{
 			final byte[] stream={(byte)TELNET_IAC,(byte)TELNET_SB,(byte)optionCode,(byte)1,(byte)TELNET_IAC,(byte)TELNET_SE};
-			rawBytesOut(out, stream);
+			rawBytesOut(stream);
 		}
 		else
 		{
 			final byte[] stream={(byte)TELNET_IAC,(byte)TELNET_SB,(byte)optionCode,(byte)TELNET_IAC,(byte)TELNET_SE};
-			rawBytesOut(out, stream);
+			rawBytesOut(stream);
 		}
 		//out.flush(); rawBytesOut already flushes
 	}
@@ -632,8 +651,7 @@ public class DefaultSession implements Session
 			command=new byte[]{(byte)TELNET_IAC,onOff?(byte)TELNET_DO:(byte)TELNET_DONT,(byte)telnetCode};
 		else
 			command=new byte[]{(byte)TELNET_IAC,onOff?(byte)TELNET_WILL:(byte)TELNET_WONT,(byte)telnetCode};
-		rawBytesOut(out, command);
-		//rawout.flush(); rawBytesOut already flushes
+		rawBytesOut(command);
 		if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 			Log.debugOut("Sent: "+(onOff?"Will":"Won't")+" "+Session.TELNET_DESCS[telnetCode]);
 		setServerTelnetMode(telnetCode,onOff);
@@ -683,13 +701,13 @@ public class DefaultSession implements Session
 			bout.write(TELNETBYTES_END_SB);
 			synchronized(gmcpSupports)
 			{
-				rawBytesOut(rawout,bout.toByteArray());
+				rawBytesOut(bout.toByteArray());
 			}
 			return true;
 		}
 		catch(final IOException e)
 		{
-			killFlag=true;
+			setKillFlag(true);
 		}
 		catch(final Exception e)
 		{
@@ -705,9 +723,7 @@ public class DefaultSession implements Session
 		try
 		{
 			final byte[] command={(byte)TELNET_IAC,onOff?(byte)TELNET_WILL:(byte)TELNET_WONT,(byte)telnetCode};
-			out.flush();
-			rawBytesOut(rawout, command);
-			//rawout.flush(); rawBytesOut already flushes
+			rawBytesOut(command);
 		}
 		catch (final Exception e)
 		{
@@ -720,10 +736,7 @@ public class DefaultSession implements Session
 	public void changeTelnetModeBackwards(final int telnetCode, final boolean onOff) throws IOException
 	{
 		final byte[] command={(byte)TELNET_IAC,onOff?(byte)TELNET_DO:(byte)TELNET_DONT,(byte)telnetCode};
-		if(out!=null)
-			out.flush();
-		rawBytesOut(rawout, command);
-		//rawout.flush(); rawBytesOut already flushes
+		rawBytesOut(command);
 		if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 			Log.debugOut("Back-Sent: "+(onOff?"Do":"Don't")+" "+Session.TELNET_DESCS[telnetCode]);
 		setServerTelnetMode(telnetCode,onOff);
@@ -732,8 +745,7 @@ public class DefaultSession implements Session
 	public void changeTelnetModeBackwards(final OutputStream out, final int telnetCode, final boolean onOff) throws IOException
 	{
 		final byte[] command={(byte)TELNET_IAC,onOff?(byte)TELNET_DO:(byte)TELNET_DONT,(byte)telnetCode};
-		rawBytesOut(out, command);
-		//rawout.flush(); rawBytesOut already flushes
+		rawBytesOut(command);
 		if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 			Log.debugOut("Back-Sent: "+(onOff?"Do":"Don't")+" "+Session.TELNET_DESCS[telnetCode]);
 		setServerTelnetMode(telnetCode,onOff);
@@ -744,18 +756,16 @@ public class DefaultSession implements Session
 	{
 		try
 		{
-			out.flush();
 			if(telnetCode==TELNET_TERMTYPE)
 			{
 				final byte[] command={(byte)TELNET_IAC,(byte)TELNET_SB,(byte)telnetCode,(byte)1,(byte)TELNET_IAC,(byte)TELNET_SE};
-				rawBytesOut(rawout, command);
+				rawBytesOut(command);
 			}
 			else
 			{
 				final byte[] command={(byte)TELNET_IAC,(byte)TELNET_SB,(byte)telnetCode,(byte)TELNET_IAC,(byte)TELNET_SE};
-				rawBytesOut(rawout, command);
+				rawBytesOut(command);
 			}
-			//rawout.flush(); rawBytesOut already flushes
 		}
 		catch (final Exception e)
 		{
@@ -915,6 +925,12 @@ public class DefaultSession implements Session
 	}
 
 	@Override
+	public void addLastMsg(String msg)
+	{
+		prevMsgs.add(msg);
+	}
+
+	@Override
 	public String getTerminalType()
 	{
 		return terminalType;
@@ -946,6 +962,7 @@ public class DefaultSession implements Session
 		return ((mob!=null)&&(mob.playerStats()!=null))?mob.playerStats().getWrap():78;
 	}
 
+	@Override
 	public int getPageBreak()
 	{
 		if(((mob!=null)&&(mob.playerStats()!=null)))
@@ -961,6 +978,16 @@ public class DefaultSession implements Session
 	}
 
 	@Override
+	public int getTerminalHeight() {
+		return terminalHeight;
+	}
+
+	@Override
+	public int getTerminalWidth() {
+		return terminalWidth;
+	}
+
+	@Override
 	public boolean isStopped()
 	{
 		return killFlag;
@@ -968,7 +995,13 @@ public class DefaultSession implements Session
 
 	public void setKillFlag(final boolean truefalse)
 	{
-		killFlag=truefalse;
+		if(killFlag != truefalse) {
+			killFlag = truefalse;
+			if (killFlag) {
+				inputHandler.requestTermination();
+				outputHandler.requestTermination();
+			}
+		}
 	}
 
 	private static final List<String> empty = new ReadOnlyList<String>(new ArrayList<String>(0));
@@ -1062,12 +1095,12 @@ public class DefaultSession implements Session
 		if(truefalse)
 		{
 			afkTime=System.currentTimeMillis();
-			println("\n\rYou are now listed as AFK.");
+			outputFormatter.println("\n\rYou are now listed as AFK.");
 		}
 		else
 		{
 			afkMessage=null;
-			println("\n\rYou are no longer AFK.");
+			outputFormatter.println("\n\rYou are no longer AFK.");
 			final MOB mob=this.mob;
 			final PlayerStats pStats=(mob==null)?null:mob.playerStats();
 			if((pStats != null)&&(mob!=null))
@@ -1111,159 +1144,23 @@ public class DefaultSession implements Session
 		setKillFlag(true);
 	}
 
-	protected long getWriteStartTime()
-	{
-		return writeStartTime;
-	}
-
 	@Override
 	public boolean isLockedUpWriting()
 	{
-		final long time=writeStartTime;
-		if(time==0)
-			return false;
-		return ((System.currentTimeMillis()-time)>10000);
+		return outputHandler.isLockedUpWriting();
 	}
 
-	public final void rawBytesOut(final OutputStream out, final byte[] bytes) throws IOException
+	public final void rawBytesOut(final byte[] bytes) throws IOException
 	{
-		try
-		{
-			if((sock==null)||(sock.isClosed())||(!sock.isConnected()))
-				return;
-			if(writeLock.tryLock(10000, TimeUnit.MILLISECONDS))
-			{
-				try
-				{
-					if((sock==null)||(sock.isClosed())||(!sock.isConnected()))
-						return;
-					writeThread=Thread.currentThread();
-					writeStartTime=System.currentTimeMillis();
-					if(debugBinOutput && Log.debugChannelOn())
-					{
-						final StringBuilder str=new StringBuilder("OUTPUT: '");
-						for(final byte c : bytes)
-							str.append((c & 0xff)).append(" ");
-						Log.debugOut( str.toString()+"'");
-					}
-					if(debugStrOutput && Log.debugChannelOn())
-					{
-						final StringBuilder str=new StringBuilder("OUTPUT: '");
-						for(final byte c : bytes)
-							str.append(((c<32)||(c>127))?"%"+CMStrings.padLeftWith(Integer.toHexString((c & 0xff)).toUpperCase(), '0', 2):(""+(char)c));
-						Log.debugOut( str.toString()+"'");
-					}
-					if(this.out!=null)
-						this.out.flush();
-					out.write(bytes);
-					out.flush();
-				}
-				catch(final ArrayIndexOutOfBoundsException x)
-				{
-					Log.errOut("ZLibFail",x.getMessage());
-					this.setKillFlag(true);
-				}
-				catch(final NullPointerException x)
-				{
-					final IOException ioe=new IOException("rawBytesOut: "+x.getMessage());
-					ioe.setStackTrace(new StackTraceElement[0]);
-					throw ioe;
-				}
-				finally
-				{
-					writeThread=null;
-					writeStartTime=0;
-					lastWriteTime=System.currentTimeMillis();
-					writeLock.unlock();
-				}
-			}
-		}
-		catch (final Exception ioe)
-		{
-			stopSession(true,true,false);
-			setKillFlag(true);
+		if (outputHandler != null) {
+			outputHandler.rawBytesOut(bytes);
+		} else {
+			// TODO: Consider a no-op behavior or logging.
+			throw new IOException("No IOHandler configured for output");
 		}
 	}
 
 	@Override
-	public void rawCharsOut(final char[] chars)
-	{
-		rawCharsOut(out,chars);
-	}
-
-	public void rawCharsOut(final PrintWriter out, final char[] chars)
-	{
-		final Socket sock=this.sock;
-		if((out==null)||(chars==null)||(chars.length==0))
-			return;
-		try
-		{
-			if(writeLock.tryLock(10000, TimeUnit.MILLISECONDS))
-			{
-				if((sock==null)||(sock.isClosed())||(!sock.isConnected()))
-					return;
-				try
-				{
-					writeThread=Thread.currentThread();
-					writeStartTime=System.currentTimeMillis();
-					if(debugBinOutput && Log.debugChannelOn())
-					{
-						final StringBuilder str=new StringBuilder("OUTPUT: '");
-						for(final char c : chars)
-							str.append((c & 0xff)).append(" ");
-						Log.debugOut( str.toString()+"'");
-					}
-					if(debugStrOutput && Log.debugChannelOn())
-					{
-						final StringBuilder str=new StringBuilder("OUTPUT: '");
-						for(final char c : chars)
-							str.append(((c<32)||(c>127))?"%"+CMStrings.padLeftWith(Integer.toHexString((c & 0xff)).toUpperCase(), '0', 2):(""+c));
-						Log.debugOut( str.toString()+"'");
-					}
-					out.write(chars);
-					if(out.checkError() && (!killFlag))
-						stopSession(true,true,false);
-				}
-				finally
-				{
-					writeThread=null;
-					writeStartTime=0;
-					lastWriteTime=System.currentTimeMillis();
-					writeLock.unlock();
-				}
-			}
-			else
-			if(!killFlag)
-			{
-				final String name=(mob!=null)?mob.Name():getAddress();
-				Log.errOut("DefaultSession","Kicked out "+name+" due to write-lock ("+out.getClass().getName()+".");
-				stopSession(true,true,true);
-				final Thread killThisThread=writeThread;
-				if(killThisThread!=null)
-					CMLib.killThread(killThisThread,500,1);
-			}
-			if(chars != PINGCHARS)
-				lastWasPrompt.set(false);
-		}
-		catch (final Exception ioe)
-		{
-			stopSession(true,true,false);
-			setKillFlag(true);
-		}
-	}
-
-	public void rawCharsOut(final String c)
-	{
-		if(c!=null)
-			rawCharsOut(c.toCharArray());
-	}
-
-	public void rawCharsOut(final char c)
-	{
-		final char[] cs={c};
-		rawCharsOut(cs);
-	}
-
 	public void snoopSupportPrint(final String msg, final boolean noCache)
 	{
 		try
@@ -1286,7 +1183,7 @@ public class DefaultSession implements Session
 				else
 					msgColored=msg;
 				for(int s=0;s<snoops.size();s++)
-					snoops.get(s).onlyPrint(preFix+msgColored,noCache);
+					snoops.get(s).getOutputFormatter().onlyPrint(preFix+msgColored,noCache);
 			}
 		}
 		catch (final IndexOutOfBoundsException x)
@@ -1295,318 +1192,10 @@ public class DefaultSession implements Session
 	}
 
 	@Override
-	public void onlyPrint(final String msg)
-	{
-		onlyPrint(msg,false);
-	}
-
-	@Override
-	public void onlyPrint(String msg, final boolean noCache)
-	{
-		if((out==null)||(msg==null))
-			return;
-		try
-		{
-			snoopSupportPrint(msg,noCache);
-			final String newMsg=CMLib.lang().finalTranslation(msg);
-			if(newMsg!=null)
-				msg=newMsg;
-
-			if(msg.endsWith("\n\r")
-			&&(msg.equals(lastStr))
-			&&(msg.length()>2)
-			&&(msg.indexOf("\n")==(msg.length()-2)))
-			{
-				spamStack++;
-				return;
-			}
-			else
-			if(spamStack>0)
-			{
-				if(spamStack>1)
-					lastStr=lastStr.substring(0,lastStr.length()-2)+"("+spamStack+")"+lastStr.substring(lastStr.length()-2);
-				rawCharsOut(lastStr.toCharArray());
-			}
-
-			spamStack=0;
-			if(msg.startsWith("\n\r")&&(msg.length()>2))
-				lastStr=msg.substring(2);
-			else
-				lastStr=msg;
-
-			if(runThread==Thread.currentThread())
-			{
-				final int pageBreak=getPageBreak();
-				int lines=0;
-				int last=0;
-				if(pageBreak>0)
-				for(int i=0;i<msg.length();i++)
-				{
-					if(msg.charAt(i)=='\n')
-					{
-						lines++;
-						if(lines>=pageBreak)
-						{
-							lines=0;
-							if((i<(msg.length()-1)&&(msg.charAt(i+1)=='\r')))
-								i++;
-							rawCharsOut(msg.substring(last,i+1).toCharArray());
-							last=i+1;
-							rawCharsOut("<pause - enter>".toCharArray());
-							try
-							{
-								String s=blockingIn(-1, true);
-								if(s!=null)
-								{
-									s=s.toLowerCase();
-									if(s.startsWith("qu")||s.startsWith("ex")||s.equals("x"))
-										return;
-								}
-							}
-							catch (final Exception e)
-							{
-								return;
-							}
-						}
-					}
-				}
-			}
-
-			// handle line cache --
-			if(!noCache)
-			for(int i=0;i<msg.length();i++)
-			{
-				if(curPrevMsg==null)
-					curPrevMsg=new StringBuffer("");
-				if(msg.charAt(i)=='\r')
-					continue;
-				if(msg.charAt(i)=='\n')
-				{
-					if(curPrevMsg.toString().trim().length()>0)
-					{
-						synchronized(prevMsgs)
-						{
-							while(prevMsgs.size()>=MAX_PREVMSGS)
-								prevMsgs.remove(0);
-							prevMsgs.add(curPrevMsg.toString());
-							curPrevMsg.setLength(0);
-						}
-					}
-					continue;
-				}
-				curPrevMsg.append(msg.charAt(i));
-			}
-			rawCharsOut(msg.toCharArray());
-		}
-		catch (final java.lang.NullPointerException e)
-		{
-		}
-	}
-
-	@Override
-	public void rawOut(final String msg)
-	{
-		rawCharsOut(msg);
-	}
-
-	@Override
-	public void rawPrint(final String msg)
-	{
-		if(msg==null)
-			return;
-		onlyPrint((needPrompt?"":(lastWasPrompt.get()?"\n\r":""))+msg,false);
-		flagTextDisplayed();
-	}
-
-	@Override
-	public void safeRawPrint(final String msg)
-	{
-		if(msg==null)
-			return;
-		onlyPrint((needPrompt?"":(lastWasPrompt.get()?"\n\r":""))+CMLib.coffeeFilter().mxpSafetyFilter(msg, this),false);
-		flagTextDisplayed();
-	}
-
-	@Override
-	public void print(final String msg)
-	{
-		onlyPrint(applyFilters(mob,mob,null,msg,false),false);
-	}
-
-	@Override
-	public void promptPrint(final String msg)
-	{
-		lastWasPrompt.set(true);
-		print(msg);
-		if(promptSuffix.length>0)
-		{
-			try
-			{
-				rawBytesOut(rawout, promptSuffix);
-			}
-			catch (final IOException e)
-			{
-			}
-		}
-		final MOB mob=mob();
-		if((!getClientTelnetMode(TELNET_SUPRESS_GO_AHEAD))
-		&& (!killFlag)
-		&& (mightSupportTelnetMode(TELNET_GA)
-			||(mob==null)
-			||(mob.isAttributeSet(MOB.Attrib.TELNET_GA))))
-		{
-			try
-			{
-				rawBytesOut(rawout, TELNETGABYTES);
-			}
-			catch (final Exception e)
-			{
-			}
-		}
-		lastWasPrompt.set(true);
-	}
-
-	@Override
-	public void rawPrintln(final String msg)
-	{
-		if(msg!=null)
-			rawPrint(msg+"\n\r");
-	}
-
-	@Override
-	public void safeRawPrintln(final String msg)
-	{
-		if(msg!=null)
-			safeRawPrint(msg+"\n\r");
-	}
-
-	@Override
-	public void stdPrint(final String msg)
-	{
-		rawPrint(applyFilters(mob,mob,null,msg,false));
-	}
-
-	@Override
-	public void print(final Physical src, final Environmental trg, final Environmental tol, final String msg)
-	{
-		onlyPrint((applyFilters(src,trg,tol,msg,false)),false);
-	}
-
-	@Override
-	public void stdPrint(final Physical src, final Environmental trg, final Environmental tol, final String msg)
-	{
-		rawPrint(applyFilters(src,trg,trg,msg,false));
-	}
-
-	@Override
-	public void println(final String msg)
-	{
-		if(msg!=null)
-			print(msg+"\n\r");
-	}
-
-	@Override
-	public void wraplessPrintln(final String msg)
-	{
-		if(msg!=null)
-			onlyPrint(applyFilters(mob,mob,null,msg,true)+"\n\r",false);
-		flagTextDisplayed();
-	}
-
-	@Override
-	public void wraplessPrint(final String msg)
-	{
-		if(msg!=null)
-			onlyPrint(applyFilters(mob,mob,null,msg,true),false);
-		flagTextDisplayed();
-	}
-
-	@Override
-	public void colorOnlyPrintln(final String msg)
-	{
-		colorOnlyPrint(msg+"\n\r",false);
-	}
-
-	@Override
-	public void colorOnlyPrintln(final String msg, final boolean noCache)
-	{
-		if(msg!=null)
-			onlyPrint(CMLib.coffeeFilter().colorOnlyFilter(msg,this)+"\n\r",noCache);
-		flagTextDisplayed();
-	}
-
-	@Override
-	public void colorOnlyPrint(final String msg)
-	{
-		colorOnlyPrint(msg,false);
-	}
-
-	@Override
-	public void colorOnlyPrint(final String msg, final boolean noCache)
-	{
-		if(msg!=null)
-			onlyPrint(CMLib.coffeeFilter().colorOnlyFilter(msg,this),noCache);
-		flagTextDisplayed();
-	}
-
-	protected void flagTextDisplayed()
-	{
-		final MOB mob=this.mob;
-		if((mob != null)&&(mob.isAttributeSet(Attrib.NOREPROMPT))&&(!mob.isInCombat()))
-			return;
-		needPrompt=true;
-	}
-
-	protected String applyFilters(final Physical src, final Environmental trg, final Environmental tol, final String msg, final boolean noWrap)
-	{
-		if(msg!=null)
-		{
-			if(!textFilters.isEmpty())
-			{
-				String newMsg = msg;
-				for(final Iterator<SessionFilter> s=textFilters.iterator();s.hasNext();)
-				{
-					final SessionFilter filter = s.next();
-					newMsg = filter.applyFilter(mob, src, trg, tol, newMsg);
-					if(newMsg == null)
-					{
-						s.remove();
-						return CMLib.coffeeFilter().fullOutFilter(this,mob,src,trg,tol,msg,noWrap);
-					}
-				}
-				return CMLib.coffeeFilter().fullOutFilter(this,mob,src,trg,tol,newMsg,noWrap);
-			}
-			else
-				return CMLib.coffeeFilter().fullOutFilter(this,mob,src,trg,tol,msg,noWrap);
-		}
-		return msg;
-	}
-
-	@Override
-	public void stdPrintln(final String msg)
-	{
-		if(msg!=null)
-			rawPrint(applyFilters(mob,mob,null,msg,false)+"\n\r");
-	}
-
-	@Override
-	public void println(final Physical src, final Environmental trg, final Environmental tol, final String msg)
-	{
-		if(msg!=null)
-			onlyPrint(applyFilters(src,trg,tol,msg,false)+"\n\r",false);
-	}
-
-	@Override
-	public void stdPrintln(final Physical src, final Environmental trg, final Environmental tol, final String msg)
-	{
-		if(msg!=null)
-			rawPrint(applyFilters(src,trg,tol,msg,false)+"\n\r");
-	}
-
-	@Override
 	public void setPromptFlag(final boolean truefalse)
 	{
 		needPrompt=truefalse;
+		outputFormatter.setNeedPrompt(truefalse);
 	}
 
 	@Override
@@ -1654,6 +1243,39 @@ public class DefaultSession implements Session
 		if((input.length()>0)&&(input.charAt(input.length()-1)=='\\'))
 			return input.substring(0,input.length()-1);
 		return input;
+	}
+
+	@Override
+	public void promptPrint(final String msg)
+	{
+		lastWasPrompt.set(true);
+		outputFormatter.print(msg);
+		if(promptSuffix.length>0)
+		{
+			try
+			{
+				rawBytesOut(promptSuffix);
+			}
+			catch (final IOException e)
+			{
+			}
+		}
+		final MOB mob=mob();
+		if((!getClientTelnetMode(TELNET_SUPRESS_GO_AHEAD))
+				&& (!killFlag)
+				&& (mightSupportTelnetMode(TELNET_GA)
+				||(mob==null)
+				||(mob.isAttributeSet(MOB.Attrib.TELNET_GA))))
+		{
+			try
+			{
+				rawBytesOut(TELNETGABYTES);
+			}
+			catch (final Exception e)
+			{
+			}
+		}
+		lastWasPrompt.set(true);
 	}
 
 	@Override
@@ -1721,8 +1343,7 @@ public class DefaultSession implements Session
 					else
 					if(terminalType.startsWith("GIVE-WINTIN.NET-A-CHANCE"))
 					{
-						rawOut("\n\r\n\r**** Your MUD Client is Broken! Please use another!!****\n\r\n\r");
-						rawout.flush();
+						outputFormatter.rawOut("\n\r\n\r**** Your MUD Client is Broken! Please use another!!****\n\r\n\r");
 						CMLib.s_sleep(1000);
 						rawout.close();
 					}
@@ -1780,7 +1401,7 @@ public class DefaultSession implements Session
 				if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 					Log.debugOut("For suboption "+Session.TELNET_DESCS[optionCode]+", got "+dataSize+" bytes, sent "+((resp==null)?0:resp.length));
 				if(resp!=null)
-					rawBytesOut(rawout, resp);
+					rawBytesOut(resp);
 			}
 			break;
 		case TELNET_GMCP:
@@ -1792,7 +1413,7 @@ public class DefaultSession implements Session
 					Log.debugOut(new String(suboptionData));
 				}
 				if(resp!=null)
-					rawBytesOut(rawout, resp);
+					rawBytesOut(resp);
 			}
 			break;
 		default:
@@ -1803,7 +1424,7 @@ public class DefaultSession implements Session
 
 	public void handleEscape() throws IOException, InterruptedIOException
 	{
-		if((in==null)||(out==null))
+		if(outputHandler == null)
 			return;
 		int c=readByte();
 		if((char)c!='[')
@@ -1920,7 +1541,7 @@ public class DefaultSession implements Session
 						final Command C=CMClass.getCommand("Shutdown");
 						l="";
 						setKillFlag(true);
-						rawCharsOut(out,"\n\n\033[1z<Executing Shutdown...\n\n".toCharArray());
+						outputFormatter.rawCharsOut("\n\n\033[1z<Executing Shutdown...\n\n".toCharArray());
 						M.setSession(this);
 						if(C!=null)
 							C.execute(M,cmd,0);
@@ -1933,7 +1554,7 @@ public class DefaultSession implements Session
 	public void handleIAC()
 		throws IOException, InterruptedIOException
 	{
-		if((in==null)||(out==null))
+		if(outputHandler==null)
 			return;
 		lastIACIn=System.currentTimeMillis();
 		int c=readByte();
@@ -1963,7 +1584,7 @@ public class DefaultSession implements Session
 					{
 						if(subOptionStream.size()>1024*1024*5)
 						{
-							killFlag=true;
+							setKillFlag(true);
 							return;
 						}
 						else
@@ -2011,10 +1632,8 @@ public class DefaultSession implements Session
 						{
 							try
 							{
-								if((out==null)||(killFlag))
+								if((outputHandler==null)||(killFlag))
 									return false;
-								out.flush();
-								rawout.flush();
 								switch(counter)
 								{
 								case 3:
@@ -2022,11 +1641,10 @@ public class DefaultSession implements Session
 									if(getClientTelnetMode(TELNET_COMPRESS2))
 									{
 										negotiateTelnetMode(rawout,TELNET_COMPRESS2);
-										//rawout.flush(); rawBytesOut already flushes
 										final ZOutputStream zOut=new ZOutputStream(rawout, JZlib.Z_DEFAULT_COMPRESSION);
 										rawout=zOut;
+										outputHandler.resetByteStream(rawout);
 										zOut.setFlushMode(JZlib.Z_SYNC_FLUSH);
-										out = new PrintWriter(new OutputStreamWriter(zOut,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
 										if(CMSecurity.isDebugging(CMSecurity.DbgFlag.TELNET))
 											Log.debugOut("MCCP compression started");
 									}
@@ -2086,7 +1704,7 @@ public class DefaultSession implements Session
 					buf.write((char)Session.TELNET_IAC);buf.write((char)Session.TELNET_SE);
 					try
 					{
-						rawBytesOut(rawout, buf.toByteArray());
+						rawBytesOut(buf.toByteArray());
 					}
 					catch (final IOException e)
 					{
@@ -2107,7 +1725,7 @@ public class DefaultSession implements Session
 			{
 				setClientTelnetMode(last,false);
 				rawout=new BufferedOutputStream(sock.getOutputStream());
-				out = new PrintWriter(new OutputStreamWriter(rawout,CMProps.getVar(CMProps.Str.CHARSETOUTPUT)));
+				outputHandler.resetByteStream(rawout);
 			}
 			if((mightSupportTelnetMode(last)&&(getServerTelnetMode(last))))
 				changeTelnetMode(last,false);
@@ -2141,7 +1759,7 @@ public class DefaultSession implements Session
 			break;
 		}
 		case TELNET_AYT:
-			rawCharsOut(" \b");
+			outputFormatter.rawCharsOut(" \b");
 			break;
 		default:
 			return;
@@ -2150,71 +1768,22 @@ public class DefaultSession implements Session
 
 	public int readByte() throws IOException
 	{
-		if(bNextByteIs255)
-			return (byte)255;
-		bNextByteIs255 = false;
-		if(fakeInput!=null)
-			throw new java.io.InterruptedIOException(".");
-		if((rawin!=null) && (rawin.available()>0))
-		{
-			final int read = rawin.read();
-			if(read==-1)
-				throw new java.io.InterruptedIOException(".");
-			if(debugBinInput && Log.debugChannelOn())
-				debugBinInputBuf.append(read & 0xff).append(" ");
-			return read;
-		}
-		throw new java.io.InterruptedIOException(".");
+		return inputHandler.readByte(bNextByteIs255, fakeInput);
 	}
 
 	public int readChar() throws IOException
 	{
-		if(bNextByteIs255)
-			return 255;
-		bNextByteIs255 = false;
-		if(fakeInput!=null)
-		{
-			if(fakeInput.length()>0)
-			{
-				final char c=fakeInput.charAt(0);
-				fakeInput.delete(0, 1);
-				return c;
-			}
-			fakeInput=null;
+		int c = inputHandler.readChar(bNextByteIs255, fakeInput);
+		if (fakeInput != null && fakeInput.length() == 0) {
+			fakeInput = null;
 		}
-		int b = readByte();
-		if(1==inMaxBytesPerChar)
-			return b;
-		if((b==TELNET_IAC)||((b&0xff)==TELNET_IAC)||(b=='\033')||(b==27)||(in==null))
-			return b;
-		charWriter.write(b);
-		int maxBytes=inMaxBytesPerChar;
-		while((in!=null)
-		&& !in.ready()
-		&& !killFlag
-		&& (rawin!=null)
-		&&(rawin.available()>0)
-		&& (--maxBytes>=0))
-		{
-			try
-			{
-				return in.read();
-			}
-			catch(final java.io.InterruptedIOException e)
-			{
-				b = readByte();
-				charWriter.write(b);
-			}
-		}
-		if(in==null)
-			throw new java.io.InterruptedIOException();
-		return in.read();
+		return c;
 	}
 
 	@Override
 	public char hotkey(final long maxWait)
 	{
-		if((in==null)||(out==null))
+		if(outputHandler==null)
 			return '\0';
 		input=new StringBuffer("");
 		final long start=System.currentTimeMillis();
@@ -2278,7 +1847,7 @@ public class DefaultSession implements Session
 							lastWasLF = false;
 						lastWasCR = false;
 						if (getClientTelnetMode(TELNET_ECHO))
-							rawCharsOut(""+(char)13+(char)10);  // CR
+							outputFormatter.rawCharsOut(""+(char)13+(char)10);  // CR
 						break;
 					}
 					case 13:
@@ -2293,7 +1862,7 @@ public class DefaultSession implements Session
 							lastWasCR = false;
 						lastWasLF = false;
 						if (getClientTelnetMode(TELNET_ECHO))
-							rawCharsOut(""+(char)13+(char)10);  // CR
+							outputFormatter.rawCharsOut(""+(char)13+(char)10);  // CR
 						break;
 					}
 					case 27:
@@ -2320,7 +1889,7 @@ public class DefaultSession implements Session
 					if(appendInputFlag)
 						input.append((char)c);
 					if (getClientTelnetMode(TELNET_ECHO))
-						rawCharsOut((char)c);
+						outputFormatter.rawCharsOut((char)c);
 					if(!appendInputFlag)
 						return c;
 				}
@@ -2353,8 +1922,16 @@ public class DefaultSession implements Session
 	public String blockingIn(final long maxTime, final boolean filter)
 		throws IOException
 	{
-		if((in==null)||(out==null))
+		if(outputHandler==null)
 			return "";
+		if(runThread != Thread.currentThread()) {
+			// FIXME
+			if(runThread != Thread.currentThread()) {
+				Log.warnOut("DefaultSession", "blockingIn: Method called on non-runThread. This may cause unexpected behavior or threading issues.");
+				return "";
+			}
+			return "";
+		}
 		this.input.setLength(0);
 		final long start=System.currentTimeMillis();
 		final long timeoutTime= (maxTime<=0) ? Long.MAX_VALUE : (start + maxTime);
@@ -2380,7 +1957,7 @@ public class DefaultSession implements Session
 				{
 					if(now > nextPingAtTime)
 					{
-						rawCharsOut(PINGCHARS);
+						outputFormatter.rawCharsOut(PINGCHARS);
 						nextPingAtTime=now +PINGTIMEOUT;
 					}
 					CMLib.s_sleep(100); // if they entered nothing, make sure we dont do a busy poll
@@ -2410,7 +1987,7 @@ public class DefaultSession implements Session
 				Log.sysOut("INPUT: "+(mob==null?"":mob.Name())+": '"+inStr.toString()+"'");
 			final MOB mob=this.mob;
 			if((mob != null)&&(mob.isAttributeSet(Attrib.NOREPROMPT)))
-				needPrompt=true;
+				setPromptFlag(true);
 			return str;
 		}
 		finally
@@ -2447,7 +2024,7 @@ public class DefaultSession implements Session
 	@Override
 	public String readlineContinue() throws IOException, SocketException
 	{
-		if((in==null)||(out==null))
+		if(outputHandler==null)
 			return "";
 		int code=-1;
 		while(!killFlag)
@@ -2486,7 +2063,7 @@ public class DefaultSession implements Session
 			Log.sysOut("INPUT: "+(mob==null?"":mob.Name())+": '"+inStr.toString()+"'");
 		final MOB mob=this.mob;
 		if((mob != null)&&(mob.isAttributeSet(Attrib.NOREPROMPT)))
-			needPrompt=true;
+			setPromptFlag(true);
 		return str;
 	}
 
@@ -2635,50 +2212,35 @@ public class DefaultSession implements Session
 	protected void closeSocks(final String finalMsg)
 	{
 		final Socket sock=this.sock;
-		final PrintWriter out=this.out;
-		if((sock!=null)&&(!sockObj.get()))
+		if((sock!=null) && (!socketShutdownLock.get()))
 		{
-			sockObj.set(true);
+			socketShutdownLock.set(true);
 			try
 			{
 				Log.sysOut("Disconnect: "+finalMsg+getAddress()+" ("+CMLib.time().date2SmartEllapsedTime(getMillisOnline(),true)+")");
+				outputFormatter.shutdown();
 				setStatus(SessionStatus.LOGOUT7);
-				sock.shutdownInput();
+				inputHandler.shutdown();
 				setStatus(SessionStatus.LOGOUT8);
-				if(out!=null)
-				{
-					try
-					{
-						if(!out.checkError())
-						{
-							out.write(PINGCHARS);
-							out.checkError();
-						}
-					}
-					catch (final Exception t)
-					{
-					}
-					out.close();
-				}
+				outputHandler.shutdown();
 				setStatus(SessionStatus.LOGOUT9);
-				sock.shutdownOutput();
+				sock.shutdownInput();
 				setStatus(SessionStatus.LOGOUT10);
-				sock.close();
+				sock.shutdownOutput();
 				setStatus(SessionStatus.LOGOUT11);
+				sock.close();
+				setStatus(SessionStatus.LOGOUT12);
 			}
-			catch(final IOException e)
+			catch(final IOException | IndexOutOfBoundsException e)
 			{
-			}
-			catch (final IndexOutOfBoundsException e)
+				Log.warnOut("DefaultSession", "closeSocks: Error during session shutdown: " + e.getMessage());
+			} finally
 			{
-			}
-			finally
-			{
-				this.rawin=null;
-				this.in=null;
-				this.out=null;
+				this.outputHandler = null;
+				this.inputHandler = null;
+				this.outputFormatter = null;
 				this.sock=null;
-				this.sockObj.set(false);
+				this.socketShutdownLock.set(false);
 			}
 		}
 	}
@@ -2839,7 +2401,7 @@ public class DefaultSession implements Session
 			{
 				try
 				{
-					rawBytesOut(rawout, msdpPingBuf);
+					rawBytesOut(msdpPingBuf);
 				}
 				catch (final IOException e)
 				{
@@ -2855,7 +2417,7 @@ public class DefaultSession implements Session
 			{
 				try
 				{
-					rawBytesOut(rawout, gmcpPingBuf);
+					rawBytesOut(gmcpPingBuf);
 				}
 				catch (final IOException e)
 				{
@@ -3068,7 +2630,7 @@ public class DefaultSession implements Session
 			}
 		}
 
-		needPrompt=true;
+		setPromptFlag(true);
 		if((!killFlag)&&(mob!=null))
 		{
 			setStatus(SessionStatus.MAINLOOP);
@@ -3092,15 +2654,15 @@ public class DefaultSession implements Session
 				final String lastInput = loginSession.acceptInput(this);
 				if(lastInput==null)
 				{
-					if((System.currentTimeMillis()-lastWriteTime)>PINGTIMEOUT)
-						rawCharsOut(PINGCHARS);
+					if((System.currentTimeMillis()-outputHandler.getLastWriteTime())>PINGTIMEOUT)
+						outputFormatter.rawCharsOut(PINGCHARS);
 					return;
 				}
 				if(!killFlag)
 					setInputLoopTime();
 			}
 			if(loginSession == null)
-				killFlag = true;
+				setKillFlag(true);
 			else
 			if(!killFlag)
 			{
@@ -3268,7 +2830,7 @@ public class DefaultSession implements Session
 			setStatus(SessionStatus.LOGOUT4);
 			setKillFlag(setKillFlag);
 			waiting=false;
-			needPrompt=false;
+			setPromptFlag(true);
 			this.acct=null;
 			snoops.clear();
 
@@ -3304,8 +2866,8 @@ public class DefaultSession implements Session
 				input=readlineContinue();
 			if(input==null)
 			{
-				if((System.currentTimeMillis()-lastWriteTime)>PINGTIMEOUT)
-					rawCharsOut(PINGCHARS);
+				if((System.currentTimeMillis()-outputHandler.getLastWriteTime())>PINGTIMEOUT)
+					outputFormatter.rawCharsOut(PINGCHARS);
 			}
 			else
 			{
@@ -3346,7 +2908,7 @@ public class DefaultSession implements Session
 
 						lastStart=System.currentTimeMillis();
 						if(echoOn)
-							rawPrintln(CMParms.combineQuoted(parsedInput,0));
+							outputFormatter.rawPrintln(CMParms.combineQuoted(parsedInput,0));
 						final List<List<String>> MORE_CMDS=CMLib.lang().preCommandParser(parsedInput);
 						for(int m=0;m<MORE_CMDS.size();m++)
 							mob.enqueCommand(MORE_CMDS.get(m),metaFlags,0);
@@ -3354,7 +2916,7 @@ public class DefaultSession implements Session
 					}
 					mob.setActions(curActions);
 				}
-				needPrompt=true;
+				setPromptFlag(true);
 			}
 			if(mob==null)
 			{
@@ -3380,14 +2942,14 @@ public class DefaultSession implements Session
 					final int minsIdle=(int)(getIdleMillis()/60000);
 					if(minsIdle>=CMath.s_int(V.firstElement()))
 					{
-						println(CMLib.lang().L("\n\r^ZYou are being logged out!^?"));
+						outputFormatter.println(CMLib.lang().L("\n\r^ZYou are being logged out!^?"));
 						stopSession(true,true,false);
 					}
 					else
 					if(minsIdle>=CMath.s_int(V.lastElement()))
 					{
 						final int remain=CMath.s_int(V.firstElement())-minsIdle;
-						println(mob(),null,null,CMLib.lang().L("\n\r^ZIf you don't do something, you will be logged out in @x1 minute(s)!^?",""+remain));
+						outputFormatter.println(mob(),null,null,CMLib.lang().L("\n\r^ZIf you don't do something, you will be logged out in @x1 minute(s)!^?",""+remain));
 					}
 				}
 
@@ -3430,13 +2992,13 @@ public class DefaultSession implements Session
 					||(input!=null))
 					{
 						showPrompt();
-						needPrompt=false;
+						setPromptFlag(false);
 					}
 				}
 				else
 				{
 					showPrompt();
-					needPrompt=false;
+					setPromptFlag(false);
 				}
 			}
 		}
@@ -3628,26 +3190,12 @@ public class DefaultSession implements Session
 		}
 	}
 
-	@Override
-	public boolean addSessionFilter(final SessionFilter filter)
-	{
-		if(filter == null)
-			return false;
-		if(!textFilters.contains(filter))
-		{
-			this.textFilters.add(filter);
-			return true;
-		}
-		return false;
-	}
 
 	@Override
 	public void setIdleTimers()
 	{
-		this.lastStr=""; // also resets spam counter
-		this.spamStack=0;
+		outputFormatter.resetSpamStack();
 		lastKeystroke=System.currentTimeMillis();
-		lastWriteTime=System.currentTimeMillis();
 	}
 
 	private static enum SESS_STAT_CODES {PREVCMD,ISAFK,AFKMESSAGE,ADDRESS,IDLETIME,
@@ -3807,7 +3355,7 @@ public class DefaultSession implements Session
 				{
 					try
 					{
-						rawBytesOut(rawout, gmcpPingBuf);
+						rawBytesOut(gmcpPingBuf);
 					}
 					catch (final IOException e)
 					{
@@ -3822,39 +3370,6 @@ public class DefaultSession implements Session
 		}
 	}
 
-	private static class SesInputStream extends InputStream
-	{
-		private final int[] bytes;
-		private int start=0;
-		private int end=0;
-		protected SesInputStream(final int maxBytesPerChar)
-		{
-			bytes=new int[maxBytesPerChar+1];
-		}
-
-		@Override
-		public int read() throws IOException
-		{
-			if(start==end)
-				throw new java.io.InterruptedIOException();
-			final int b=bytes[start];
-			if(start==bytes.length-1)
-				start=0;
-			else
-				start++;
-			return b;
-		}
-
-		public void write(final int b)
-		{
-			bytes[end]=b;
-			if(end==bytes.length-1)
-				end=0;
-			else
-				end++;
-		}
-	}
-
 	@Override
 	public String getLastSeenRoomID() {
 		return lastSeenRoomID;
@@ -3863,5 +3378,10 @@ public class DefaultSession implements Session
 	@Override
 	public Integer getLastSeenRoomHash() {
 		return lastRoomHash;
+	}
+
+	@Override
+	public OutputFormatter getOutputFormatter() {
+		return outputFormatter;
 	}
 }

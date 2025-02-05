@@ -489,9 +489,9 @@ public class CMProtocols extends StdLibrary implements ProtocolLibrary
 				for(final String commandKey : mcpPackages.keySet())
 				{
 					final MCPPackage pkg = mcpPackages.get(commandKey);
-					session.rawPrintln("#$#mcp-negotiate-can "+mcpKey[0]+" package: "+pkg.packageName()+" min-version: "+pkg.minVersion()+" max-version: "+pkg.maxVersion());
+					session.getOutputFormatter().rawPrintln("#$#mcp-negotiate-can "+mcpKey[0]+" package: "+pkg.packageName()+" min-version: "+pkg.minVersion()+" max-version: "+pkg.maxVersion());
 				}
-				session.rawPrintln("#$#mcp-negotiate-end "+mcpKey[0]);
+				session.getOutputFormatter().rawPrintln("#$#mcp-negotiate-end "+mcpKey[0]);
 			}
 			else
 			{

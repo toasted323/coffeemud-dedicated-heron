@@ -629,14 +629,14 @@ public class Reset extends StdCommand
 			||(sess.confirm(L("Re-Level the area '@x1' to between @x2 and @x3 (y/N)?",A.name(),""+levelLow,""+levelHigh),"N")))
 			{
 				if(sess!=null)
-					sess.print(L("Working..."));
+					sess.getOutputFormatter().print(L("Working..."));
 				Log.infoOut(mob.Name()+" RESET RELEVELED "+A.name()+" to "+levelLow+"->"+levelHigh);
 				final int oldMinLevel = A.getIStat(Area.Stats.MIN_LEVEL);
 				final int oldMaxLevel = A.getIStat(Area.Stats.MAX_LEVEL);
 				for(final Enumeration<String> r=A.getProperRoomnumbers().getRoomIDs();r.hasMoreElements();)
 				{
 					if(sess!=null)
-						sess.print(".");
+						sess.getOutputFormatter().print(".");
 					final Room R=CMLib.map().getRoom(r.nextElement());
 					if((R!=null)
 					&&(R.roomID()!=null)
@@ -646,7 +646,7 @@ public class Reset extends StdCommand
 						if(roomR==null)
 						{
 							if(sess != null)
-								sess.println(L("Unable to load room @x1, skipping.",CMLib.map().getExtendedRoomID(R)));
+								sess.getOutputFormatter().println(L("Unable to load room @x1, skipping.",CMLib.map().getExtendedRoomID(R)));
 						}
 						else
 						if(CMLib.percolator().relevelRoom(roomR, oldMinLevel, oldMaxLevel, levelLow, levelHigh))
@@ -661,7 +661,7 @@ public class Reset extends StdCommand
 					}
 				}
 				if(sess!=null)
-					sess.print(L("Done."));
+					sess.getOutputFormatter().print(L("Done."));
 			}
 		}
 		else
@@ -1379,7 +1379,7 @@ public class Reset extends StdCommand
 			if(mob.session().confirm(L("Alter every mobs combat stats to system defaults?!"), L("N")))
 			{
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
-				mob.session().print(L("working..."));
+				mob.session().getOutputFormatter().print(L("working..."));
 				StringBuffer recordedChanges=null;
 				for(int i=1;i<commands.size();i++)
 				{
@@ -1456,7 +1456,7 @@ public class Reset extends StdCommand
 					return false;
 				}
 				if(recordedChanges!=null)
-					mob.session().println(".");
+					mob.session().getOutputFormatter().println(".");
 				for(final Iterator<Room> r=rooms.iterator();r.hasNext();)
 				{
 					Room R=CMLib.map().getRoom(r.next());
@@ -1468,7 +1468,7 @@ public class Reset extends StdCommand
 							continue;
 						if((recordedChanges!=null)&&(recordedChanges.length()>0))
 						{
-							mob.session().rawOut(recordedChanges.toString());
+							mob.session().getOutputFormatter().rawOut(recordedChanges.toString());
 							recordedChanges.setLength(0);
 						}
 						R.getArea().setAreaState(Area.State.FROZEN);
@@ -1491,11 +1491,11 @@ public class Reset extends StdCommand
 							R.getArea().setAreaState(Area.State.ACTIVE);
 					}
 					if(recordedChanges==null)
-						mob.session().print(".");
+						mob.session().getOutputFormatter().print(".");
 				}
 				if((recordedChanges!=null)&&(recordedChanges.length()>0))
-					mob.session().rawOut(recordedChanges.toString());
-				mob.session().println(L("done!"));
+					mob.session().getOutputFormatter().rawOut(recordedChanges.toString());
+				mob.session().getOutputFormatter().println(L("done!"));
 			}
 		}
 		else
@@ -1509,7 +1509,7 @@ public class Reset extends StdCommand
 			if(mob.session().confirm(L("Alter weapon bearing mobs damage stat to damage-weapon or 0?!"), L("N")))
 			{
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
-				mob.session().print(L("working..."));
+				mob.session().getOutputFormatter().print(L("working..."));
 				StringBuffer recordedChanges=null;
 				for(int i=1;i<commands.size();i++)
 				{
@@ -1586,7 +1586,7 @@ public class Reset extends StdCommand
 					return false;
 				}
 				if(recordedChanges!=null)
-					mob.session().println(".");
+					mob.session().getOutputFormatter().println(".");
 				for(final Iterator<Room> r=rooms.iterator();r.hasNext();)
 				{
 					Room R=CMLib.map().getRoom(r.next());
@@ -1598,7 +1598,7 @@ public class Reset extends StdCommand
 							continue;
 						if((recordedChanges!=null)&&(recordedChanges.length()>0))
 						{
-							mob.session().rawOut(recordedChanges.toString());
+							mob.session().getOutputFormatter().rawOut(recordedChanges.toString());
 							recordedChanges.setLength(0);
 						}
 						R.getArea().setAreaState(Area.State.FROZEN);
@@ -1621,11 +1621,11 @@ public class Reset extends StdCommand
 							R.getArea().setAreaState(Area.State.ACTIVE);
 					}
 					if(recordedChanges==null)
-						mob.session().print(".");
+						mob.session().getOutputFormatter().print(".");
 				}
 				if((recordedChanges!=null)&&(recordedChanges.length()>0))
-					mob.session().rawOut(recordedChanges.toString());
-				mob.session().println(L("done!"));
+					mob.session().getOutputFormatter().rawOut(recordedChanges.toString());
+				mob.session().getOutputFormatter().println(L("done!"));
 			}
 		}
 		else
@@ -1635,7 +1635,7 @@ public class Reset extends StdCommand
 				return false;
 			if(mob.session().confirm(L("Alter every door called 'the ground'?!"), L("N")))
 			{
-				mob.session().print(L("working..."));
+				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				try
 				{
@@ -1659,13 +1659,13 @@ public class Reset extends StdCommand
 							Log.sysOut("Reset","Groundly doors in "+R.roomID()+" fixed.");
 							CMLib.database().DBUpdateExits(R);
 						}
-						mob.session().print(".");
+						mob.session().getOutputFormatter().print(".");
 					}
 				}
 				catch (final NoSuchElementException nse)
 				{
 				}
-				mob.session().println(L("done!"));
+				mob.session().getOutputFormatter().println(L("done!"));
 			}
 		}
 		else
@@ -1675,7 +1675,7 @@ public class Reset extends StdCommand
 				return false;
 			if(mob.session().confirm(L("Change all mobs armor to the codebase defaults?"), L("N")))
 			{
-				mob.session().print(L("working..."));
+				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				for(final Enumeration<Area> a=CMLib.map().areas();a.hasMoreElements();)
 				{
@@ -1707,7 +1707,7 @@ public class Reset extends StdCommand
 								else
 									Log.sysOut("Reset","Skipped "+M.name()+" in room "+R.roomID());
 							}
-							mob.session().print(".");
+							mob.session().getOutputFormatter().print(".");
 							if(didSomething)
 								CMLib.database().DBUpdateMOBs(R);
 						}
@@ -1715,7 +1715,7 @@ public class Reset extends StdCommand
 					if(A.getAreaState()!=Area.State.ACTIVE)
 						A.setAreaState(Area.State.ACTIVE);
 				}
-				mob.session().println(L("done!"));
+				mob.session().getOutputFormatter().println(L("done!"));
 			}
 		}
 		else
@@ -1725,7 +1725,7 @@ public class Reset extends StdCommand
 				return false;
 			if(mob.session().confirm(L("Alter every mobs money to system defaults?!"), L("N")))
 			{
-				mob.session().print(L("working..."));
+				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				for(final Enumeration<Area> a=CMLib.map().areas();a.hasMoreElements();)
 				{
@@ -1753,7 +1753,7 @@ public class Reset extends StdCommand
 									didSomething=true;
 								}
 							}
-							mob.session().print(".");
+							mob.session().getOutputFormatter().print(".");
 							if(didSomething)
 								CMLib.database().DBUpdateMOBs(R);
 						}
@@ -1761,7 +1761,7 @@ public class Reset extends StdCommand
 					if(A.getAreaState()!=Area.State.ACTIVE)
 						A.setAreaState(Area.State.ACTIVE);
 				}
-				mob.session().println(L("done!"));
+				mob.session().getOutputFormatter().println(L("done!"));
 			}
 		}
 		else
@@ -1786,7 +1786,7 @@ public class Reset extends StdCommand
 
 			if(mob.session().confirm(L("Add this behavior/property to every Area?"), L("N")))
 			{
-				mob.session().print(L("working..."));
+				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				for(final Enumeration<Area> a=CMLib.map().areas();a.hasMoreElements();)
 				{
@@ -1830,10 +1830,10 @@ public class Reset extends StdCommand
 					if(changed)
 					{
 						CMLib.database().DBUpdateArea(A.Name(),A);
-						mob.session().print(".");
+						mob.session().getOutputFormatter().print(".");
 					}
 				}
-				mob.session().println(L("done!"));
+				mob.session().getOutputFormatter().println(L("done!"));
 			}
 		}
 		else
@@ -1843,7 +1843,7 @@ public class Reset extends StdCommand
 				return false;
 			if(mob.session().confirm(L("Begin scanning and altering the material type of all items?"), L("N")))
 			{
-				mob.session().print(L("working..."));
+				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				for(final Enumeration<Area> a=CMLib.map().areas();a.hasMoreElements();)
 				{
@@ -1898,14 +1898,14 @@ public class Reset extends StdCommand
 									CMLib.database().DBUpdateItems(R);
 								if(changedMOBS)
 									CMLib.database().DBUpdateMOBs(R);
-								mob.session().print(".");
+								mob.session().getOutputFormatter().print(".");
 							}
 						}
 					}
 					if(A.getAreaState()!=Area.State.ACTIVE)
 						A.setAreaState(Area.State.ACTIVE);
 				}
-				mob.session().println(L("done!"));
+				mob.session().getOutputFormatter().println(L("done!"));
 			}
 		}
 		else
@@ -1915,7 +1915,7 @@ public class Reset extends StdCommand
 				return false;
 			if(mob.session().confirm(L("Begin scanning mixed generic races for descrepencies?"), L("N")))
 			{
-				mob.session().print(L("working..."));
+				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				final List<List<Race>> raceSets=new ArrayList<List<Race>>();
 				for(final Enumeration<Race> r=CMClass.races();r.hasMoreElements();)
@@ -2042,7 +2042,7 @@ public class Reset extends StdCommand
 				return false;
 			if(mob.session().confirm(L("Begin scanning and altering all items to system defaults?"), L("N")))
 			{
-				mob.session().print(L("working..."));
+				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				StringBuffer recordedChanges=null;
 				for(int i=1;i<commands.size();i++)
@@ -2122,7 +2122,7 @@ public class Reset extends StdCommand
 					return false;
 				}
 				if(recordedChanges!=null)
-					mob.session().println(".");
+					mob.session().getOutputFormatter().println(".");
 				for(final Iterator<Room> r=rooms.iterator();r.hasNext();)
 				{
 					Room R=CMLib.map().getRoom(r.next());
@@ -2132,7 +2132,7 @@ public class Reset extends StdCommand
 					A.setAreaState(Area.State.FROZEN);
 					if((recordedChanges!=null)&&(recordedChanges.length()>0))
 					{
-						mob.session().rawOut(recordedChanges.toString());
+						mob.session().getOutputFormatter().rawOut(recordedChanges.toString());
 						recordedChanges.setLength(0);
 					}
 					synchronized(CMClass.getSync("SYNC"+R.roomID()))
@@ -2193,24 +2193,24 @@ public class Reset extends StdCommand
 						if((changedMOBS)&&(recordedChanges==null))
 							CMLib.database().DBUpdateMOBs(R);
 						if(recordedChanges==null)
-							mob.session().print(".");
+							mob.session().getOutputFormatter().print(".");
 					}
 					if(A.getAreaState()!=Area.State.ACTIVE)
 						A.setAreaState(Area.State.ACTIVE);
 				}
 				if((recordedChanges!=null)&&(recordedChanges.length()>0))
-					mob.session().rawOut(recordedChanges.toString());
-				mob.session().println(L("done!"));
+					mob.session().getOutputFormatter().rawOut(recordedChanges.toString());
+				mob.session().getOutputFormatter().println(L("done!"));
 			}
 		}
 		else
 		if(s.startsWith("clantick"))
 		{
-			mob.session().println(L("clantick: tick clans"));
+			mob.session().getOutputFormatter().println(L("clantick: tick clans"));
 			CMLib.clans().tickAllClans();
-			mob.session().println(L("clantick: clans tick"));
+			mob.session().getOutputFormatter().println(L("clantick: clans tick"));
 			CMLib.clans().forceTick();
-			mob.session().println(L("clantick: done!"));
+			mob.session().getOutputFormatter().println(L("clantick: done!"));
 		}
 		else
 		if(s.equalsIgnoreCase("VISITATION"))

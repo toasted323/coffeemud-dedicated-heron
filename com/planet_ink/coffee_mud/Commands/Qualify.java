@@ -569,7 +569,7 @@ public class Qualify  extends Skills
 					if(limits.languageSkills() < Integer.MAX_VALUE/2)
 						msg.append(L("\n\r^HYou may learn ^w@x1^H more languages.^N",""+limits.languageSkills()));
 				}
-				mob.session().wraplessPrintln(L("^!You now qualify for the following unknown abilities:^?@x1",msg.toString()));
+				mob.session().getOutputFormatter().wraplessPrintln(L("^!You now qualify for the following unknown abilities:^?@x1",msg.toString()));
 				if(!ID().equals("WillQualify"))
 					mob.tell(L("\n\rUse WILLQUALIFY to see everything available now, or in later levels."));
 				mob.tell(L("\n\rUse the GAIN command with your teacher to gain new skills, spells, and expertises."));

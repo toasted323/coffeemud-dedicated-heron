@@ -321,14 +321,14 @@ public class Merge extends StdCommand
 		if((buf.length()>20)&&(buf.substring(0,20).indexOf("<MOBS>")>=0))
 		{
 			if(mob.session()!=null)
-				mob.session().rawPrint(L("Unpacking mobs from file: '@x1'...",filename));
+				mob.session().getOutputFormatter().rawPrint(L("Unpacking mobs from file: '@x1'...",filename));
 			List<MOB> mobs=new Vector<MOB>();
 			final String error=CMLib.coffeeMaker().addMOBsFromXML(buf.toString(),mobs,mob.session());
 			things.addAll(mobs);
 			mobs.clear();
 			mobs=null;
 			if(mob.session()!=null)
-				mob.session().rawPrintln("!");
+				mob.session().getOutputFormatter().rawPrintln("!");
 			if(error.length()>0)
 			{
 				mob.tell(L("An error occurred on merge: @x1",error));
@@ -341,14 +341,14 @@ public class Merge extends StdCommand
 		if((buf.length()>20)&&(buf.substring(0,20).indexOf("<ITEMS>")>=0))
 		{
 			if(mob.session()!=null)
-				mob.session().rawPrint(L("Unpacking items from file: '@x1'...",filename));
+				mob.session().getOutputFormatter().rawPrint(L("Unpacking items from file: '@x1'...",filename));
 			List<Item> items=new Vector<Item>();
 			final String error=CMLib.coffeeMaker().addItemsFromXML(buf.toString(),items,mob.session());
 			things.addAll(items);
 			items.clear();
 			items=null;
 			if(mob.session()!=null)
-				mob.session().rawPrintln("!");
+				mob.session().getOutputFormatter().rawPrintln("!");
 			if(error.length()>0)
 			{
 				mob.tell(L("An error occurred on merge: @x1",error));
@@ -473,14 +473,14 @@ public class Merge extends StdCommand
 			if(placesToDo.get(i) instanceof Room)
 			{
 				if(mob.session()!=null)
-					mob.session().rawPrint(".");
+					mob.session().getOutputFormatter().rawPrint(".");
 			}
 			else
 				return false;
 		}
 		// now do the merge...
 		if(mob.session()!=null)
-			mob.session().rawPrint(L("Merging and saving..."));
+			mob.session().getOutputFormatter().rawPrint(L("Merging and saving..."));
 		if(noisy)
 			mergedebugtell(mob,"Rooms to do: "+placesToDo.size());
 		if(noisy)
@@ -558,13 +558,13 @@ public class Merge extends StdCommand
 				if(savemobs)
 					CMLib.database().DBUpdateMOBs(R);
 				if(mob.session()!=null)
-					mob.session().rawPrint(".");
+					mob.session().getOutputFormatter().rawPrint(".");
 				R.getArea().setAreaState(oldFlags);
 			}
 		}
 
 		if(mob.session()!=null)
-			mob.session().safeRawPrintln(L("!\n\rDone!"));
+			mob.session().getOutputFormatter().safeRawPrintln(L("!\n\rDone!"));
 		Area A=null;
 		for(int i=0;i<placesToDo.size();i++)
 		{

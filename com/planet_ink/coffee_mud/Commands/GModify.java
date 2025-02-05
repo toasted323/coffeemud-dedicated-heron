@@ -998,9 +998,9 @@ public class GModify extends StdCommand
 			if(sess!=null)
 			{
 				if(changes.size()==0)
-					sess.safeRawPrintln(L("Searching..."));
+					sess.getOutputFormatter().safeRawPrintln(L("Searching..."));
 				else
-					sess.safeRawPrint(L("Searching, modifying and saving..."));
+					sess.getOutputFormatter().safeRawPrint(L("Searching, modifying and saving..."));
 			}
 			final java.util.List<PlayerLibrary.ThinPlayer> allUsers=CMLib.database().getExtendedUserList();
 			final PlayerLibrary plib=CMLib.players();
@@ -1034,11 +1034,11 @@ public class GModify extends StdCommand
 							CMLib.database().DBUpdatePlayer(M);
 					}
 					if((sess!=null)&&(changes.size()>0))
-						sess.rawPrint(".");
+						sess.getOutputFormatter().rawPrint(".");
 				}
 			}
 			if(sess!=null)
-				sess.rawPrintln(L("!\n\rDone!"));
+				sess.getOutputFormatter().rawPrintln(L("!\n\rDone!"));
 			return true;
 		}
 
@@ -1077,7 +1077,7 @@ public class GModify extends StdCommand
 			if(placesToDo.get(i) instanceof Room)
 			{
 				if(mob.session()!=null)
-					mob.session().rawPrint(".");
+					mob.session().getOutputFormatter().rawPrint(".");
 			}
 			else
 				return false;
@@ -1086,9 +1086,9 @@ public class GModify extends StdCommand
 		if(mob.session()!=null)
 		{
 			if(changes.size()==0)
-				mob.session().safeRawPrintln(L("Searching..."));
+				mob.session().getOutputFormatter().safeRawPrintln(L("Searching..."));
 			else
-				mob.session().safeRawPrint(L("Searching, modifying and saving..."));
+				mob.session().getOutputFormatter().safeRawPrint(L("Searching, modifying and saving..."));
 		}
 		if(noisy)
 			gmodifydebugtell(mob,"Rooms to do: "+placesToDo.size());
@@ -1227,7 +1227,7 @@ public class GModify extends StdCommand
 				if(savemobs)
 					CMLib.database().DBUpdateMOBs(R);
 				if((sess!=null)&&(changes.size()>0))
-					sess.rawPrint(".");
+					sess.getOutputFormatter().rawPrint(".");
 				A.setAreaState(oldFlag);
 				if(changes.size()==0)
 				{
@@ -1249,7 +1249,7 @@ public class GModify extends StdCommand
 		}
 
 		if(sess!=null)
-			sess.rawPrintln(L("!\n\rDone!"));
+			sess.getOutputFormatter().rawPrintln(L("!\n\rDone!"));
 		for(int i=0;i<placesToDo.size();i++)
 		{
 			final Room R=(Room)placesToDo.get(i);

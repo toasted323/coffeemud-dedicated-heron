@@ -98,7 +98,7 @@ public class Spell_SeeAura extends Spell
 				mob.location().send(mob,msg);
 				final StringBuilder str=CMLib.commands().getScore(target);
 				if(!mob.isMonster())
-					mob.session().wraplessPrintln(str.toString());
+					mob.session().getOutputFormatter().wraplessPrintln(str.toString());
 				else
 					commonTell(mob,str.toString());
 			}

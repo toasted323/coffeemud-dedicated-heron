@@ -283,7 +283,7 @@ public class Load extends StdCommand
 								pout.flush();
 								mob.tell(L("Compile failed:"));
 								if(mob.session()!=null)
-									mob.session().rawOut(bout.toString());
+									mob.session().getOutputFormatter().rawOut(bout.toString());
 								return false;
 							}
 						}

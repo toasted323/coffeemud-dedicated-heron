@@ -61,7 +61,7 @@ public class Chants extends Skills
 		parseDomainInfo(mob,commands,new XVector<Integer>(Integer.valueOf(Ability.ACODE_CHANT)),level,domain,domainName);
 		msg.append(L("\n\r^HYour @x1chants:^? @x2",domainName[0].replace('_',' '),getAbilities(mob,mob,Ability.ACODE_CHANT,domain[0],true,level[0]).toString()));
 		if(!mob.isMonster())
-			mob.session().wraplessPrintln(msg.toString());
+			mob.session().getOutputFormatter().wraplessPrintln(msg.toString());
 		return false;
 	}
 

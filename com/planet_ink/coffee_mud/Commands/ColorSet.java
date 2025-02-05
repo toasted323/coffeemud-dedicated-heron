@@ -301,7 +301,7 @@ public class ColorSet extends StdCommand
 						buf.append(colorDescription(clookup[0][theSet.get(i).second.intValue()]));
 					buf.append("^N");
 				}
-				session.println(buf.toString());
+				session.getOutputFormatter().println(buf.toString());
 				session.promptPrint(L("Enter Number, channel name, or RETURN: "));
 			}
 
@@ -368,7 +368,7 @@ public class ColorSet extends StdCommand
 								buf.append("^"+C.getCodeChar()+CMStrings.capitalizeAndLower(C.name()));
 							}
 						}
-						session.println(buf.toString()+"^N");
+						session.getOutputFormatter().println(buf.toString()+"^N");
 						pickColor(mob,COLOR_ALLBASICCOLORCODELETTERS,new InputCallback(InputCallback.Type.PROMPT,"")
 						{
 							@Override
@@ -424,7 +424,7 @@ public class ColorSet extends StdCommand
 								buf.append("^"+C.getCodeChar()+CMStrings.capitalizeAndLower(C.name()));
 							}
 						}
-						session.println(buf.toString()+"^N");
+						session.getOutputFormatter().println(buf.toString()+"^N");
 						pickColor(mob,COLOR_ALLBACKGROUNDCOLORCODELETTERS,new InputCallback(InputCallback.Type.PROMPT,"")
 						{
 							@Override

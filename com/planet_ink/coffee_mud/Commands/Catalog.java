@@ -532,7 +532,7 @@ public class Catalog extends StdCommand
 					list.append("\n\r");
 				}
 				if(mob.session()!=null)
-					mob.session().wraplessPrintln(list.toString());
+					mob.session().getOutputFormatter().wraplessPrintln(list.toString());
 			}
 			else
 			if(commands.get(0).equalsIgnoreCase("DELETE"))

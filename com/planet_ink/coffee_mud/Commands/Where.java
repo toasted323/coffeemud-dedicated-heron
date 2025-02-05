@@ -304,7 +304,7 @@ public class Where extends StdCommand
 										}
 									}
 								};
-								session.wraplessPrintln(lines.toString());
+								session.getOutputFormatter().wraplessPrintln(lines.toString());
 								lines.setLength(0);
 								session.prompt(callBack);
 							}
@@ -818,7 +818,7 @@ public class Where extends StdCommand
 				msg.append(L("\n\r\n\r^HEnter 'HELP (AREA NAME) for more information.^?"));
 			}
 			if(!mob.isMonster())
-				mob.session().colorOnlyPrintln(msg.toString()+"\n\r");
+				mob.session().getOutputFormatter().colorOnlyPrintln(msg.toString()+"\n\r");
 		}
 		return false;
 	}

@@ -77,7 +77,7 @@ public class Matches extends StdTest
 					match = S.prompt("Enter a matcher: ");
 					if(match.trim().length()==0)
 						break;
-					S.println("match="+CMStrings.matches(word, match, false));
+					S.getOutputFormatter().println("match="+CMStrings.matches(word, match, false));
 				}
 			}
 		}

@@ -319,7 +319,7 @@ public class Modify extends StdCommand
 			mob.tell(L("You have failed to specify the proper fields.\n\rFormat: CREATE EXPERTISE [EXPERTISE ID]=[PARAMETERS] as follows: \n\r"));
 			final String inst=CMLib.expertises().getExpertiseInstructions();
 			if(mob.session()!=null)
-				mob.session().wraplessPrintln(inst.toString());
+				mob.session().getOutputFormatter().wraplessPrintln(inst.toString());
 			mob.location().showOthers(mob,null,CMMsg.MSG_OK_ACTION,L("<S-NAME> flub(s) a spell.."));
 			return;
 		}
@@ -409,7 +409,7 @@ public class Modify extends StdCommand
 			boolean reid=false;
 			if((A==null)&&(!CMSecurity.isAllowed(mob, mob.location(), CMSecurity.SecFlag.CMDAREAS)))
 			{
-				mob.session().println(L("Not permitted."));
+				mob.session().getOutputFormatter().println(L("Not permitted."));
 				mob.location().showOthers(mob,null,CMMsg.MSG_OK_ACTION,L("<S-NAME> flub(s) a powerful spell."));
 				return;
 			}
@@ -426,8 +426,8 @@ public class Modify extends StdCommand
 							areaType=mob.session().prompt(L("Enter an area type to create (default=StdArea): "),L("StdArea"));
 							if(CMClass.getAreaType(areaType)==null)
 							{
-								mob.session().println(L("Invalid area type! Valid ones are:"));
-								mob.session().println(CMLib.lister().build3ColTable(mob,CMClass.areaTypes()).toString());
+								mob.session().getOutputFormatter().println(L("Invalid area type! Valid ones are:"));
+								mob.session().getOutputFormatter().println(CMLib.lister().build3ColTable(mob,CMClass.areaTypes()).toString());
 								areaType="";
 							}
 						}
@@ -776,7 +776,7 @@ public class Modify extends StdCommand
 								}
 							}
 						};
-						session.wraplessPrintln(lines.toString());
+						session.getOutputFormatter().wraplessPrintln(lines.toString());
 						lines.setLength(0);
 						session.prompt(callBack);
 					}
@@ -790,7 +790,7 @@ public class Modify extends StdCommand
 				pw.flush();
 				lines.append(e.getMessage()+"\n\r"+bout.toString());
 				if(mob.session()!=null)
-					mob.session().wraplessPrintln(lines.toString());
+					mob.session().getOutputFormatter().wraplessPrintln(lines.toString());
 				lines.setLength(0);
 			}
 		}
@@ -1964,7 +1964,7 @@ public class Modify extends StdCommand
 
 		if(commands.size()<3)
 		{
-			mob.session().safeRawPrintln(L("but fail to specify the proper fields.\n\rThe format is MODIFY SOCIAL [NAME] ([PARAM])\n\r"));
+			mob.session().getOutputFormatter().safeRawPrintln(L("but fail to specify the proper fields.\n\rThe format is MODIFY SOCIAL [NAME] ([PARAM])\n\r"));
 			mob.location().showOthers(mob,null,CMMsg.MSG_OK_ACTION,L("<S-NAME> flub(s) a powerful spell."));
 			return;
 		}
@@ -2856,7 +2856,7 @@ public class Modify extends StdCommand
 						}
 					}
 					if(mob.session()!=null)
-						mob.session().rawPrint(buf.toString());
+						mob.session().getOutputFormatter().rawPrint(buf.toString());
 					mob.tell(L("Command completed."));
 				}
 				else

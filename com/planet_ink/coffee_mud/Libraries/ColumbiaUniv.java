@@ -1161,7 +1161,7 @@ public class ColumbiaUniv extends StdLibrary implements ExpertiseLibrary
 					else
 					{
 						if(!session.isStopped())
-							session.println("\n\r");
+							session.getOutputFormatter().println("\n\r");
 						teacher.tell(L("@x1 does not want you to.",student.charStats().HeShe()));
 					}
 				}

@@ -14,6 +14,7 @@ import com.planet_ink.coffee_mud.Libraries.interfaces.*;
 import com.planet_ink.coffee_mud.Locales.interfaces.*;
 import com.planet_ink.coffee_mud.MOBS.interfaces.*;
 import com.planet_ink.coffee_mud.Races.interfaces.*;
+import com.planet_ink.coffee_mud.io.interfaces.OutputFormatter;
 
 import java.util.*;
 
@@ -52,7 +53,7 @@ public class Replay extends StdCommand
 		if(!mob.isMonster())
 		{
 			final Session S=mob.session();
-			int num=Session.MAX_PREVMSGS;
+			int num=OutputFormatter.MAX_PREVMSGS;
 			if(commands.size()>1)
 				num=CMath.s_int(CMParms.combine(commands,1));
 			if(num<=0)
@@ -61,7 +62,7 @@ public class Replay extends StdCommand
 			if(num>last.size())
 				num=last.size();
 			for(int v=last.size()-num;v<last.size();v++)
-				S.onlyPrint((last.get(v))+"\n\r",true);
+				S.getOutputFormatter().onlyPrint((last.get(v))+"\n\r",true);
 		}
 		return false;
 	}

@@ -812,7 +812,7 @@ public class IMudClient implements I3Interface
 			buf.append(CMStrings.padRight(L("Driver"),10)+": "+mudToShow.driver+"\n\r");
 			buf.append(CMStrings.padRight(L("Status"),10)+": "+mudToShow.status+"\n\r");
 		}
-		mob.session().wraplessPrintln(buf.toString());
+		mob.session().getOutputFormatter().wraplessPrintln(buf.toString());
 	}
 
 	@Override
@@ -847,7 +847,7 @@ public class IMudClient implements I3Interface
 			final REMOTEINFO m=V.elementAt(v);
 			buf.append("["+CMStrings.padRight(m.name,15)+"]["+CMStrings.padRight(m.version,30)+"] "+CMStrings.padRight(m.network,13)+" ("+CMStrings.padRight(m.hub,10)+")\n\r");
 		}
-		mob.session().wraplessPrintln(buf.toString());
+		mob.session().getOutputFormatter().wraplessPrintln(buf.toString());
 	}
 
 	protected List<I3Mud> getSortedI3Muds()
@@ -915,7 +915,7 @@ public class IMudClient implements I3Interface
 				buf.append("["+CMStrings.padRight(m.mud_name,col1Width)+"]["+CMStrings.padRight(mudlib,col2Width)+"] "+m.address+" ("+m.player_port+")\n\r");
 			}
 		}
-		mob.session().wraplessPrintln(buf.toString());
+		mob.session().getOutputFormatter().wraplessPrintln(buf.toString());
 	}
 
 	@Override
@@ -941,7 +941,7 @@ public class IMudClient implements I3Interface
 				buf.append("\n\r");
 			}
 		}
-		mob.session().wraplessPrintln(buf.toString());
+		mob.session().getOutputFormatter().wraplessPrintln(buf.toString());
 	}
 
 	@Override
@@ -976,7 +976,7 @@ public class IMudClient implements I3Interface
 						   r.owner+"\n\r");
 			}
 		}
-		mob.session().wraplessPrintln(buf.toString());
+		mob.session().getOutputFormatter().wraplessPrintln(buf.toString());
 	}
 
 	@Override

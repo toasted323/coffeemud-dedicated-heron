@@ -201,30 +201,30 @@ public class Affect extends StdCommand
 					else
 						P=mob.location().fetchFromMOBRoomFavorsItems(mob,null,name,Wearable.FILTER_ANY);
 					if(P==null)
-						S.colorOnlyPrint(L("You don't see @x1 here.\n\r^N",name));
+						S.getOutputFormatter().colorOnlyPrint(L("You don't see @x1 here.\n\r^N",name));
 					else
 					{
 						if(S==mob.session())
-							S.colorOnlyPrint(L(" \n\r^!@x1 is affected by: ^?",P.name()));
+							S.getOutputFormatter().colorOnlyPrint(L(" \n\r^!@x1 is affected by: ^?",P.name()));
 						final String msg=getAffects(S,P,true,mob.isAttributeSet(MOB.Attrib.SYSOPMSGS));
 						if(msg.length()<5)
-							S.colorOnlyPrintln(L("Nothing!\n\r^N"));
+							S.getOutputFormatter().colorOnlyPrintln(L("Nothing!\n\r^N"));
 						else
-							S.colorOnlyPrintln(msg);
+							S.getOutputFormatter().colorOnlyPrintln(msg);
 					}
 					return false;
 				}
 
 			}
 			if(S==mob.session())
-				S.colorOnlyPrintln("\n\r"+getMOBState(mob)+"\n\r");
+				S.getOutputFormatter().colorOnlyPrintln("\n\r"+getMOBState(mob)+"\n\r");
 			if(S==mob.session())
-				S.colorOnlyPrint(L("^!You are affected by: ^?"));
+				S.getOutputFormatter().colorOnlyPrint(L("^!You are affected by: ^?"));
 			final String msg=getAffects(S,mob,mob.isAttributeSet(MOB.Attrib.SYSOPMSGS),mob.isAttributeSet(MOB.Attrib.SYSOPMSGS));
 			if(msg.length()<5)
-				S.colorOnlyPrintln(L("Nothing!\n\r^N"));
+				S.getOutputFormatter().colorOnlyPrintln(L("Nothing!\n\r^N"));
 			else
-				S.colorOnlyPrintln(msg);
+				S.getOutputFormatter().colorOnlyPrintln(msg);
 		}
 		return false;
 	}

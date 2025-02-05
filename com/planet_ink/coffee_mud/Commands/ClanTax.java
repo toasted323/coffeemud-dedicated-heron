@@ -135,7 +135,7 @@ public class ClanTax extends StdCommand
 		if((intt<0)||(intt>25))
 		{
 			if(mob.session()!=null)
-				mob.session().println(L("'@x1' is not a valid value.  Try 0-25.",t));
+				mob.session().getOutputFormatter().println(L("'@x1' is not a valid value.  Try 0-25.",t));
 			return;
 		}
 		final Vector<String> commands=new Vector<String>();

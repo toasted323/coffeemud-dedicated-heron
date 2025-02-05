@@ -65,7 +65,7 @@ public class WizEmote extends StdCommand
 					if((S.mob()!=null)
 					&&(S.mob().location()!=null)
 					&&(CMSecurity.isAllowed(mob,S.mob().location(),CMSecurity.SecFlag.WIZEMOTE)))
-	  					S.stdPrintln("^w"+msg+"^?");
+	  					S.getOutputFormatter().stdPrintln("^w"+msg+"^?");
 				}
 			}
 			else
@@ -76,7 +76,7 @@ public class WizEmote extends StdCommand
 					if((S.mob()!=null)
 					&&(S.mob().location()==R)
 					&&(CMSecurity.isAllowed(mob,R,CMSecurity.SecFlag.WIZEMOTE)))
-						S.stdPrintln("^w"+msg+"^?");
+						S.getOutputFormatter().stdPrintln("^w"+msg+"^?");
 				}
 			}
 			else
@@ -88,7 +88,7 @@ public class WizEmote extends StdCommand
 					&&(S.mob().location()!=null)
 					&&(A.inMyMetroArea(S.mob().location().getArea()))
 					&&(CMSecurity.isAllowed(mob,S.mob().location(),CMSecurity.SecFlag.WIZEMOTE)))
-						S.stdPrintln("^w"+msg+"^?");
+						S.getOutputFormatter().stdPrintln("^w"+msg+"^?");
 				}
 			}
 			else
@@ -99,7 +99,7 @@ public class WizEmote extends StdCommand
 					if((S.mob()!=null)
 					&&(S.mob().getClanRole(C.clanID())!=null)
 					&&(CMSecurity.isAllowed(mob,S.mob().location(),CMSecurity.SecFlag.WIZEMOTE)))
-						S.stdPrintln("^w"+msg+"^?");
+						S.getOutputFormatter().stdPrintln("^w"+msg+"^?");
 				}
 			}
 			else
@@ -113,7 +113,7 @@ public class WizEmote extends StdCommand
 					&&(CMLib.english().containsString(S.mob().name(),who)
 						||CMLib.english().containsString(S.mob().location().getArea().name(),who)))
 					{
-	  					S.stdPrintln("^w"+msg+"^?");
+	  					S.getOutputFormatter().stdPrintln("^w"+msg+"^?");
 						found=true;
 						break;
 					}

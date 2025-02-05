@@ -119,7 +119,7 @@ public class Expertises extends StdCommand
 		if(!msg.toString().endsWith("\n\r"))
 			msg.append("\n\r");
 		if(!mob.isMonster())
-			mob.session().wraplessPrintln(msg.toString());
+			mob.session().getOutputFormatter().wraplessPrintln(msg.toString());
 		return false;
 	}
 

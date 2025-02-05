@@ -393,7 +393,7 @@ public class StdShopKeeper extends StdMOB implements ShopKeeper
 					{
 						budgetRemaining = budgetRemaining - Math.round(paid);
 						if (mySession != null)
-							mySession.stdPrintln(msg.source(), msg.target(), msg.tool(), msg.targetMessage());
+							mySession.getOutputFormatter().stdPrintln(msg.source(), msg.target(), msg.tool(), msg.targetMessage());
 						if (!CMath.bset(msg.targetMajor(), CMMsg.MASK_OPTIMIZE))
 							mob.location().recoverRoomStats();
 						if (isGeneric())
@@ -458,7 +458,7 @@ public class StdShopKeeper extends StdMOB implements ShopKeeper
 							CMLib.coffeeShops().purchaseAbility((Ability) product, this, this, mobFor);
 
 						if (mySession != null)
-							mySession.stdPrintln(msg.source(), msg.target(), msg.tool(), msg.targetMessage());
+							mySession.getOutputFormatter().stdPrintln(msg.source(), msg.target(), msg.tool(), msg.targetMessage());
 						if (!CMath.bset(msg.targetMajor(), CMMsg.MASK_OPTIMIZE))
 							mob.location().recoverRoomStats();
 					}

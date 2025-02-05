@@ -70,7 +70,7 @@ public class Export extends StdCommand
 			xml=xml.replace('\n',' ');
 			xml=xml.replace('\r',' ');
 			if(S!=null)
-				S.safeRawPrintln(xml+"\n\r\n\r");
+				S.getOutputFormatter().safeRawPrintln(xml+"\n\r\n\r");
 		}
 		else
 		if(fileName.equalsIgnoreCase("EMAIL"))
@@ -447,11 +447,11 @@ public class Export extends StdCommand
 			{
 				final StringBuffer x=new StringBuffer("<PLAYERS>");
 				if(S!=null)
-					S.rawPrint(L("Reading players..."));
+					S.getOutputFormatter().rawPrint(L("Reading players..."));
 				final java.util.List<String> V=CMLib.database().getUserList();
 				for(final String name : V)
 				{
-					//if(S!=null) S.rawPrint(".");
+					//if(S!=null) S.getOutputFormatter().rawPrint(".");
 					final MOB M=CMLib.players().getLoadPlayer(name);
 					if(M!=null)
 					{
@@ -464,18 +464,18 @@ public class Export extends StdCommand
 					fileName=fileName+"/player";
 				xml=x.toString()+"</PLAYERS>";
 				if(S!=null)
-					S.rawPrintln("!");
+					S.getOutputFormatter().rawPrintln("!");
 			}
 			else
 			if(commandType.equalsIgnoreCase("ACCOUNT"))
 			{
 				final StringBuffer x=new StringBuffer("<ACCOUNTS>");
 				if(S!=null)
-					S.rawPrint(L("Reading accounts and players..."));
+					S.getOutputFormatter().rawPrint(L("Reading accounts and players..."));
 				for(final Enumeration<PlayerAccount> a=CMLib.players().accounts("",null);a.hasMoreElements();)
 				{
 					final PlayerAccount A=a.nextElement();
-					//if(S!=null) S.rawPrint(".");
+					//if(S!=null) S.getOutputFormatter().rawPrint(".");
 					x.append("\r\n<ACCOUNT>");
 					x.append(CMLib.coffeeMaker().getAccountXML(A,custom,files));
 					x.append("</ACCOUNT>");
@@ -484,14 +484,14 @@ public class Export extends StdCommand
 					fileName=fileName+"/account";
 				xml=x.toString()+"</ACCOUNTS>";
 				if(S!=null)
-					S.rawPrintln("!");
+					S.getOutputFormatter().rawPrintln("!");
 			}
 			else
 			if(commandType.equalsIgnoreCase("CATALOG"))
 			{
 				final StringBuffer x=new StringBuffer("<CATALOG HASBOTH>");
 				if(S!=null)
-					S.rawPrint(L("Reading catalog items and mobs..."));
+					S.getOutputFormatter().rawPrint(L("Reading catalog items and mobs..."));
 				x.append("\r\n<MOBS>");
 				final Map<String,List<MOB>> foundMobs=new TreeMap<String,List<MOB>>();
 				x.append(CMLib.coffeeMaker().getUniqueMobsXML(Arrays.asList(CMLib.catalog().getCatalogMobs()), custom, files, foundMobs));
@@ -507,7 +507,7 @@ public class Export extends StdCommand
 				if(fileNameCode==2)
 					fileName=fileName+"/catalog";
 				if(S!=null)
-					S.rawPrintln("!");
+					S.getOutputFormatter().rawPrintln("!");
 				xml=x.toString()+"</CATALOG>";
 			}
 			else
@@ -521,7 +521,7 @@ public class Export extends StdCommand
 			if(commandType.equalsIgnoreCase("AREA"))
 			{
 				if(S!=null)
-					S.rawPrint(L("Reading area '@x1'...",area.Name()));
+					S.getOutputFormatter().rawPrint(L("Reading area '@x1'...",area.Name()));
 				xml=CMLib.coffeeMaker().getAreaXML(area,S,custom,files,true).toString();
 				if(fileNameCode==2)
 				{
@@ -531,7 +531,7 @@ public class Export extends StdCommand
 						fileName=fileName+"/"+area.Name();
 				}
 				if(S!=null)
-					S.rawPrintln("!");
+					S.getOutputFormatter().rawPrintln("!");
 			}
 			else
 			if(commandType.equalsIgnoreCase("CLASS"))
@@ -609,10 +609,10 @@ public class Export extends StdCommand
 					if(A!=null)
 					{
 						if(S!=null)
-							S.rawPrint(L("Reading area '@x1'...",A.name()));
+							S.getOutputFormatter().rawPrint(L("Reading area '@x1'...",A.name()));
 						buf.append(CMLib.coffeeMaker().getAreaXML(A,S,custom,files,true).toString());
 						if(S!=null)
-							S.rawPrintln("!");
+							S.getOutputFormatter().rawPrintln("!");
 						if(fileNameCode==2)
 						{
 							String name=fileName;
@@ -743,7 +743,7 @@ public class Export extends StdCommand
 			if((fileNameCode==2)&&(((type==null)||(type == CMObjectType.ITEM))))
 				fileName=fileName+"/catalog";
 			if(S!=null)
-				S.rawPrintln("!");
+				S.getOutputFormatter().rawPrintln("!");
 			xml=x.toString()+"</CATALOG>";
 		}
 		else
@@ -758,29 +758,29 @@ public class Export extends StdCommand
 			if(commandType.equalsIgnoreCase("AREA"))
 			{
 				if(S!=null)
-					S.rawPrint(L("Reading area mobs '@x1'...",area.Name()));
+					S.getOutputFormatter().rawPrint(L("Reading area mobs '@x1'...",area.Name()));
 				final StringBuffer buf=new StringBuffer("<MOBS>");
 				for(final Enumeration<Room> r=area.getCompleteMap();r.hasMoreElements();)
 				{
 					final Room R=r.nextElement();
-					//if(S!=null) S.rawPrint(".");
+					//if(S!=null) S.getOutputFormatter().rawPrint(".");
 					buf.append(CMLib.coffeeMaker().getRoomMobs(R,custom,files,found).toString());
 				}
 				xml=buf.toString()+"</MOBS>";
 				if(S!=null)
-					S.rawPrintln("!");
+					S.getOutputFormatter().rawPrintln("!");
 			}
 			else
 			{
 				if(S!=null)
-					S.rawPrint(L("Reading world mobs ..."));
+					S.getOutputFormatter().rawPrint(L("Reading world mobs ..."));
 				final StringBuffer buf=new StringBuffer("<MOBS>");
 				try
 				{
 					for(final Enumeration<Room> r=CMLib.map().rooms();r.hasMoreElements();)
 					{
 						final Room R=r.nextElement();
-						//if(S!=null) S.rawPrint(".");
+						//if(S!=null) S.getOutputFormatter().rawPrint(".");
 						buf.append(CMLib.coffeeMaker().getRoomMobs(R,custom,files,found).toString());
 					}
 				}
@@ -789,7 +789,7 @@ public class Export extends StdCommand
 				}
 				xml=buf.toString()+"</MOBS>";
 				if(S!=null)
-					S.rawPrintln("!");
+					S.getOutputFormatter().rawPrintln("!");
 			}
 		}
 		else
@@ -809,29 +809,29 @@ public class Export extends StdCommand
 			if(commandType.equalsIgnoreCase("AREA"))
 			{
 				if(S!=null)
-					S.rawPrint(L("Reading area @x1 '@x2'...",subType.toLowerCase(),area.Name()));
+					S.getOutputFormatter().rawPrint(L("Reading area @x1 '@x2'...",subType.toLowerCase(),area.Name()));
 				final StringBuffer buf=new StringBuffer("<ITEMS>");
 				for(final Enumeration<Room> r=area.getCompleteMap();r.hasMoreElements();)
 				{
 					final Room R=r.nextElement();
-					//if(S!=null) S.rawPrint(".");
+					//if(S!=null) S.getOutputFormatter().rawPrint(".");
 					buf.append(CMLib.coffeeMaker().getRoomItems(R,found,files,type).toString());
 				}
 				xml=buf.toString()+"</ITEMS>";
 				if(S!=null)
-					S.rawPrintln("!");
+					S.getOutputFormatter().rawPrintln("!");
 			}
 			else
 			{
 				if(S!=null)
-					S.rawPrint(L("Reading world @x1 ...",subType.toLowerCase()));
+					S.getOutputFormatter().rawPrint(L("Reading world @x1 ...",subType.toLowerCase()));
 				final StringBuffer buf=new StringBuffer("<ITEMS>");
 				try
 				{
 					for(final Enumeration<Room> r=CMLib.map().rooms();r.hasMoreElements();)
 					{
 						final Room R=r.nextElement();
-						//if(S!=null) S.rawPrint(".");
+						//if(S!=null) S.getOutputFormatter().rawPrint(".");
 						buf.append(CMLib.coffeeMaker().getRoomItems(R,found,files,type).toString());
 					}
 				}
@@ -840,7 +840,7 @@ public class Export extends StdCommand
 				}
 				xml=buf.toString()+"</ITEMS>";
 				if(S!=null)
-					S.rawPrintln("!");
+					S.getOutputFormatter().rawPrintln("!");
 			}
 		}
 		if(custom.size()>0)

@@ -170,7 +170,7 @@ public class AHelp extends StdCommand
 		}
 		else
 		if(!mob.isMonster())
-			mob.session().wraplessPrintln(thisTag.toString());
+			mob.session().getOutputFormatter().wraplessPrintln(thisTag.toString());
 		return false;
 	}
 
