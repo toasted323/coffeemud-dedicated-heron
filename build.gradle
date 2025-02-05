@@ -31,7 +31,7 @@ repositories {
 
 ext {
     junitVersion = '5.9.2'
-    mockitoVersion = '5.3.1'
+    mockitoVersion = '4.11.0'
 }
 
 dependencies {
@@ -41,7 +41,7 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
-    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-inline:$mockitoVersion"
     testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
 }
 
