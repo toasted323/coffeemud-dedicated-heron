@@ -23,6 +23,7 @@ import com.planet_ink.coffee_mud.core.Log;
 import com.planet_ink.coffee_mud.io.interfaces.*;
 import com.planet_ink.coffee_mud.io.*;
 import com.planet_ink.coffee_mud.session.DefaultCommandManager;
+import com.planet_ink.coffee_mud.session.DefaultAsyncModalDialogManager;
 import com.planet_ink.coffee_mud.session.interfaces.*;
 
 import java.io.*;
@@ -146,7 +147,6 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 
 	protected final Stack<ColorState>	markedColors	= new Stack<ColorState>();
 	protected AtomicBoolean				lastWasPrompt	= new AtomicBoolean(false);
-	protected volatile InputCallback	inputCallback	= null;
 	protected String 					lastSeenRoomID 	= null;
 	protected Integer 					lastRoomHash 	= null;
 
@@ -155,6 +155,7 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 	private DefaultOutputFormatter outputFormatter;
 	private IOExceptionHandler exceptionHandler;
 	private CommandManager commandManager;
+	private AsyncModalDialogManager asyncModalDialogManager;
 
 
 	@Override
@@ -1234,15 +1235,19 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 	@Override
 	public void prompt(final InputCallback callBack)
 	{
-		if(callBack!=null)
+		if (asyncModalDialogManager == null) {
+			asyncModalDialogManager = new DefaultAsyncModalDialogManager(groupName);
+		}
+		if (callBack != null)
 		{
 			lastWasPrompt.set(true);
-			callBack.showPrompt();
+			asyncModalDialogManager.startDialog(callBack);
 			lastWasPrompt.set(true);
 		}
-		if(this.inputCallback!=null)
-			this.inputCallback.timedOut();
-		this.inputCallback=callBack;
+		else
+		{
+			asyncModalDialogManager.cancelDialog();
+		}
 	}
 
 	@Override
@@ -2356,7 +2361,7 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 	@Override
 	public boolean isWaitingForInput()
 	{
-		return (inputCallback!=null);
+		return (asyncModalDialogManager != null && asyncModalDialogManager.isDialogActive());
 	}
 
 	@Override
@@ -2463,47 +2468,20 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 		{
 			if(killFlag)
 				setStatus(SessionStatus.LOGOUT);
-			final InputCallback callBack=this.inputCallback;
-			if(callBack!=null)
+
+			final AsyncModalDialogManager dialog = this.asyncModalDialogManager;
+			if (dialog != null && dialog.isDialogActive())
 			{
 				try
 				{
-					setInputLoopTime(); // update the input loop time so we don't get suspicious
-					final String input=readlineContinue();
-					if(input != null)
-					{
-						callBack.setInput(input);
-						if(!callBack.waitForInput())
-						{
-							CMLib.threads().executeRunnable(groupName,new Runnable()
-							{
-								@Override
-								public void run()
-								{
-									try
-									{
-										callBack.callBack();
-									}
-									catch(final Throwable t)
-									{
-										Log.errOut(t);
-									}
-								}
-							});
-						}
-					}
-					else
-					if(callBack.isTimedOut())
-					{
-						callBack.timedOut();
-					}
+					setInputLoopTime();
+					String input = readlineContinue();
+					dialog.processInput(input);
 				}
-				catch(final Exception e)
+				catch (final Exception e)
 				{
-
+					Log.errOut("Session", "run: Error processing dialog input: " + e.getMessage());
 				}
-				if(!callBack.waitForInput())
-					inputCallback=null;
 			}
 			else
 			switch(status)
@@ -2539,7 +2517,10 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 			case LOGOUT12:
 			case LOGOUTFINAL:
 			{
-				inputCallback=null;
+				if (dialog != null) {
+					dialog.cancelDialog();
+					Log.warnOut("Session", "run: Cancelled dialog during logout");
+				}
 				preLogout(mob);
 				logoutFinal();
 				break;
