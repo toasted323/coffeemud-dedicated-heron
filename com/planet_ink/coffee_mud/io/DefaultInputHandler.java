@@ -106,7 +106,7 @@ public class DefaultInputHandler implements InputHandler {
 		try {
 			read = in.read();
 		} catch (IOException e) {
-			Log.errOut("InputHandler", "readByte: Error reading byte: " + e.getMessage());
+			Log.errOut("InputHandler", "readByte: Error reading byte: " + e.getClass().getSimpleName() + ": " + e.getMessage());
 			throw e;
 		}
 
@@ -198,7 +198,7 @@ public class DefaultInputHandler implements InputHandler {
 				in.close();
 			} catch (IOException e) {
 				exceptions.add(e);
-				Log.errOut("InputHandler", "Error while closing input stream: " + e.getMessage());
+				Log.errOut("InputHandler", "Error while closing input stream: " + e.getClass().getSimpleName() + ": " + e.getMessage());
 			} finally {
 				in = null;
 			}
@@ -209,7 +209,7 @@ public class DefaultInputHandler implements InputHandler {
 				charInWriter.close();
 			} catch (IOException e) {
 				exceptions.add(e);
-				Log.errOut("InputHandler", "Error while closing charInWriter: " + e.getMessage());
+				Log.errOut("InputHandler", "Error while closing charInWriter: " + e.getClass().getSimpleName() + ": " + e.getMessage());
 			} finally {
 				charInWriter = null;
 			}
@@ -220,7 +220,7 @@ public class DefaultInputHandler implements InputHandler {
 				charIn.close();
 			} catch (IOException e) {
 				exceptions.add(e);
-				Log.errOut("InputHandler", "Error while closing charIn: " + e.getMessage());
+				Log.errOut("InputHandler", "Error while closing charIn: " + e.getClass().getSimpleName() + ": " + e.getMessage());
 			} finally {
 				charIn = null;
 			}
@@ -237,7 +237,6 @@ public class DefaultInputHandler implements InputHandler {
 			throw new IOException(errorMessage.toString());
 		}
 	}
-
 
 
 	@Override
