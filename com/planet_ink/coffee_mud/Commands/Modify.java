@@ -418,12 +418,12 @@ public class Modify extends StdCommand
 			{
 				if((!mob.isMonster())&&(CMLib.map().getShip(restStr)==null))
 				{
-					if(confirmed||mob.session().confirm(L("\n\rThis command will create a BRAND NEW AREA\n\r with Area code '@x1'.  Are you SURE (y/N)?",restStr),"N"))
+					if(confirmed||mob.session().getSyncModalDialogManager().confirm(L("\n\rThis command will create a BRAND NEW AREA\n\r with Area code '@x1'.  Are you SURE (y/N)?",restStr),"N"))
 					{
 						int tries=0;
 						while((areaType.length()==0)&&((++tries)<10)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 						{
-							areaType=mob.session().prompt(L("Enter an area type to create (default=StdArea): "),L("StdArea"));
+							areaType=mob.session().getSyncModalDialogManager().prompt(L("Enter an area type to create (default=StdArea): "),L("StdArea"));
 							if(CMClass.getAreaType(areaType)==null)
 							{
 								mob.session().getOutputFormatter().println(L("Invalid area type! Valid ones are:"));
@@ -1006,7 +1006,7 @@ public class Modify extends StdCommand
 
 		if((!myArea.Name().equals(oldName))&&(!mob.isMonster()))
 		{
-			if(mob.session().confirm(L("Is changing the name of this area really necessary (y/N)?"),"N"))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Is changing the name of this area really necessary (y/N)?"),"N"))
 			{
 				for(final Enumeration<Room> r=myArea.getCompleteMap();r.hasMoreElements();)
 				{
@@ -1309,7 +1309,7 @@ public class Modify extends StdCommand
 						showFlag = -1;
 						continue;
 					}
-					showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+					showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 					if(showFlag<=0)
 					{
 						showFlag=-1;
@@ -2719,7 +2719,7 @@ public class Modify extends StdCommand
 					somethingFound=true;
 					mob.tell(L("Unapproved script:\n\r@x1\n\r",O.toString()));
 					if((!mob.isMonster())
-					&&(mob.session().confirm(L("Approve this script (Y/n)?"),"Y")))
+					&&(mob.session().getSyncModalDialogManager().confirm(L("Approve this script (Y/n)?"),"Y")))
 						CMSecurity.approveJScript(mob.Name(),L.longValue());
 					else
 						j.remove(L);

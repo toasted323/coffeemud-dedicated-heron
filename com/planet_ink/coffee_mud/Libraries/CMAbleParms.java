@@ -916,7 +916,7 @@ public class CMAbleParms extends StdLibrary implements AbilityParameters
 		{
 			final StringBuffer list=getRecipeList(recipe);
 			mob.tell(list.toString());
-			final String lineNum = mob.session().prompt(L("\n\rEnter a line to edit, A to add, or ENTER to exit: "),"");
+			final String lineNum = mob.session().getSyncModalDialogManager().prompt(L("\n\rEnter a line to edit, A to add, or ENTER to exit: "),"");
 			if(lineNum.trim().length()==0)
 				break;
 			AbilityRecipeRow editRow = null;
@@ -984,7 +984,7 @@ public class CMAbleParms extends StdLibrary implements AbilityParameters
 						showFlag=-1;
 						continue;
 					}
-					showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+					showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 					if(showFlag<=0)
 					{
 						showFlag=-1;
@@ -996,7 +996,7 @@ public class CMAbleParms extends StdLibrary implements AbilityParameters
 		if((mob.session()!=null)&&(!mob.session().isStopped()))
 		{
 			final String prompt="Save to V)FS, F)ilesystem, or C)ancel (" + (recipe.wasVFS()?"V/f/c":"v/F/c")+"): ";
-			final String choice=mob.session().choose(prompt,L("VFC"),recipe.wasVFS()?L("V"):L("F"));
+			final String choice=mob.session().getSyncModalDialogManager().choose(prompt,L("VFC"),recipe.wasVFS()?L("V"):L("F"));
 			if(choice.equalsIgnoreCase("C"))
 				mob.tell(L("Cancelled."));
 			else
@@ -4105,7 +4105,7 @@ public class CMAbleParms extends StdLibrary implements AbilityParameters
 						mob.tell(L("@x1. Trap ID: '@x2'.",""+showNumber,oldVal));
 						if((showFlag!=showNumber[0])&&(showFlag>-999))
 							return oldVal;
-						behave=mob.session().prompt(L("Enter trap ability ID (?):"),"");
+						behave=mob.session().getSyncModalDialogManager().prompt(L("Enter trap ability ID (?):"),"");
 						if(behave.length()>0)
 						{
 							if(behave.equalsIgnoreCase("?"))
@@ -5136,7 +5136,7 @@ public class CMAbleParms extends StdLibrary implements AbilityParameters
 							return "";
 						final boolean isResource = CMParms.contains(RawMaterial.CODES.NAMES(),str);
 						if((!isResource)&&(mob.session()!=null)&&(!mob.session().isStopped()))
-							if(!mob.session().confirm(L("You`ve entered a non-resource item keyword '@x1', ok (Y/n)?",str),"Y"))
+							if(!mob.session().getSyncModalDialogManager().confirm(L("You`ve entered a non-resource item keyword '@x1', ok (Y/n)?",str),"Y"))
 								proceed = true;
 					}
 					return str;
@@ -5237,7 +5237,7 @@ public class CMAbleParms extends StdLibrary implements AbilityParameters
 						final boolean isResource = CMParms.contains(RawMaterial.CODES.NAMES(),str);
 						if((!isResource)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 						{
-							if(!mob.session().confirm(L("You`ve entered a non-resource item keyword '@x1', ok (Y/n)?",str),"Y"))
+							if(!mob.session().getSyncModalDialogManager().confirm(L("You`ve entered a non-resource item keyword '@x1', ok (Y/n)?",str),"Y"))
 								proceed = true;
 							else
 								str=str+"$";
@@ -5784,7 +5784,7 @@ public class CMAbleParms extends StdLibrary implements AbilityParameters
 						if((showFlag!=showNumber[0])&&(showFlag>-999))
 							return newVal;
 						final Vector<String> parsedVals = CMParms.parse(newVal.toUpperCase());
-						behave=mob.session().prompt(L("Enter a race to add/remove (?)\n\r:"),"");
+						behave=mob.session().getSyncModalDialogManager().prompt(L("Enter a race to add/remove (?)\n\r:"),"");
 						if(behave.length()>0)
 						{
 							if(behave.equalsIgnoreCase("?"))

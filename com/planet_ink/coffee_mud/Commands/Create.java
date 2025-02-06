@@ -904,7 +904,7 @@ public class Create extends StdCommand
 		if((R!=null)&&(!R.isGeneric()))
 		{
 			if((mob.session()==null)
-			||(!mob.session().confirm(L("Currently, @x1 is a standard race.  "
+			||(!mob.session().getSyncModalDialogManager().confirm(L("Currently, @x1 is a standard race.  "
 					+ "This will convert the race to a GenRace so that you can modify it.  "
 					+ "Be warned that special functionality of the race may be lost by doing this.  "
 					+ "You can undo this action by destroying the same race ID after creating it.  "
@@ -971,7 +971,7 @@ public class Create extends StdCommand
 		final String defaultArea=(spaceCoords.length()>0)?"Planet":"StdArea";
 		while((areaType.length()==0)&&((++tries)<10))
 		{
-			areaType=mob.session().prompt(L("Enter an area type to create (default=@x1): ",defaultArea),defaultArea);
+			areaType=mob.session().getSyncModalDialogManager().prompt(L("Enter an area type to create (default=@x1): ",defaultArea),defaultArea);
 			if(CMClass.getAreaType(areaType)==null)
 			{
 				mob.session().getOutputFormatter().println(L("Invalid area type! Valid ones are:"));
@@ -1045,7 +1045,7 @@ public class Create extends StdCommand
 			List<Social> socials=CMLib.ableComponents().getSocialsSet(socialsParse.firstElement());
 			if(((socials==null)||(socials.size()==0))
 			&&((mob.session()==null)
-				||(!mob.session().confirm(L("Create social @x1 (y/N)? ",name),"N"))))
+				||(!mob.session().getSyncModalDialogManager().confirm(L("Create social @x1 (y/N)? ",name),"N"))))
 				return;
 			if(socials==null)
 				socials=new Vector<Social>();
@@ -1571,7 +1571,7 @@ public class Create extends StdCommand
 		if((C!=null)&&(!C.isGeneric()))
 		{
 			if((mob.session()==null)
-			||(!mob.session().confirm(L("Currently, @x1 is a standard character class.  "
+			||(!mob.session().getSyncModalDialogManager().confirm(L("Currently, @x1 is a standard character class.  "
 				+ "This will convert the class to a GenCharClass so that you can modify it.  "
 				+ "Be warned that special functionality of the class may be lost by doing this.  "
 				+ "You can undo this action by destroying the same class ID after creating it.  "
@@ -1675,7 +1675,7 @@ public class Create extends StdCommand
 		List<Social> socials=CMLib.socials().getSocialsSet(socialsParse.firstElement());
 		if(((socials==null)||(socials.size()==0))
 		&&((mob.session()==null)
-			||(!mob.session().confirm(L("The social '@x1' does not exist.  Create it (y/N)? ",name),"N"))))
+			||(!mob.session().getSyncModalDialogManager().confirm(L("The social '@x1' does not exist.  Create it (y/N)? ",name),"N"))))
 			return;
 		if(socials==null)
 			socials=new Vector<Social>();
@@ -2033,7 +2033,7 @@ public class Create extends StdCommand
 					return false;
 				}
 				else
-				if((!mob.isMonster())&&(mob.session().confirm(L("Create a new faction with ID/filename: 'resources/@x1' (N/y)? ",name),"N")))
+				if((!mob.isMonster())&&(mob.session().getSyncModalDialogManager().confirm(L("Create a new faction with ID/filename: 'resources/@x1' (N/y)? ",name),"N")))
 				{
 					//name=Resources.buildResourcePath("")+name;
 					final StringBuffer template=new CMFile(Resources.buildResourcePath("examples")+"factiontemplate.ini",null,CMFile.FLAG_LOGERRORS).text();
@@ -2113,7 +2113,7 @@ public class Create extends StdCommand
 			mob.location().show(mob,null,CMMsg.MSG_OK_VISUAL,L("^S<S-NAME> wave(s) <S-HIS-HER> arms...^?"));
 			if(commands.size()<3)
 			{
-				if((mob.session()!=null)&&(mob.session().confirm(L("Create a new Quest using the Quest Maker Wizard (y/N)? "),"N")))
+				if((mob.session()!=null)&&(mob.session().getSyncModalDialogManager().confirm(L("Create a new Quest using the Quest Maker Wizard (y/N)? "),"N")))
 					CMLib.quests().questMakerCommandLine(mob);
 				else
 				{
@@ -2135,7 +2135,7 @@ public class Create extends StdCommand
 				else
 				if((CMLib.quests().fetchQuest(Q.name())!=null)
 				&&((mob.isMonster())
-					||(!mob.session().confirm(L("That quest is already loaded.  Load a duplicate (N/y)? "),"N"))))
+					||(!mob.session().getSyncModalDialogManager().confirm(L("That quest is already loaded.  Load a duplicate (N/y)? "),"N"))))
 						return false;
 				else
 				{

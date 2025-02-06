@@ -148,7 +148,7 @@ public class Email extends StdCommand
 					}
 					if(mob.session()==null)
 						continue;
-					String s=mob.session().prompt(L("Enter a message #"),"");
+					String s=mob.session().getSyncModalDialogManager().prompt(L("Enter a message #"),"");
 					if((!CMath.isInteger(s))||(mob.session().isStopped()))
 						return false;
 					final int num=CMath.s_int(s);
@@ -183,7 +183,7 @@ public class Email extends StdCommand
 						}
 						if(mob.session()==null)
 							continue;
-						s=mob.session().choose(L("Would you like to D)elete, H)old, or R)eply (D/H/R)? "),"DHR","H");
+						s=mob.session().getSyncModalDialogManager().choose(L("Would you like to D)elete, H)old, or R)eply (D/H/R)? "),"DHR","H");
 						if(s.equalsIgnoreCase("H"))
 							break;
 						if(s.equalsIgnoreCase("R"))
@@ -221,12 +221,12 @@ public class Email extends StdCommand
 				&&((M.playerStats().getAccount()==null)
 					||(!M.playerStats().getAccount().isSet(AccountFlag.NOAUTOFORWARD))))
 				{
-					if(!mob.session().confirm(L("Send email to '@x1' (Y/n)?",M.Name()),"Y"))
+					if(!mob.session().getSyncModalDialogManager().confirm(L("Send email to '@x1' (Y/n)?",M.Name()),"Y"))
 						return false;
 				}
 				else
 				{
-					if(!mob.session().confirm(L("Send email to '@x1', even though their AUTOFORWARD is turned off (y/N)?",M.Name()),"N"))
+					if(!mob.session().getSyncModalDialogManager().confirm(L("Send email to '@x1', even though their AUTOFORWARD is turned off (y/N)?",M.Name()),"N"))
 						return false;
 				}
 				if(CMProps.getIntVar(CMProps.Int.MAXMAILBOX)>0)
@@ -240,7 +240,7 @@ public class Email extends StdCommand
 				}
 				if(mob.session()==null)
 					return false;
-				final String subject=mob.session().prompt(L("Email Subject: "),"").trim();
+				final String subject=mob.session().getSyncModalDialogManager().prompt(L("Email Subject: "),"").trim();
 				if(subject.length()==0)
 				{
 					mob.tell(L("Aborted"));
@@ -248,7 +248,7 @@ public class Email extends StdCommand
 				}
 				if(mob.session()==null)
 					return false;
-				final String message=mob.session().prompt(L("Enter your message\n\r: "),"").trim();
+				final String message=mob.session().getSyncModalDialogManager().prompt(L("Enter your message\n\r: "),"").trim();
 				if(message.trim().length()==0)
 				{
 					mob.tell(L("Aborted"));
@@ -275,7 +275,7 @@ public class Email extends StdCommand
 		{
 			if(commands==null)
 				return true;
-			final String change=mob.session().prompt(L("You currently have '@x1' set as the email address for this character.\n\rChange it (y/N)?",pstats.getEmail()),"N");
+			final String change=mob.session().getSyncModalDialogManager().prompt(L("You currently have '@x1' set as the email address for this character.\n\rChange it (y/N)?",pstats.getEmail()),"N");
 			if(change.toUpperCase().startsWith("N"))
 				return false;
 		}
@@ -283,7 +283,7 @@ public class Email extends StdCommand
 		&&(commands!=null)
 		&&(CMProps.getVar(CMProps.Str.MAILBOX).length()>0))
 			mob.session().getOutputFormatter().println(L("\n\r** Changing your email address will cause you to be logged off, and a new password to be generated and emailed to the new address. **\n\r"));
-		String newEmail=mob.session().prompt(L("New E-mail Address:"));
+		String newEmail=mob.session().getSyncModalDialogManager().prompt(L("New E-mail Address:"));
 		if(newEmail==null)
 			return false;
 		newEmail=newEmail.trim();
@@ -293,7 +293,7 @@ public class Email extends StdCommand
 				return false;
 			if(newEmail.indexOf('@')<0)
 				return false;
-			String confirmEmail=mob.session().prompt(L("Confirm that '@x1' is correct by re-entering.\n\rRe-enter:",newEmail));
+			String confirmEmail=mob.session().getSyncModalDialogManager().prompt(L("Confirm that '@x1' is correct by re-entering.\n\rRe-enter:",newEmail));
 			if(confirmEmail==null)
 				return false;
 			confirmEmail=confirmEmail.trim();

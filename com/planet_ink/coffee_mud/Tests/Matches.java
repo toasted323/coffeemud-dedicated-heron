@@ -66,7 +66,7 @@ public class Matches extends StdTest
 			&&(S!=null)
 			&&(!S.isStopped()))
 			{
-				word = S.prompt("Enter a word: ");
+				word = S.getSyncModalDialogManager().prompt("Enter a word: ");
 				if(word.trim().length()==0)
 					break;
 				String match="x";
@@ -74,7 +74,7 @@ public class Matches extends StdTest
 				&&(S!=null)
 				&&(!S.isStopped()))
 				{
-					match = S.prompt("Enter a matcher: ");
+					match = S.getSyncModalDialogManager().prompt("Enter a matcher: ");
 					if(match.trim().length()==0)
 						break;
 					S.getOutputFormatter().println("match="+CMStrings.matches(word, match, false));

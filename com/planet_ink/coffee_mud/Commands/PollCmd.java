@@ -75,7 +75,7 @@ public class PollCmd extends StdCommand
 			if(P.mayISeeResults(mob))
 			{
 				CMLib.polls().processResults(P, mob);
-				mob.session().prompt(L("Press ENTER to continue:\n\r"));
+				mob.session().getSyncModalDialogManager().prompt(L("Press ENTER to continue:\n\r"));
 			}
 		}
 		if(commands==null)
@@ -92,7 +92,7 @@ public class PollCmd extends StdCommand
 			if(P.mayISeeResults(mob))
 			{
 				CMLib.polls().processResults(P, mob);
-				mob.session().prompt(L("Press ENTER to continue:"));
+				mob.session().getSyncModalDialogManager().prompt(L("Press ENTER to continue:"));
 			}
 		}
 
@@ -105,7 +105,7 @@ public class PollCmd extends StdCommand
 			{
 				CMLib.polls().processResults(P, mob);
 				if(i<mypolls[2].size()-1)
-					mob.session().prompt(L("Press ENTER to continue:\n\r"));
+					mob.session().getSyncModalDialogManager().prompt(L("Press ENTER to continue:\n\r"));
 			}
 			i++;
 		}

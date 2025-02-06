@@ -274,7 +274,7 @@ public class MOTD extends StdCommand
 						session.getOutputFormatter().wraplessPrintln("\n\r--------------------------------------\n\r"+buf.toString());
 						if (pause)
 						{
-							session.prompt(L("\n\rPress ENTER: "), 10000);
+							session.getSyncModalDialogManager().prompt(L("\n\rPress ENTER: "), 10000);
 							session.getOutputFormatter().println("\n\r");
 						}
 					}
@@ -294,7 +294,7 @@ public class MOTD extends StdCommand
 						final List<JournalEntry> items=CMLib.database().DBReadJournalMsgsNewerThan(CMJ.JOURNAL_NAME(), mob.Name(), -1);
 						if((items!=null)&&(items.size()>0))
 						{
-							if(session.confirm(L("You have messages waiting response in @x1. Read now (y/N)? ", CMJ.NAME()),"N",5000))
+							if(session.getSyncModalDialogManager().confirm(L("You have messages waiting response in @x1. Read now (y/N)? ", CMJ.NAME()),"N",5000))
 							{
 								int count=1;
 								final Item journalItem=CMClass.getItem("StdJournal");

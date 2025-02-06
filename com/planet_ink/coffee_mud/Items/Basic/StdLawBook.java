@@ -295,7 +295,7 @@ public class StdLawBook extends StdItem
 		mob.tell(getFromTOC("MODLAW"));
 		if(oldLaw==null)
 		{
-			if(mob.session().confirm(L("This is not presently a crime, would you like to make it one (Y/n)?"),"Y"))
+			if(mob.session().getSyncModalDialogManager().confirm(L("This is not presently a crime, would you like to make it one (Y/n)?"),"Y"))
 			{
 				oldLaw=new String[Law.BIT_NUMBITS];
 				oldLaw[Law.BIT_CRIMENAME]="Name of the crime";
@@ -318,7 +318,7 @@ public class StdLawBook extends StdItem
 			str.append(L("5. Justification : @x1\n\r",oldLaw[Law.BIT_WARNMSG]));
 			str.append(L("6. DELETE THIS CRIME\n\r"));
 			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
-			final String s=mob.session().choose(L("Enter a number to modify or RETURN: "),"123456\n","\n");
+			final String s=mob.session().getSyncModalDialogManager().choose(L("Enter a number to modify or RETURN: "),"123456\n","\n");
 			final int x=CMath.s_int(s);
 			if(x==0)
 				return oldLaw;
@@ -326,13 +326,13 @@ public class StdLawBook extends StdItem
 			switch(x)
 			{
 			case 1:
-				oldLaw[Law.BIT_CRIMENAME]=mob.session().prompt(L("Enter a new name for this crime: "),oldLaw[Law.BIT_CRIMENAME]);
+				oldLaw[Law.BIT_CRIMENAME]=mob.session().getSyncModalDialogManager().prompt(L("Enter a new name for this crime: "),oldLaw[Law.BIT_CRIMENAME]);
 				break;
 			case 5:
-				oldLaw[Law.BIT_WARNMSG]=mob.session().prompt(L("Shame/Justification Message: "),oldLaw[Law.BIT_WARNMSG]);
+				oldLaw[Law.BIT_WARNMSG]=mob.session().getSyncModalDialogManager().prompt(L("Shame/Justification Message: "),oldLaw[Law.BIT_WARNMSG]);
 				break;
 			case 6:
-				if(mob.session().confirm(L("Are you sure you want to delete this crime (y/N)?"),"N"))
+				if(mob.session().getSyncModalDialogManager().confirm(L("Are you sure you want to delete this crime (y/N)?"),"N"))
 					return null;
 				break;
 			case 4:
@@ -374,7 +374,7 @@ public class StdLawBook extends StdItem
 						}
 					}
 					msg.append(L("\n\rSelect a sentence (@x1): ",oldSentence));
-					String t=mob.session().prompt(msg.toString(),oldSentence);
+					String t=mob.session().getSyncModalDialogManager().prompt(msg.toString(),oldSentence);
 					for (final String element : Law.PUNISHMENT_DESCS)
 					{
 						if(element.startsWith(t.toUpperCase()))
@@ -409,7 +409,7 @@ public class StdLawBook extends StdItem
 							}
 							msg.append(L("\n\rSelect a flag to toggle or RETURN (@x1): ",oldFlags.toString()));
 							int selectedMask=-1;
-							t=mob.session().prompt(msg.toString(),"");
+							t=mob.session().getSyncModalDialogManager().prompt(msg.toString(),"");
 							if(t.length()==0)
 								break;
 							int indexIfExists=-1;
@@ -443,9 +443,9 @@ public class StdLawBook extends StdItem
 											abort=true;
 										}
 										else
-										if(mob.session().confirm(L("Add this room as a new detention center room (y/N)? "),"N"))
+										if(mob.session().getSyncModalDialogManager().confirm(L("Add this room as a new detention center room (y/N)? "),"N"))
 										{
-											final String time=mob.session().prompt(L("Enter the amount of time before they are released: "),"");
+											final String time=mob.session().getSyncModalDialogManager().prompt(L("Enter the amount of time before they are released: "),"");
 											if((time.length()==0)||(!CMath.isInteger(time))||(CMath.s_int(time)<0)||(CMath.s_int(time)>10000))
 											{
 												mob.tell(L("Invalid entry.  Aborted."));
@@ -459,7 +459,7 @@ public class StdLawBook extends StdItem
 										break;
 									case Law.PUNISHMENTMASK_FINE:
 									{
-										final String fine=mob.session().prompt(L("Enter the amount of the fine in base-gold value: "),"");
+										final String fine=mob.session().getSyncModalDialogManager().prompt(L("Enter the amount of the fine in base-gold value: "),"");
 										if((fine.length()==0)||(!CMath.isNumber(fine))||(CMath.s_double(fine)<0)||(CMath.s_double(fine)>100000.0))
 										{
 											mob.tell(L("Invalid entry.  Aborted."));
@@ -471,7 +471,7 @@ public class StdLawBook extends StdItem
 									}
 									case Law.PUNISHMENTMASK_SHAME:
 									{
-										final String fine=mob.session().prompt(L("Enter the number of mud days to shame them for (256=forever): "),"");
+										final String fine=mob.session().getSyncModalDialogManager().prompt(L("Enter the number of mud days to shame them for (256=forever): "),"");
 										if((fine.length()==0)||(!CMath.isNumber(fine))||(CMath.s_int(fine)<0))
 										{
 											mob.tell(L("Invalid entry.  Aborted."));
@@ -483,7 +483,7 @@ public class StdLawBook extends StdItem
 									}
 									case Law.PUNISHMENTMASK_BANISH:
 									{
-										final String fine=mob.session().prompt(L("Enter the number of mud days to banish them for (256=forever): "),"");
+										final String fine=mob.session().getSyncModalDialogManager().prompt(L("Enter the number of mud days to banish them for (256=forever): "),"");
 										if((fine.length()==0)||(!CMath.isNumber(fine))||(CMath.s_int(fine)<0))
 										{
 											mob.tell(L("Invalid entry.  Aborted."));
@@ -553,7 +553,7 @@ public class StdLawBook extends StdItem
 							there=true;
 						lastAnswer=false;
 						lastOle=locflag[1];
-						if(mob.session().confirm(locflag[0]
+						if(mob.session().getSyncModalDialogManager().confirm(locflag[0]
 												 +" "
 												 +(there?"(Y/n)":"(y/N)")
 												 +"?",
@@ -564,7 +564,7 @@ public class StdLawBook extends StdItem
 						}
 					}
 					String restLoca=CMParms.combineQuoted(allloca1,0).trim();
-					restLoca=mob.session().prompt(L("Enter any other location masks (@x1): ",restLoca),restLoca);
+					restLoca=mob.session().getSyncModalDialogManager().prompt(L("Enter any other location masks (@x1): ",restLoca),restLoca);
 					oldLaw[Law.BIT_CRIMELOCS]=(s2.toString()+" "+restLoca).trim();
 					break;
 				}
@@ -591,7 +591,7 @@ public class StdLawBook extends StdItem
 							there=true;
 						lastAnswer=false;
 						lastOle=lawflag[1];
-						if(mob.session().confirm(lawflag[0]
+						if(mob.session().getSyncModalDialogManager().confirm(lawflag[0]
 												 +" "
 												 +(there?"(Y/n)":"(y/N)")
 												 +"?",
@@ -629,13 +629,13 @@ public class StdLawBook extends StdItem
 			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
-			String s=mob.session().prompt(L("\n\rEnter number to modify, A, or RETURN: "),"");
+			String s=mob.session().getSyncModalDialogManager().prompt(L("\n\rEnter number to modify, A, or RETURN: "),"");
 			if(s.length()==0)
 				break;
 			else
 			if(s.equalsIgnoreCase("A"))
 			{
-				s=mob.session().prompt(L("\n\rEnter some key words to make illegal: "),"");
+				s=mob.session().getSyncModalDialogManager().prompt(L("\n\rEnter some key words to make illegal: "),"");
 				if(s.length()>0)
 				{
 					final String[] newValue=modifyLaw(A,B,theLaw,mob,null);
@@ -720,13 +720,13 @@ public class StdLawBook extends StdItem
 			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
-			String s=mob.session().prompt(L("\n\rEnter number to modify, A, or RETURN: "),"");
+			String s=mob.session().getSyncModalDialogManager().prompt(L("\n\rEnter number to modify, A, or RETURN: "),"");
 			if(s.length()==0)
 				break;
 			else
 			if(s.equalsIgnoreCase("A"))
 			{
-				s=mob.session().prompt(L("\n\rEnter item key words or resource types to make illegal (?)\n\r: "),"");
+				s=mob.session().getSyncModalDialogManager().prompt(L("\n\rEnter item key words or resource types to make illegal (?)\n\r: "),"");
 				if(s.equals("?"))
 					mob.tell(L("Valid resources: @x1",CMParms.toListString(RawMaterial.CODES.NAMES())));
 				else
@@ -734,7 +734,7 @@ public class StdLawBook extends StdItem
 				{
 					s=s.toUpperCase();
 					final boolean resource=RawMaterial.CODES.FIND_CaseSensitive(s)>=0;
-					if(resource||mob.session().confirm(L("'@x1' is not a known resource.  Add as a key word anyway (y/N)?",s),"N"))
+					if(resource||mob.session().getSyncModalDialogManager().confirm(L("'@x1' is not a known resource.  Add as a key word anyway (y/N)?",s),"N"))
 					{
 						final String[] newValue=modifyLaw(A,B,theLaw,mob,null);
 						if(newValue!=null)
@@ -836,13 +836,13 @@ public class StdLawBook extends StdItem
 			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
-			String s=mob.session().prompt(L("\n\rEnter number to modify, A, or RETURN: "),"");
+			String s=mob.session().getSyncModalDialogManager().prompt(L("\n\rEnter number to modify, A, or RETURN: "),"");
 			if(s.length()==0)
 				break;
 			else
 			if(s.equalsIgnoreCase("A"))
 			{
-				s=mob.session().prompt(L("\n\rEnter a skill name to make illegal: "),"");
+				s=mob.session().getSyncModalDialogManager().prompt(L("\n\rEnter a skill name to make illegal: "),"");
 				if(s.length()>0)
 				{
 					final Ability AB=CMClass.findAbility(s);
@@ -963,14 +963,14 @@ public class StdLawBook extends StdItem
 			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
-			String s=mob.session().prompt(L("\n\rEnter a number to modify: "),"");
+			String s=mob.session().getSyncModalDialogManager().prompt(L("\n\rEnter a number to modify: "),"");
 			final int x=CMath.s_int(s);
 			if(x==0)
 				break;
 			switch(x)
 			{
 			case 1:
-				s=mob.session().prompt(L("Enter a new tax amount: "),theLaw.getInternalStr("PROPERTYTAX"));
+				s=mob.session().getSyncModalDialogManager().prompt(L("Enter a new tax amount: "),theLaw.getInternalStr("PROPERTYTAX"));
 				if(CMath.s_double(s)!=CMath.s_double(theLaw.getInternalStr("PROPERTYTAX")))
 				{
 					changeTheLaw(A,B,mob,theLaw,"PROPERTYTAX",""+CMath.s_double(s));
@@ -978,7 +978,7 @@ public class StdLawBook extends StdItem
 				}
 				break;
 			case 2:
-				s=mob.session().prompt(L("Enter a new tax amount: "),theLaw.getInternalStr("SALESTAX"));
+				s=mob.session().getSyncModalDialogManager().prompt(L("Enter a new tax amount: "),theLaw.getInternalStr("SALESTAX"));
 				if(CMath.s_double(s)!=CMath.s_double(theLaw.getInternalStr("SALESTAX")))
 				{
 					changeTheLaw(A,B,mob,theLaw,"SALESTAX",""+CMath.s_double(s));
@@ -986,7 +986,7 @@ public class StdLawBook extends StdItem
 				}
 				break;
 			case 3:
-				s=mob.session().prompt(L("Enter a new tax amount: "),theLaw.getInternalStr("CITTAX"));
+				s=mob.session().getSyncModalDialogManager().prompt(L("Enter a new tax amount: "),theLaw.getInternalStr("CITTAX"));
 				if(CMath.s_double(s)!=CMath.s_double(theLaw.getInternalStr("CITTAX")))
 				{
 					changeTheLaw(A,B,mob,theLaw,"CITTAX",""+CMath.s_double(s));
@@ -1018,8 +1018,8 @@ public class StdLawBook extends StdItem
 				{
 					String room2="/";
 					while((room2.equals("/"))||(!room2.equals("*"))&&(room2.length()>0)&&(CMLib.map().getRoom(room2)==null))
-						room2=mob.session().prompt(L("Enter a new room ID (RETURN=@x1, *=any): ",room),room);
-					final String item2=mob.session().prompt(L("Enter an optional container name (RETURN=@x1): ",item),item);
+						room2=mob.session().getSyncModalDialogManager().prompt(L("Enter a new room ID (RETURN=@x1, *=any): ",room),room);
+					final String item2=mob.session().getSyncModalDialogManager().prompt(L("Enter an optional container name (RETURN=@x1): ",item),item);
 					if((!room.equalsIgnoreCase(room2))||(!item.equalsIgnoreCase(item2)))
 					{
 						changeTheLaw(A,B,mob,theLaw,"TREASURY",""+room2+";"+item2);
@@ -1070,13 +1070,13 @@ public class StdLawBook extends StdItem
 			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
-			String s=mob.session().prompt(L("\n\rEnter number to modify, A, or RETURN: "),"");
+			String s=mob.session().getSyncModalDialogManager().prompt(L("\n\rEnter number to modify, A, or RETURN: "),"");
 			if(s.length()==0)
 				break;
 			else
 			if(s.equalsIgnoreCase("A"))
 			{
-				s=mob.session().prompt(L("\n\rEnter a skill name to make an illegal influence: "),"");
+				s=mob.session().getSyncModalDialogManager().prompt(L("\n\rEnter a skill name to make an illegal influence: "),"");
 				if(s.length()>0)
 				{
 					final Ability AB=CMClass.findAbility(s);
@@ -1175,7 +1175,7 @@ public class StdLawBook extends StdItem
 			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
-			final String s=mob.session().prompt(L("\n\rEnter number to modify or RETURN: "),"");
+			final String s=mob.session().getSyncModalDialogManager().prompt(L("\n\rEnter number to modify or RETURN: "),"");
 			final int x=CMath.s_int(s);
 			String crimeName="";
 			if((x>0)&&(x<=7))
@@ -1261,14 +1261,14 @@ public class StdLawBook extends StdItem
 			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
-			String s=mob.session().prompt(L("\n\rEnter 'A' to add a new release room, or enter a number to modify: "),"");
+			String s=mob.session().getSyncModalDialogManager().prompt(L("\n\rEnter 'A' to add a new release room, or enter a number to modify: "),"");
 			boolean changed=false;
 			if(s.equalsIgnoreCase("A"))
 			{
 				if(!CMLib.law().getLegalObject(A).inMyMetroArea(mob.location().getArea()))
 					mob.tell(L("You can not add this room as a release room, as it is not in the area."));
 				else
-				if(mob.session().confirm(L("Add this room as a new release room (y/N)? "),"N"))
+				if(mob.session().getSyncModalDialogManager().confirm(L("Add this room as a new release room (y/N)? "),"N"))
 				{
 					releaseRoomsV.add(CMLib.map().getExtendedRoomID(mob.location()));
 					changed=true;
@@ -1281,7 +1281,7 @@ public class StdLawBook extends StdItem
 				{
 					if(x>4)
 					{
-						if(mob.session().confirm(L("Remove this room as a release room (y/N)? "),"N"))
+						if(mob.session().getSyncModalDialogManager().confirm(L("Remove this room as a release room (y/N)? "),"N"))
 						{
 							releaseRoomsV.remove(x-5);
 							changed=true;
@@ -1290,7 +1290,7 @@ public class StdLawBook extends StdItem
 					else
 					{
 						final long oldTime=CMath.s_int(theLaw.getInternalStr("PAROLE"+x+"TIME"))*CMProps.getTickMillis()/1000;
-						s=mob.session().prompt(L("Enter a new number of seconds (@x1): ",""+oldTime),""+oldTime);
+						s=mob.session().getSyncModalDialogManager().prompt(L("Enter a new number of seconds (@x1): ",""+oldTime),""+oldTime);
 						if((CMath.s_int(s)!=oldTime)&&(CMath.s_int(s)>0))
 						{
 							long x1=CMath.s_int(s);
@@ -1349,14 +1349,14 @@ public class StdLawBook extends StdItem
 			mob.session().getOutputFormatter().colorOnlyPrintln(str.toString());
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				break;
-			String s=mob.session().prompt(L("\n\rEnter 'A' to add a new jail room, or enter a number to modify: "),"");
+			String s=mob.session().getSyncModalDialogManager().prompt(L("\n\rEnter 'A' to add a new jail room, or enter a number to modify: "),"");
 			boolean changed=false;
 			if(s.equalsIgnoreCase("A"))
 			{
 				if(!CMLib.law().getLegalObject(A).inMyMetroArea(mob.location().getArea()))
 					mob.tell(L("You can not add this room as a jail, as it is not in the area."));
 				else
-				if(mob.session().confirm(L("Add this room as a new jail room (y/N)? "),"N"))
+				if(mob.session().getSyncModalDialogManager().confirm(L("Add this room as a new jail room (y/N)? "),"N"))
 				{
 					V.add(CMLib.map().getExtendedRoomID(mob.location()));
 					changed=true;
@@ -1369,7 +1369,7 @@ public class StdLawBook extends StdItem
 				{
 					if(x>4)
 					{
-						if(mob.session().confirm(L("Remove this room as a jail room (y/N)? "),"N"))
+						if(mob.session().getSyncModalDialogManager().confirm(L("Remove this room as a jail room (y/N)? "),"N"))
 						{
 							V.remove(x-5);
 							changed=true;
@@ -1378,7 +1378,7 @@ public class StdLawBook extends StdItem
 					else
 					{
 						final long oldTime=CMath.s_int(theLaw.getInternalStr("JAIL"+x+"TIME"))*CMProps.getTickMillis()/1000;
-						s=mob.session().prompt(L("Enter a new number of seconds (@x1): ",""+oldTime),""+oldTime);
+						s=mob.session().getSyncModalDialogManager().prompt(L("Enter a new number of seconds (@x1): ",""+oldTime),""+oldTime);
 						if((CMath.s_int(s)!=oldTime)&&(CMath.s_int(s)>0))
 						{
 							long x1=CMath.s_int(s);
@@ -1418,7 +1418,7 @@ public class StdLawBook extends StdItem
 			mob.tell(L("2. Law         : @x1",shortLawDesc(theLaw.basicCrimes().get("TRESPASSING"))));
 			if((!theLaw.hasModifiableLaws())||(!allowedToModify))
 				return;
-			final String prompt=mob.session().choose(L("Enter one to change or RETURN: "),"12\n","\n");
+			final String prompt=mob.session().getSyncModalDialogManager().choose(L("Enter one to change or RETURN: "),"12\n","\n");
 			final int x=CMath.s_int(prompt);
 			if((x<=0)||(x>2))
 				return;
@@ -1427,7 +1427,7 @@ public class StdLawBook extends StdItem
 				String s="?";
 				while(s.trim().equals("?"))
 				{
-					s=mob.session().prompt(L("Enter a new mask, ? for help, or RETURN=[@x1]\n\r: ",theLaw.getInternalStr("TRESPASSERS")),theLaw.getInternalStr("TRESPASSERS"));
+					s=mob.session().getSyncModalDialogManager().prompt(L("Enter a new mask, ? for help, or RETURN=[@x1]\n\r: ",theLaw.getInternalStr("TRESPASSERS")),theLaw.getInternalStr("TRESPASSERS"));
 					if(s.trim().equals("?"))
 						mob.tell(CMLib.masking().maskHelp("\n\r","arrests"));
 					else
@@ -1474,7 +1474,7 @@ public class StdLawBook extends StdItem
 			String s="?";
 			while(s.trim().equals("?"))
 			{
-				s=mob.session().prompt(L("Enter a new mask, ? for help, or RETURN=[@x1]\n\r: ",theLaw.getInternalStr("PROTECTED")),theLaw.getInternalStr("PROTECTED"));
+				s=mob.session().getSyncModalDialogManager().prompt(L("Enter a new mask, ? for help, or RETURN=[@x1]\n\r: ",theLaw.getInternalStr("PROTECTED")),theLaw.getInternalStr("PROTECTED"));
 				if(s.trim().equals("?"))
 					mob.tell(CMLib.masking().maskHelp("\n\r","protects"));
 				else
@@ -1524,11 +1524,11 @@ public class StdLawBook extends StdItem
 		mob.tell(L("1. Area Judge: \n\r@x1\n\r2. Area Officers: \n\r@x2",duhJudge,duhOfficers.toString()));
 		if(theLaw.hasModifiableNames()&&theLaw.hasModifiableLaws()&&allowedToModify)
 		{
-			final int w=CMath.s_int(mob.session().choose(L("Enter one to modify, or RETURN to cancel: "),"12\n",""));
+			final int w=CMath.s_int(mob.session().getSyncModalDialogManager().choose(L("Enter one to modify, or RETURN to cancel: "),"12\n",""));
 			if(w==0)
 				return;
 			final String modifiableTag=(w==1)?"JUDGE":"OFFICERS";
-			final String s=mob.session().prompt(L("Enter key words from officials name(s) [@x1]\n\r: ",theLaw.getInternalStr(modifiableTag)),theLaw.getInternalStr(modifiableTag));
+			final String s=mob.session().getSyncModalDialogManager().prompt(L("Enter key words from officials name(s) [@x1]\n\r: ",theLaw.getInternalStr(modifiableTag)),theLaw.getInternalStr(modifiableTag));
 			if(!s.equals(theLaw.getInternalStr(modifiableTag)))
 			{
 				changeTheLaw(A,B,mob,theLaw,modifiableTag,s);

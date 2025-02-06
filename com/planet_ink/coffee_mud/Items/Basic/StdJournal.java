@@ -427,7 +427,7 @@ public class StdJournal extends StdItem implements Book
 										cmds+="C";
 									}
 									prompt+="or RETURN: ";
-									final String s=mob.session().choose(prompt,cmds+"\n","\n");
+									final String s=mob.session().getSyncModalDialogManager().choose(prompt,cmds+"\n","\n");
 									if(s.equalsIgnoreCase("S"))
 										msg.setValue(0);
 									else
@@ -460,9 +460,9 @@ public class StdJournal extends StdItem implements Book
 											repeat=true;
 										}
 										else
-										if(!mob.session().choose(L("Send email to @x1 (Y/n)?",fromTP.name()),L("YN\n"),"Y").equalsIgnoreCase("N"))
+										if(!mob.session().getSyncModalDialogManager().choose(L("Send email to @x1 (Y/n)?",fromTP.name()),L("YN\n"),"Y").equalsIgnoreCase("N"))
 										{
-											final String replyMsg=mob.session().prompt(L("Enter your email response\n\r: "));
+											final String replyMsg=mob.session().getSyncModalDialogManager().prompt(L("Enter your email response\n\r: "));
 											if((replyMsg.trim().length()>0) && (read != null))
 											{
 												CMLib.smtp().emailOrJournal(mob.Name(),
@@ -485,7 +485,7 @@ public class StdJournal extends StdItem implements Book
 									{
 										String journal;
 										try {
-											journal=mob.session().prompt(L("Enter the journal or user to transfer this msg to: "),"",30000);
+											journal=mob.session().getSyncModalDialogManager().prompt(L("Enter the journal or user to transfer this msg to: "),"",30000);
 										}
 										catch(final IOException e)
 										{
@@ -507,7 +507,7 @@ public class StdJournal extends StdItem implements Book
 									{
 										String journal;
 										try {
-											journal=mob.session().prompt(L("Enter the journal or user to copy this msg to: "),"",30000);
+											journal=mob.session().getSyncModalDialogManager().prompt(L("Enter the journal or user to copy this msg to: "),"",30000);
 										}
 										catch(final IOException e)
 										{
@@ -539,7 +539,7 @@ public class StdJournal extends StdItem implements Book
 									{
 										if(read != null)
 										{
-											final String replyMsg=mob.session().prompt(L("Enter your response\n\r: "));
+											final String replyMsg=mob.session().getSyncModalDialogManager().prompt(L("Enter your response\n\r: "));
 											if(replyMsg.trim().length()>0)
 											{
 												CMLib.journals().notifyReplying(Name(), read.from(),mob.Name(), read.subj());
@@ -691,7 +691,7 @@ public class StdJournal extends StdItem implements Book
 					   &&(CMSecurity.isAllowed(mob,R,CMSecurity.SecFlag.JOURNALS)||admin)
 					   &&(!mob.isMonster()))
 					{
-						if(mob.session().confirm(L("Delete all journal entries? Are you sure (y/N)?"),"N"))
+						if(mob.session().getSyncModalDialogManager().confirm(L("Delete all journal entries? Are you sure (y/N)?"),"N"))
 							CMLib.database().DBDeleteJournal(name(),null);
 					}
 					else
@@ -711,9 +711,9 @@ public class StdJournal extends StdItem implements Book
 								to=mob.Name();
 							else
 							if(CMath.s_bool(getParm("MAILBOX"))
-							||mob.session().confirm(L("Is this a private message (y/N)?"),"N"))
+							||mob.session().getSyncModalDialogManager().confirm(L("Is this a private message (y/N)?"),"N"))
 							{
-								to=mob.session().prompt(L("To whom:"));
+								to=mob.session().getSyncModalDialogManager().prompt(L("To whom:"));
 								if(((!to.toUpperCase().trim().startsWith("MASK=")
 										||(!CMSecurity.isAllowed(mob,R,CMSecurity.SecFlag.JOURNALS)&&(!admin))))
 								&&(!CMLib.players().playerExists(to)))
@@ -722,7 +722,7 @@ public class StdJournal extends StdItem implements Book
 									return;
 								}
 							}
-							subject=mob.session().prompt(L("Enter a subject: "));
+							subject=mob.session().getSyncModalDialogManager().prompt(L("Enter a subject: "));
 							if(subject.trim().length()==0)
 							{
 								mob.tell(L("Aborted."));
@@ -732,7 +732,7 @@ public class StdJournal extends StdItem implements Book
 							   &&(!admin)
 							   &&(!(CMSecurity.isAllowed(mob,R,CMSecurity.SecFlag.JOURNALS))))
 								subject=subject.substring(4);
-							message=mob.session().prompt(L("Enter your message\n\r: "));
+							message=mob.session().getSyncModalDialogManager().prompt(L("Enter your message\n\r: "));
 							if(message.trim().length()==0)
 							{
 								mob.tell(L("Aborted."));

@@ -351,7 +351,7 @@ public class Socials extends StdLibrary implements SocialsList
 			mob.session().getOutputFormatter().safeRawPrintln(L("@x1Others Effect type: @x2",numStr,actionDesc));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		String newName=mob.session().choose(L("Change W)ords, M)ovement (w/noise), S)ound, V)isual, H)ands, Q)uiet move: "),L("WMSVHQ"),"");
+		String newName=mob.session().getSyncModalDialogManager().choose(L("Change W)ords, M)ovement (w/noise), S)ound, V)isual, H)ands, Q)uiet move: "),L("WMSVHQ"),"");
 		if((newName!=null)&&(newName.length()>0))
 		{
 			newName=newName.toUpperCase();
@@ -401,7 +401,7 @@ public class Socials extends StdLibrary implements SocialsList
 									"HEARING NOISE"))))));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		String newName=mob.session().choose(L("Change W)ords, M)ovement (w/noise), S)ound, V)isual, H)ands, Q)uiet move: "),L("WMSVHQ"),"");
+		String newName=mob.session().getSyncModalDialogManager().choose(L("Change W)ords, M)ovement (w/noise), S)ound, V)isual, H)ands, Q)uiet move: "),L("WMSVHQ"),"");
 		if((newName!=null)&&(newName.length()>0))
 		{
 			newName=newName.toUpperCase();
@@ -459,7 +459,7 @@ public class Socials extends StdLibrary implements SocialsList
 		mob.session().getOutputFormatter().safeRawPrintln(L("@x1Your action type: @x2",numStr,actionDesc));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		String newName=mob.session().choose(L("Change W)ords, M)ovement (small), S)ound, L)arge Movement, Q)uiet Move: "),L("WMSLQ"),"");
+		String newName=mob.session().getSyncModalDialogManager().choose(L("Change W)ords, M)ovement (small), S)ound, L)arge Movement, Q)uiet Move: "),L("WMSLQ"),"");
 		if((newName!=null)&&(newName.length()>0))
 		{
 			newName=newName.toUpperCase();
@@ -572,7 +572,7 @@ public class Socials extends StdLibrary implements SocialsList
 				if(selection<0)
 				{
 					mob.session().getOutputFormatter().safeRawPrintln(str.toString());
-					s=mob.session().prompt(L("\n\rSelect an option or RETURN: "),"");
+					s=mob.session().getSyncModalDialogManager().prompt(L("\n\rSelect an option or RETURN: "),"");
 					if(!CMath.isInteger(s))
 					{
 						soc=null;
@@ -591,7 +591,7 @@ public class Socials extends StdLibrary implements SocialsList
 					newOne="?";
 					while((newOne.equals("?"))&&(!mob.session().isStopped()))
 					{
-						newOne=mob.session().prompt(L("\n\rNew target (?): "),"").toUpperCase().trim();
+						newOne=mob.session().getSyncModalDialogManager().prompt(L("\n\rNew target (?): "),"").toUpperCase().trim();
 						if(newOne.equals("?"))
 							mob.session().getOutputFormatter().rawPrintln(L("Choices:\n\r <T-NAME> (MOBTARGET),\n\r <I-NAME> (ITEMTARGET),\n\r"
 													+ " <V-NAME> (INVTARGET),\n\r <T-NAME> (EQUIPTARGET),\n\r"
@@ -635,14 +635,14 @@ public class Socials extends StdLibrary implements SocialsList
 					newOne="";
 				else
 				if((foundDex<0)
-				&&(!mob.session().confirm(L("'@x1' is a non-standard target.  Are you sure (y/N)? ",tag),"N")))
+				&&(!mob.session().getSyncModalDialogManager().confirm(L("'@x1' is a non-standard target.  Are you sure (y/N)? ",tag),"N")))
 				{
 					rest="";
 					pickNewSocial=true;
 				}
 				else
 				if((spaceDex > 0)
-				&&(!mob.session().confirm(L("Target: '@x1' is a valid target, with an argument of @x2.  Is this OK (Y/n)? ",friendlyTag,newOne.substring(spaceDex+1)),"Y")))
+				&&(!mob.session().getSyncModalDialogManager().confirm(L("Target: '@x1' is a valid target, with an argument of @x2.  Is this OK (Y/n)? ",friendlyTag,newOne.substring(spaceDex+1)),"Y")))
 				{
 					rest="";
 					pickNewSocial=true;
@@ -719,7 +719,7 @@ public class Socials extends StdLibrary implements SocialsList
 						showFlag=-1;
 						continue;
 					}
-					final String input = mob.session().prompt(L("Edit which (or DELETE)? "),"");
+					final String input = mob.session().getSyncModalDialogManager().prompt(L("Edit which (or DELETE)? "),"");
 					showFlag=CMath.s_int(input);
 					if((input!=null)&&(input.equalsIgnoreCase("DELETE")))
 					{

@@ -80,7 +80,7 @@ public class Sounds extends StdCommand
 				{
 					try
 					{
-						mob.session().prompt("",500);
+						mob.session().getSyncModalDialogManager().prompt("",500);
 					}
 					catch(final Exception e)
 					{

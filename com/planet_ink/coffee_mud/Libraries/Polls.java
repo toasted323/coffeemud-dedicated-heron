@@ -205,7 +205,7 @@ public class Polls extends StdLibrary implements PollManager
 			while((choice<0)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 			{
 
-				final String s=mob.session().prompt(L("Please make your selection (1-@x1): ",""+P.getOptions().size()));
+				final String s=mob.session().getSyncModalDialogManager().prompt(L("Please make your selection (1-@x1): ",""+P.getOptions().size()));
 				if((s.length()==0)&&(CMath.bset(P.getFlags(),Poll.FLAG_ABSTAIN)))
 					break;
 				if(CMath.isInteger(s)&&(CMath.s_int(s)>=1)&&(CMath.s_int(s)<=P.getOptions().size()))
@@ -314,7 +314,7 @@ public class Polls extends StdLibrary implements PollManager
 				showFlag=-1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;

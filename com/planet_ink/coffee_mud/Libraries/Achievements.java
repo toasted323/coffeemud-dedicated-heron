@@ -9432,7 +9432,7 @@ public class Achievements extends StdLibrary implements AchievementLibrary
 					showFlag=-1;
 					continue;
 				}
-				final String promptStr=mob.session().prompt(L("Edit which (or CANCEL)? "),"");
+				final String promptStr=mob.session().getSyncModalDialogManager().prompt(L("Edit which (or CANCEL)? "),"");
 				showFlag=CMath.s_int(promptStr);
 				if(showFlag<=0)
 				{

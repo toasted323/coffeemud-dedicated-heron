@@ -126,7 +126,7 @@ public class Fighter_BloodBrother extends FighterSkill
 		{
 			try
 			{
-				if(!target.session().confirm(L("@x1 wants to become your blood brother.  Is this OK (y/N)?",mob.Name()), "N", 5000))
+				if(!target.session().getSyncModalDialogManager().confirm(L("@x1 wants to become your blood brother.  Is this OK (y/N)?",mob.Name()), "N", 5000))
 					success=false;
 			}
 			catch (final IOException e)

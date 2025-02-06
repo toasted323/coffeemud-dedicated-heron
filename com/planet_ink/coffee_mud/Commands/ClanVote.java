@@ -180,7 +180,7 @@ public class ClanVote extends StdCommand
 						boolean updateVote=false;
 						if((prompt.length()>0)&&(mob.session()!=null))
 						{
-							final String answer=mob.session().choose(L("Choices: @x1or ENTER @x2: ",prompt.toString(),enterWhat),choices,"");
+							final String answer=mob.session().getSyncModalDialogManager().choose(L("Choices: @x1or ENTER @x2: ",prompt.toString(),enterWhat),choices,"");
 							if(answer.length()>0)
 							switch(answer.toUpperCase().charAt(0))
 							{
@@ -198,7 +198,7 @@ public class ClanVote extends StdCommand
 								break;
 							case 'C':
 								if((mob.session()!=null)
-								&&(mob.session().confirm(L("This will cancel this entire vote, are you sure (N/y)?"),"N")))
+								&&(mob.session().getSyncModalDialogManager().confirm(L("This will cancel this entire vote, are you sure (N/y)?"),"N")))
 								{
 									C.delVote(CV);
 									CMLib.clans().clanAnnounce(mob,L("A prior vote for @x1 @x2 has been deleted.",C.getGovernmentName(),C.clanID()));

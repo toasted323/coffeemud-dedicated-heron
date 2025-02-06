@@ -53,6 +53,7 @@ import com.planet_ink.coffee_mud.core.interfaces.Tickable;
 import com.planet_ink.coffee_mud.io.interfaces.BlockingInputProvider;
 import com.planet_ink.coffee_mud.io.interfaces.OutputFormatter;
 import com.planet_ink.coffee_mud.io.interfaces.OutputTranslator;
+import com.planet_ink.coffee_mud.session.interfaces.SyncModalDialogManager;
 
 /*
    Copyright 2024 github.com/toasted323
@@ -405,7 +406,7 @@ public class VFShell
 		}
 	}
 
-	private static class VFShellSession implements Session, OutputFormatter {
+	private static class VFShellSession implements Session, OutputFormatter, SyncModalDialogManager {
 		protected OutputStream bout = System.out;
 		protected MOB mob;
 
@@ -415,6 +416,11 @@ public class VFShell
 
 		@Override
 		public OutputFormatter getOutputFormatter() {
+			return this;
+		}
+
+		@Override
+		public SyncModalDialogManager getSyncModalDialogManager() {
 			return this;
 		}
 

@@ -1000,7 +1000,7 @@ public class Import extends StdCommand
 					continue;
 				else
 				if(!noPrompt)
-					if(!mob.session().confirm(L("\n\rExternal resource '@x1' found, import (Y/n)?",filename),"Y"))
+					if(!mob.session().getSyncModalDialogManager().confirm(L("\n\rExternal resource '@x1' found, import (Y/n)?",filename),"Y"))
 						continue;
 			}
 			Resources.saveFileResource(filename,mob,new StringBuffer(data));
@@ -1027,7 +1027,7 @@ public class Import extends StdCommand
 				{
 					if(!noPrompt)
 					{
-						if(!mob.session().confirm(L("Custom Race '@x1' found, import (Y/n)?",R.ID()),"Y"))
+						if(!mob.session().getSyncModalDialogManager().confirm(L("Custom Race '@x1' found, import (Y/n)?",R.ID()),"Y"))
 							continue;
 					}
 					CMClass.addRace(R);
@@ -1041,7 +1041,7 @@ public class Import extends StdCommand
 					else
 					if(!noPrompt)
 					{
-						if(!mob.session().confirm(L("Custom Race '@x1' found which would override your standard race.  Import this custom race anyway (Y/n)?",R.ID()),"Y"))
+						if(!mob.session().getSyncModalDialogManager().confirm(L("Custom Race '@x1' found which would override your standard race.  Import this custom race anyway (Y/n)?",R.ID()),"Y"))
 							continue;
 					}
 					CMClass.addRace(R);
@@ -1060,7 +1060,7 @@ public class Import extends StdCommand
 				{
 					if(!noPrompt)
 					{
-						if(!mob.session().confirm(L("Custom Char Class '@x1' found, import (Y/n)?",C.ID()),"Y"))
+						if(!mob.session().getSyncModalDialogManager().confirm(L("Custom Char Class '@x1' found, import (Y/n)?",C.ID()),"Y"))
 							continue;
 					}
 					CMClass.addCharClass(C);
@@ -1074,7 +1074,7 @@ public class Import extends StdCommand
 					else
 					if(!noPrompt)
 					{
-						if(!mob.session().confirm(L("Custom Char Class '@x1' found which would override your standard class.  Import this custom class anyway (Y/n)?",C.ID()),"Y"))
+						if(!mob.session().getSyncModalDialogManager().confirm(L("Custom Char Class '@x1' found which would override your standard class.  Import this custom class anyway (Y/n)?",C.ID()),"Y"))
 							continue;
 					}
 					CMClass.addCharClass(C);
@@ -1093,7 +1093,7 @@ public class Import extends StdCommand
 				{
 					if(!noPrompt)
 					{
-						if(!mob.session().confirm(L("Custom Ability '@x1' found, import (Y/n)?",A.ID()),"Y"))
+						if(!mob.session().getSyncModalDialogManager().confirm(L("Custom Ability '@x1' found, import (Y/n)?",A.ID()),"Y"))
 							continue;
 					}
 					CMClass.addClass(CMObjectType.ABILITY, A);
@@ -1107,7 +1107,7 @@ public class Import extends StdCommand
 					else
 					if(!noPrompt)
 					{
-						if(!mob.session().confirm(L("Custom Ability '@x1' found which would override your standard Ability.  Import custom ability anyway (Y/n)?",A.ID()),"Y"))
+						if(!mob.session().getSyncModalDialogManager().confirm(L("Custom Ability '@x1' found which would override your standard Ability.  Import custom ability anyway (Y/n)?",A.ID()),"Y"))
 							continue;
 					}
 					CMClass.delClass(CMObjectType.ABILITY, A2);
@@ -1127,7 +1127,7 @@ public class Import extends StdCommand
 				{
 					if(!noPrompt)
 					{
-						if(!mob.session().confirm(L("Custom Manufacturer '@x1' found, import (Y/n)?",M.name()),"Y"))
+						if(!mob.session().getSyncModalDialogManager().confirm(L("Custom Manufacturer '@x1' found, import (Y/n)?",M.name()),"Y"))
 							continue;
 					}
 					CMLib.tech().addManufacturer(eM);
@@ -1139,7 +1139,7 @@ public class Import extends StdCommand
 					else
 					if(!noPrompt)
 					{
-						if(!mob.session().confirm(L("Custom Manufacturer '@x1' found which would override your existing one.  Import custom manufacturer anyway (Y/n)?",M.name()),"Y"))
+						if(!mob.session().getSyncModalDialogManager().confirm(L("Custom Manufacturer '@x1' found which would override your existing one.  Import custom manufacturer anyway (Y/n)?",M.name()),"Y"))
 							continue;
 					}
 					eM.setXML(M.getXML());
@@ -5500,7 +5500,7 @@ public class Import extends StdCommand
 								}
 							}
 							else
-							if(((!prompt)||((session!=null)&&session.confirm(L("Area: \"@x1\" exists, obliterate first?",areaName),"N"))))
+							if(((!prompt)||((session!=null)&&session.getSyncModalDialogManager().confirm(L("Area: \"@x1\" exists, obliterate first?",areaName),"N"))))
 							{
 								if(reLinkTable==null)
 									reLinkTable=new ArrayList<String>();
@@ -5585,7 +5585,7 @@ public class Import extends StdCommand
 							return returnAnError(session,"Area '"+areaName+"' already exists.",compileErrors,errorList);
 						else
 						if((!prompt)
-						||((session!=null)&&session.confirm(L("Area: \"@x1\" exists, obliterate first?",areaName),"N")))
+						||((session!=null)&&session.getSyncModalDialogManager().confirm(L("Area: \"@x1\" exists, obliterate first?",areaName),"N")))
 						{
 							reLinkTable=new ArrayList<String>();
 							if(!temporarilyDeleteArea(mob,reLinkTable,areaName))
@@ -5730,7 +5730,7 @@ public class Import extends StdCommand
 						final MOB M=mobs.get(m);
 						if(CMLib.catalog().isCatalogObj(M))
 						{
-							if((!prompt)||((session!=null)&&(session.confirm(L("Replace existing catalog mob '@x1' with imported one?",M.name()), L("Y")))))
+							if((!prompt)||((session!=null)&&(session.getSyncModalDialogManager().confirm(L("Replace existing catalog mob '@x1' with imported one?",M.name()), L("Y")))))
 								CMLib.catalog().updateCatalog(M);
 							else
 								continue;
@@ -5752,7 +5752,7 @@ public class Import extends StdCommand
 						final Item I=items.get(m);
 						if(CMLib.catalog().isCatalogObj(I))
 						{
-							if((!prompt)||((session!=null)&&(session.confirm(L("Replace existing catalog item '@x1' with imported one?",I.name()), L("Y")))))
+							if((!prompt)||((session!=null)&&(session.getSyncModalDialogManager().confirm(L("Replace existing catalog item '@x1' with imported one?",I.name()), L("Y")))))
 								CMLib.catalog().updateCatalog(I);
 							else
 								continue;
@@ -5910,7 +5910,7 @@ public class Import extends StdCommand
 								continue;
 							}
 							else
-							if((session!=null)&&(!session.confirm(L("Account: \"@x1\" exists, obliterate first?",A.getAccountName()),"Y")))
+							if((session!=null)&&(!session.getSyncModalDialogManager().confirm(L("Account: \"@x1\" exists, obliterate first?",A.getAccountName()),"Y")))
 								continue;
 							else
 								CMLib.players().obliterateAccountOnly(CMLib.players().getLoadAccount(A.getAccountName()));
@@ -5942,7 +5942,7 @@ public class Import extends StdCommand
 								continue;
 							}
 							else
-							if((session!=null)&&(!session.confirm(L("Player: \"@x1\" exists, obliterate first?",M.Name()),"Y")))
+							if((session!=null)&&(!session.getSyncModalDialogManager().confirm(L("Player: \"@x1\" exists, obliterate first?",M.Name()),"Y")))
 								continue;
 							else
 								CMLib.players().obliteratePlayer(CMLib.players().getLoadPlayer(M.Name()),false,CMSecurity.isDisabled(CMSecurity.DisFlag.DEATHCRY));
@@ -6078,7 +6078,7 @@ public class Import extends StdCommand
 						{
 							if((changing)&&prompt&&(session!=null))
 								session.getOutputFormatter().rawPrint(L("Change Social '@x1' from '@x2', you see, to: '@x3'",S1.name(),S1.getSourceMessage(),str));
-							if((!changing)||((session!=null)&&prompt&&session.confirm("?","Y")))
+							if((!changing)||((session!=null)&&prompt&&session.getSyncModalDialogManager().confirm("?","Y")))
 								S1.setSourceMessage(str);
 						}
 
@@ -6090,7 +6090,7 @@ public class Import extends StdCommand
 						{
 							if((changing)&&prompt&&(session!=null))
 								session.getOutputFormatter().rawPrint(L("Change Social '@x1' from '@x2', others see, to: '@x3'",S1.name(),S1.getOthersMessage(),str));
-							if((!changing)||((session!=null)&&prompt&&(session.confirm("?","Y"))))
+							if((!changing)||((session!=null)&&prompt&&(session.getSyncModalDialogManager().confirm("?","Y"))))
 								S1.setOthersMessage(str);
 						}
 
@@ -6110,7 +6110,7 @@ public class Import extends StdCommand
 						{
 							if((changing)&&prompt&&(session!=null))
 								session.getOutputFormatter().rawPrint(L("Change Social '@x1' from '@x2', you see, to: '@x3'",S2.name(),S2.getSourceMessage(),str));
-							if((!changing)||((session!=null)&&prompt&&session.confirm("?","Y")))
+							if((!changing)||((session!=null)&&prompt&&session.getSyncModalDialogManager().confirm("?","Y")))
 								S2.setSourceMessage(str);
 						}
 
@@ -6122,7 +6122,7 @@ public class Import extends StdCommand
 						{
 							if((session!=null)&&prompt&&changing)
 								session.getOutputFormatter().rawPrint(L("Change Social '@x1', others see from '@x2', to: '@x3'",S2.name(),S2.getOthersMessage(),str));
-							if((!changing)||((session!=null)&&prompt&&session.confirm("?","Y")))
+							if((!changing)||((session!=null)&&prompt&&session.getSyncModalDialogManager().confirm("?","Y")))
 								S2.setOthersMessage(str);
 						}
 
@@ -6134,7 +6134,7 @@ public class Import extends StdCommand
 						{
 							if((session!=null)&&prompt&&changing)
 								session.getOutputFormatter().rawPrint(L("Change Social '@x1', target sees from '@x2', to: '@x3'",S2.name(),S2.getTargetMessage(),str));
-							if((!changing)||((session!=null)&&prompt&&session.confirm("?","Y")))
+							if((!changing)||((session!=null)&&prompt&&session.getSyncModalDialogManager().confirm("?","Y")))
 								S2.setTargetMessage(str);
 						}
 
@@ -6146,7 +6146,7 @@ public class Import extends StdCommand
 						{
 							if((session!=null)&&prompt&&changing)
 								session.getOutputFormatter().rawPrint(L("Change Social '@x1', no target sees from '@x2', to: '@x3'",S2.name(),S2.getFailedTargetMessage(),str));
-							if((!changing)||((session!=null)&&prompt&&session.confirm("?","Y")))
+							if((!changing)||((session!=null)&&prompt&&session.getSyncModalDialogManager().confirm("?","Y")))
 								S2.setFailedMessage(str);
 						}
 
@@ -6166,7 +6166,7 @@ public class Import extends StdCommand
 						{
 							if((session!=null)&&prompt&&changing)
 								session.getOutputFormatter().rawPrint(L("Change Social '@x1', you see from '@x2', to: '@x3''",S3.name(),S3.getSourceMessage(),str));
-							if((!changing)||((session!=null)&&prompt&&session.confirm("?","Y")))
+							if((!changing)||((session!=null)&&prompt&&session.getSyncModalDialogManager().confirm("?","Y")))
 								S3.setSourceMessage(str);
 						}
 
@@ -6178,7 +6178,7 @@ public class Import extends StdCommand
 						{
 							if((session!=null)&&prompt&&changing)
 								session.getOutputFormatter().rawPrint(L("Change Social '@x1', others see from '@x2', to: '@x3'",S3.name(),S3.getOthersMessage(),str));
-							if((!changing)||((session!=null)&&prompt&&session.confirm("?","Y")))
+							if((!changing)||((session!=null)&&prompt&&session.getSyncModalDialogManager().confirm("?","Y")))
 								S3.setOthersMessage(str);
 						}
 
@@ -6207,7 +6207,7 @@ public class Import extends StdCommand
 						{
 							try
 							{
-							if(!session.confirm(L("Would you like to continue (y/N)"),"N"))
+							if(!session.getSyncModalDialogManager().confirm(L("Would you like to continue (y/N)"),"N"))
 								return false;
 							}
 							catch(final Exception e)
@@ -6261,7 +6261,7 @@ public class Import extends StdCommand
 						return returnAnError(session,"Area '"+areaName+"' already exists.",compileErrors,errorList);
 					else
 					if((!prompt)
-					||((session!=null)&&(session.confirm(L("Area: \"@x1\" exists, obliterate first?",areaName),"N"))))
+					||((session!=null)&&(session.getSyncModalDialogManager().confirm(L("Area: \"@x1\" exists, obliterate first?",areaName),"N"))))
 					{
 						reLinkTable=new ArrayList<String>();
 						if(!temporarilyDeleteArea(mob,reLinkTable,areaName))
@@ -6279,7 +6279,7 @@ public class Import extends StdCommand
 					}
 				}
 				else
-				if((prompt)&&((session!=null)&&(!session.confirm(L("Found area: \"@x1\", is this ok?",areaName),"Y"))))
+				if((prompt)&&((session!=null)&&(!session.getSyncModalDialogManager().confirm(L("Found area: \"@x1\", is this ok?",areaName),"Y"))))
 				{
 					if(multiArea)
 						continue;
@@ -6894,7 +6894,7 @@ public class Import extends StdCommand
 												{
 													if((prompt)
 													&&(session!=null)
-													&&(!session.confirm(L("@x1 links to #@x2. Found @x3. Link?",R.roomID(),""+linkRoomID,R2.roomID()),"Y")))
+													&&(!session.getSyncModalDialogManager().confirm(L("@x1 links to #@x2. Found @x3. Link?",R.roomID(),""+linkRoomID,R2.roomID()),"Y")))
 														continue;
 												}
 												linkRoom=R2;

@@ -32,6 +32,7 @@ import com.planet_ink.coffee_mud.core.interfaces.Tickable;
 import com.planet_ink.coffee_mud.io.interfaces.BlockingInputProvider;
 import com.planet_ink.coffee_mud.io.interfaces.OutputFormatter;
 import com.planet_ink.coffee_mud.io.interfaces.OutputTranslator;
+import com.planet_ink.coffee_mud.session.interfaces.SyncModalDialogManager;
 
 /*
    Copyright 2024 github.com/toasted323
@@ -55,7 +56,7 @@ import com.planet_ink.coffee_mud.io.interfaces.OutputTranslator;
    2024-12 toasted323: ensure any exit changes observed by the player are sent via gmcp too
    2024-12 toasted323: mapping from ships
 */
-public class FakeSession implements Session
+public class FakeSession implements Session, SyncModalDialogManager
 {
 	OutputFormatter 				outputFormatter = new FakeOutputFormatter();
 	protected CMFile				theFile		= null;
@@ -676,6 +677,11 @@ public class FakeSession implements Session
 	@Override
 	public OutputFormatter getOutputFormatter() {
 		return outputFormatter;
+	}
+
+	@Override
+	public SyncModalDialogManager getSyncModalDialogManager() {
+		return this;
 	}
 
 	private class FakeOutputFormatter implements OutputFormatter {

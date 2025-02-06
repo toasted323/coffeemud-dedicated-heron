@@ -125,7 +125,7 @@ public class Restring extends StdCommand
 						showFlag=-1;
 						continue;
 					}
-					showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+					showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 					if(showFlag<=0)
 					{
 						showFlag=-1;

@@ -80,7 +80,7 @@ public class MXP extends StdCommand
 				{
 					try
 					{
-						mob.session().prompt("", 250);
+						mob.session().getSyncModalDialogManager().prompt("", 250);
 					}
 					catch (final Exception e)
 					{

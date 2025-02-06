@@ -24,6 +24,7 @@ import com.planet_ink.coffee_mud.io.interfaces.*;
 import com.planet_ink.coffee_mud.io.*;
 import com.planet_ink.coffee_mud.session.DefaultCommandManager;
 import com.planet_ink.coffee_mud.session.DefaultAsyncModalDialogManager;
+import com.planet_ink.coffee_mud.session.DefaultSyncModalDialogManager;
 import com.planet_ink.coffee_mud.session.interfaces.*;
 
 import java.io.*;
@@ -65,7 +66,7 @@ import java.nio.charset.Charset;
    2024-12 toasted323: Mapping from ships
 */
 
-public class DefaultSession implements Session, CommandManagerContext, OutputFormattingContext, SnoopManager, BlockingInputProvider
+public class DefaultSession implements Session, CommandManagerContext, OutputFormattingContext, SnoopManager, BlockingInputProvider, InputProcessor
 {
 	protected static final int		SOTIMEOUT		= 300;
 	protected static final int		PINGTIMEOUT  	= 30000;
@@ -156,7 +157,7 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 	private IOExceptionHandler exceptionHandler;
 	private CommandManager commandManager;
 	private AsyncModalDialogManager asyncModalDialogManager;
-
+	private SyncModalDialogManager syncModalDialogManager;
 
 	@Override
 	public String ID()
@@ -286,6 +287,30 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 		);
 	}
 
+	private SyncModalDialogManager createSyncModalDialogManager() {
+		StringParsingUtility stringParser = new StringParsingUtility() {
+			@Override
+			public List<String> parseCommas(String str, boolean ignoreQuotes) {
+				return CMParms.parseCommas(str, ignoreQuotes);
+			}
+
+			@Override
+			public boolean containsIgnoreCase(List<String> list, String str) {
+				return CMParms.containsIgnoreCase(list, str);
+			}
+
+			@Override
+			public List<String> cleanParameterList(String rest) {
+				return CMParms.cleanParameterList(rest);
+			}
+		};
+
+		return new DefaultSyncModalDialogManager(
+				this,
+				stringParser
+		);
+	}
+
 	@Override
 	public void initializeSession(final Socket s, final String groupName, final String introTextStr)
 	{
@@ -378,6 +403,7 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 				outputHandler = new DefaultOutputHandler(rawout, outputCharSet, writeLock, debugStrOutput, debugStrOutput);
 				outputFormatter = new DefaultOutputFormatter(outputHandler, this,this, exceptionHandler);
 				commandManager = createCommandManager();
+				syncModalDialogManager = createSyncModalDialogManager();
 				return;
 			}
 
@@ -392,6 +418,7 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 			outputFormatter.setSession(this);
 			outputFormatter.setMob(this.mob);
 			commandManager = createCommandManager();
+			syncModalDialogManager = createSyncModalDialogManager();
 
 			if(!mcpDisabled)
 			{
@@ -1213,26 +1240,6 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 	}
 
 	@Override
-	public String prompt(final String Message, final String Default, final long maxTime)
-		throws IOException
-	{
-		final String Msg=prompt(Message,maxTime).trim();
-		if(Msg.equals(""))
-			return Default;
-		return Msg;
-	}
-
-	@Override
-	public String prompt(final String Message, final String Default)
-		throws IOException
-	{
-		final String Msg=prompt(Message,-1).trim();
-		if(Msg.equals(""))
-			return Default;
-		return Msg;
-	}
-
-	@Override
 	public void prompt(final InputCallback callBack)
 	{
 		if (asyncModalDialogManager == null) {
@@ -1248,19 +1255,6 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 		{
 			asyncModalDialogManager.cancelDialog();
 		}
-	}
-
-	@Override
-	public String prompt(final String Message, final long maxTime)
-			throws IOException
-	{
-		promptPrint(Message);
-		final String input=blockingIn(maxTime, true);
-		if(input==null)
-			return "";
-		if((input.length()>0)&&(input.charAt(input.length()-1)=='\\'))
-			return input.substring(0,input.length()-1);
-		return input;
 	}
 
 	@Override
@@ -1294,19 +1288,6 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 			}
 		}
 		lastWasPrompt.set(true);
-	}
-
-	@Override
-	public String prompt(final String Message)
-		throws IOException
-	{
-		promptPrint(Message);
-		final String input=blockingIn(-1, true);
-		if(input==null)
-			return "";
-		if((input.length()>0)&&(input.charAt(input.length()-1)=='\\'))
-			return input.substring(0,input.length()-1);
-		return input;
 	}
 
 	@Override
@@ -1827,7 +1808,7 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 		return '\0';
 	}
 
-	protected int nonBlockingIn(final boolean appendInputFlag)
+	public int nonBlockingIn(final boolean appendInputFlag)
 	throws IOException
 	{
 		try
@@ -2083,81 +2064,6 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 		if((mob != null)&&(mob.isAttributeSet(Attrib.NOREPROMPT)))
 			setPromptFlag(true);
 		return str;
-	}
-
-	@Override
-	public boolean confirm(final String Message, String Default, final long maxTime) throws IOException
-	{
-		if(Default.toUpperCase().startsWith("T"))
-			Default="Y";
-		final String YN=choose(Message,"YN",Default,maxTime);
-		if(YN.equals("Y"))
-			return true;
-		return false;
-	}
-
-	@Override
-	public boolean confirm(final String Message, String Default) throws IOException
-	{
-		if(Default.toUpperCase().startsWith("T"))
-			Default="Y";
-		final String YN=choose(Message,"YN",Default,-1);
-		if(YN.equals("Y"))
-			return true;
-		return false;
-	}
-
-	@Override
-	public String choose(final String Message, final String Choices, final String Default) throws IOException
-	{
-		return choose(Message,Choices,Default,-1,null);
-	}
-
-	@Override
-	public String choose(final String Message, final String Choices, final String Default, final long maxTime) throws IOException
-	{
-		return choose(Message,Choices,Default,maxTime,null);
-	}
-
-	@Override
-	public String choose(final String promptMsg, final String choices, final String def, final long maxTime, final List<String> paramsOut) throws IOException
-	{
-		String YN="";
-		String rest=null;
-		final List<String> choiceList;
-		final boolean oneChar=choices.indexOf(',')<0;
-		if(!oneChar)
-			choiceList=CMParms.parseCommas(choices,true);
-		else
-		{
-			choiceList=new ArrayList<String>();
-			for(final char c : choices.toCharArray())
-				choiceList.add(""+c);
-		}
-		while((YN.equals("")||(!CMParms.containsIgnoreCase(choiceList, YN)))
-		&&(!killFlag))
-		{
-			promptPrint(promptMsg);
-			YN=blockingIn(maxTime, true);
-			if(YN==null)
-				return def.toUpperCase();
-			YN=YN.trim();
-			if(YN.equals(""))
-				return def.toUpperCase();
-			if((YN.length()>1)
-			&&(oneChar))
-			{
-				if(paramsOut!=null)
-					rest=YN.substring(1).trim();
-				YN=YN.substring(0,1).toUpperCase();
-			}
-			else
-			if(oneChar)
-				YN=YN.toUpperCase();
-		}
-		if((rest!=null)&&(paramsOut!=null)&&(rest.length()>0))
-			paramsOut.addAll(CMParms.cleanParameterList(rest));
-		return YN;
 	}
 
 	@Override
@@ -3333,5 +3239,10 @@ public class DefaultSession implements Session, CommandManagerContext, OutputFor
 	@Override
 	public OutputFormatter getOutputFormatter() {
 		return outputFormatter;
+	}
+
+	@Override
+	public SyncModalDialogManager getSyncModalDialogManager() {
+		return syncModalDialogManager;
 	}
 }

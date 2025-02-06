@@ -16,11 +16,13 @@ import com.planet_ink.coffee_mud.Locales.interfaces.*;
 import com.planet_ink.coffee_mud.MOBS.interfaces.*;
 import com.planet_ink.coffee_mud.Races.interfaces.*;
 import com.planet_ink.coffee_mud.io.interfaces.OutputFormatter;
+import com.planet_ink.coffee_mud.session.interfaces.SyncModalDialogManager;
 
 import java.util.*;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
+
 /*
    Copyright 2024 github.com/toasted323
    Copyright 2001-2024 Bo Zimmerman
@@ -42,9 +44,10 @@ import java.net.SocketException;
    2024-12 toasted323: ensure any exit changes observed by the player are sent via gmcp too
    2024-12 toasted323: mapping from ships
 */
+
 /**
  * A Session object is the key interface between the internet user
- * and their player MOB.  In fact, the presence of an attached session
+ * and their player MOB. In fact, the presence of an attached session
  * object to a MOB is the only difference between an NPC MOB and a player MOB.
  * This object handles input, output, and related processes.
  */
@@ -74,6 +77,16 @@ public interface Session extends CMCommon, Modifiable, CMRunnable
 	 * @return The OutputFormatter object for this session.
 	 */
 	public OutputFormatter getOutputFormatter();
+
+
+	/**
+	 * Returns the SyncModalDialogManager associated with this Session.
+	 * The SyncModalDialogManager is responsible for handling synchronous modal dialogs,
+	 * including prompts, confirmations, and choice selections for this session.
+	 *
+	 * @return The SyncModalDialogManager object for this session.
+	 */
+	public SyncModalDialogManager getSyncModalDialogManager();
 
 	/**
 	 * Negotiates various telnet options (or attempts to), and
@@ -167,20 +180,6 @@ public interface Session extends CMCommon, Modifiable, CMRunnable
 	 */
 	public char hotkey(long maxWait);
 
-	/**
-	 * Prompts the user to enter a string, and then returns what
-	 * the enter.  Does not time out, but may throw an exception
-	 * on disconnnect.
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#prompt(String)
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#prompt(String, long)
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#prompt(String, String, long)
-	 * @param Message the prompt message to display to the user
-	 * @param Default the default response if the user just hits enter
-	 * @return the string entered by the user, or the Default
-	 * @throws IOException a disconnect
-	 */
-	public String prompt(String Message, String Default)
-		throws IOException;
 
 	/**
 	 * Puts the session into an input state, returning immediately.  The
@@ -191,126 +190,6 @@ public interface Session extends CMCommon, Modifiable, CMRunnable
 	 * @param callBack the callback to modify and make when done
 	 */
 	public void prompt(InputCallback callBack);
-
-	/**
-	 * Prompts the user to enter a string, and then returns what
-	 * the enter.  Possibly times out, and may throw an exception
-	 * on disconnnect or time out.
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#prompt(String)
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#prompt(String, String)
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#prompt(String, long)
-	 * @param Message the prompt message to display to the user
-	 * @param Default the default response if the user just hits enter
-	 * @param maxTime max number of milliseconds to wait before timing out
-	 * @return the string entered by the user, or the Default
-	 * @throws IOException a disconnect or time out
-	 */
-	public String prompt(String Message, String Default, long maxTime)
-		throws IOException;
-
-	/**
-	 * Prompts the user to enter a string, and then returns what
-	 * the enter.  Does not time out, but may throw an exception
-	 * on disconnnect.
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#prompt(String, String)
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#prompt(String, long)
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#prompt(String, String, long)
-	 * @param Message the prompt message to display to the user
-	 * @return the string entered by the user
-	 * @throws IOException a disconnect
-	 */
-	public String prompt(String Message)
-		throws IOException;
-
-	/**
-	 * Prompts the user to enter a string, and then returns what
-	 * the enter.  Possibly times out, and may throw an exception
-	 * on disconnnect or time out.
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#prompt(String)
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#prompt(String, String)
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#prompt(String, String, long)
-	 * @param Message the prompt message to display to the user
-	 * @param maxTime max number of milliseconds to wait before timing out
-	 * @return the string entered by the user
-	 * @throws IOException a disconnect or time out
-	 */
-	public String prompt(final String Message, long maxTime)
-		throws IOException;
-
-	/**
-	 * Prompts the user to enter Y or N, and returns what they
-	 * enter.  Will not time out, but may throw an exception on
-	 * disconnect.
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#confirm(String, String, long)
-	 * @param Message the prompt message to display to the user
-	 * @param Default the default response if the user just hits enter
-	 * @return true if they entered Y, false otherwise
-	 * @throws IOException a disconnect
-	 */
-	public boolean confirm(final String Message, final String Default)
-		throws IOException;
-
-	/**
-	 * Prompts the user to enter Y or N, and returns what they
-	 * enter. Possibly times out, and may throw an exception
-	 * on disconnnect or time out.
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#confirm(String, String)
-	 * @param Message the prompt message to display to the user
-	 * @param Default the default response if the user just hits enter
-	 * @param maxTime max number of milliseconds to wait before timing out
-	 * @return true if they entered Y, false otherwise
-	 * @throws IOException a disconnect or time out
-	 */
-	public boolean confirm(final String Message, final String Default, long maxTime)
-		throws IOException;
-
-	/**
-	 * Prompts the user to enter one character responses from a set of
-	 * valid choices.  Repeats the prompt if the user does not enter
-	 * a valid choice.  ENTER is a valid choice for Default. Does not time out,
-	 * but may throw an exception on disconnnect.
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#choose(String, String, String, long)
-	 * @param Message the prompt message to display to the user
-	 * @param Choices a list of uppercase characters that may be entered
-	 * @param Default the default response if the user just hits enter
-	 * @return the character entered from the choices
-	 * @throws IOException a disconnect
-	 */
-	public String choose(final String Message, final String Choices, final String Default)
-		throws IOException;
-
-	/**
-	 * Prompts the user to enter one character responses from a set of
-	 * valid choices.  Repeats the prompt if the user does not enter
-	 * a valid choice.  ENTER is a valid choice for Default. Does not time out,
-	 * but may throw an exception on disconnnect.
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#choose(String, String, String, long)
-	 * @param Message the prompt message to display to the user
-	 * @param Choices a list of uppercase characters that may be entered
-	 * @param Default the default response if the user just hits enter
-	 * @param maxTime max number of milliseconds to wait before timing out
-	 * @param paramsOut an empty list to put any extra crap added to the end of the choice.
-	 * @return the character entered from the choices
-	 * @throws IOException a disconnect
-	 */
-	public String choose(final String Message, final String Choices, final String Default, long maxTime, List<String> paramsOut)
-		throws IOException;
-
-	/**
-	 * Prompts the user to enter one character responses from a set of
-	 * valid choices.  Repeats the prompt if the user does not enter
-	 * a valid choice.  ENTER is a valid choice for Default.   May time out,
-	 * and may throw an exception on disconnnect.
-	 * @see com.planet_ink.coffee_mud.Common.interfaces.Session#choose(String, String, String)
-	 * @param Message the prompt message to display to the user
-	 * @param Choices a list of uppercase characters that may be entered
-	 * @param Default the default response if the user just hits enter
-	 * @param maxTime max number of milliseconds to wait before timing out
-	 * @return the character entered from the choices
-	 * @throws IOException a disconnect or time out
-	 */
-	public String choose(final String Message, final String Choices, final String Default, long maxTime)
-		throws IOException;
 
 	/**
 	 * Notifies this session that the given session is snooping it.

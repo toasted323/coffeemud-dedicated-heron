@@ -326,7 +326,7 @@ public class StdAuctioneer extends StdMOB implements Auctioneer
 					int days=0;
 					try
 					{
-						days=CMath.s_int(mob.session().prompt(":","",30000));
+						days=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(":","",30000));
 					}
 					catch(final Exception e)
 					{
@@ -355,7 +355,7 @@ public class StdAuctioneer extends StdMOB implements Auctioneer
 					CMLib.commands().postSay(this,mob,L("Auctioning @x1 will cost a listing fee of @x2, proceed?",I.name(),depositAmt),true,false);
 					try
 					{
-						if(!mob.session().confirm(L("(Y/N):"),"Y",10000))
+						if(!mob.session().getSyncModalDialogManager().confirm(L("(Y/N):"),"Y",10000))
 							return false;
 					}
 					catch(final Exception e)
@@ -417,7 +417,7 @@ public class StdAuctioneer extends StdMOB implements Auctioneer
 						{
 							try
 							{
-								if (!msg.source().session().confirm(L("This will cancel your auction on @x1, are you sure (y/N)?", data.getAuctionedItem().name()), "N", 10000))
+								if (!msg.source().session().getSyncModalDialogManager().confirm(L("This will cancel your auction on @x1, are you sure (y/N)?", data.getAuctionedItem().name()), "N", 10000))
 									return false;
 							}
 							catch (final Exception e)
@@ -501,7 +501,7 @@ public class StdAuctioneer extends StdMOB implements Auctioneer
 						{
 							try
 							{
-								if (!msg.source().session().confirm(L("This will cancel your auction on @x1, are you sure (y/N)?", data.getAuctionedItem().name()), "N", 10000))
+								if (!msg.source().session().getSyncModalDialogManager().confirm(L("This will cancel your auction on @x1, are you sure (y/N)?", data.getAuctionedItem().name()), "N", 10000))
 									return false;
 							}
 							catch (final Exception e)
@@ -589,9 +589,9 @@ public class StdAuctioneer extends StdMOB implements Auctioneer
 					{
 						final double lowestDenom=CMLib.beanCounter().getLowestDenomination(thisData.getCurrency());
 						CMLib.commands().postSay(this,mob,L("What would you like your opening price to be (in @x1?",CMLib.beanCounter().getDenominationName(thisData.getCurrency(), lowestDenom)),true,false);
-						final String openPrice=mob.session().prompt(": ",30000);
+						final String openPrice=mob.session().getSyncModalDialogManager().prompt(": ",30000);
 						CMLib.commands().postSay(this,mob,L("What would you like your buy-now price to be (in @x1?",CMLib.beanCounter().getDenominationName(thisData.getCurrency(), lowestDenom)),true,false);
-						final String buyPrice=mob.session().prompt(": ",30000);
+						final String buyPrice=mob.session().getSyncModalDialogManager().prompt(": ",30000);
 						thisData.setBid(CMath.s_double(openPrice)*lowestDenom);
 						if(thisData.getBid()<0.0)
 							thisData.setBid(0.0);

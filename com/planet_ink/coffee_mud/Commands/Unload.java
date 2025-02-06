@@ -137,7 +137,7 @@ public class Unload extends StdCommand
 			&&(CMLib.map().getArea(CMParms.combine(commands,2))!=null))
 			{
 				final String which=CMParms.combine(commands,2);
-				if(mob.session().confirm(L("Are you sure you want to unload area '@x1' (y/N)?",which), "N"))
+				if(mob.session().getSyncModalDialogManager().confirm(L("Are you sure you want to unload area '@x1' (y/N)?",which), "N"))
 				{
 					Area A=null;
 					if(which.length()>0)
@@ -305,7 +305,7 @@ public class Unload extends StdCommand
 					}
 					users.add(M);
 				}
-				final boolean saveFirst=mob.session().confirm(L("Save first (Y/n)?"),"Y");
+				final boolean saveFirst=mob.session().getSyncModalDialogManager().confirm(L("Save first (Y/n)?"),"Y");
 				for(int u=0;u<users.size();u++)
 				{
 					final MOB M=users.get(u);

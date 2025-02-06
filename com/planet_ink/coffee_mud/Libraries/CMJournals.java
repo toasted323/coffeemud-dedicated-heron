@@ -2049,7 +2049,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 			{
 				final boolean canExtEdit=((sess.getClientTelnetMode(Session.TELNET_GMCP)));
 				final LinkedList<String> paramsOut=new LinkedList<String>();
-				final String option=sess.choose(L("^HMenu ^N(?/A/D/L/I/E/R/S/Q@x1)^H: ^N",(canExtEdit?"/W":"")),L("ADLIERSQ?@x1",(canExtEdit?"W":"")),"?",-1,paramsOut);
+				final String option=sess.getSyncModalDialogManager().choose(L("^HMenu ^N(?/A/D/L/I/E/R/S/Q@x1)^H: ^N",(canExtEdit?"/W":"")),L("ADLIERSQ?@x1",(canExtEdit?"W":"")),"?",-1,paramsOut);
 				final String paramAll=(paramsOut.size()>0)?CMParms.combine(paramsOut,0):null;
 				final String param1=(paramsOut.size()>0)?paramsOut.getFirst():null;
 				final String param2=(paramsOut.size()>1)?CMParms.combine(paramsOut,1):null;
@@ -2057,14 +2057,14 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 				{
 				case 'S':
 					if(((paramAll!=null)&&(paramAll.equalsIgnoreCase("Y")))
-					||(sess.confirm(L("Save and exit, are you sure (N/y)? "),"N")))
+					||(sess.getSyncModalDialogManager().confirm(L("Save and exit, are you sure (N/y)? "),"N")))
 					{
 						return MsgMkrResolution.SAVEFILE;
 					}
 					break;
 				case 'Q':
 					if(((paramAll!=null)&&(paramAll.equalsIgnoreCase("Y")))
-					||(sess.confirm(L("Quit without saving (N/y)? "),"N")))
+					||(sess.getSyncModalDialogManager().confirm(L("Quit without saving (N/y)? "),"N")))
 						return MsgMkrResolution.CANCELFILE;
 					break;
 				case 'R':
@@ -2097,7 +2097,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 					{
 						String line=param1;
 						if(line==null)
-							line=sess.prompt(L("Line to edit (0-@x1): ",""+(vbuf.size()-1)),"");
+							line=sess.getSyncModalDialogManager().prompt(L("Line to edit (0-@x1): ",""+(vbuf.size()-1)),"");
 						if((CMath.isInteger(line))&&(CMath.s_int(line)>=0)&&(CMath.s_int(line)<(vbuf.size())))
 						{
 							final int ln=CMath.s_int(line);
@@ -2123,7 +2123,7 @@ public class CMJournals extends StdLibrary implements JournalsLibrary
 					{
 						String line=paramAll;
 						if(line==null)
-							line=sess.prompt(L("Line to delete (0-@x1): ",""+(vbuf.size()-1)),"");
+							line=sess.getSyncModalDialogManager().prompt(L("Line to delete (0-@x1): ",""+(vbuf.size()-1)),"");
 						if((CMath.isInteger(line))&&(CMath.s_int(line)>=0)&&(CMath.s_int(line)<(vbuf.size())))
 						{
 							final int ln=CMath.s_int(line);

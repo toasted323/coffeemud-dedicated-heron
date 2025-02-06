@@ -92,7 +92,7 @@ public class Catalog extends StdCommand
 				if((data!=null)&&(!data.category().equals(newCat)))
 				{
 					if((mob.session()==null)
-					||(!mob.session().confirm(L("The object '@x1' already exists in the catalog@x2 , exactly as it is.  Would you like to change it to category '@x3'(y/N)?",cataP.Name(),category,newCat),"N")))
+					||(!mob.session().getSyncModalDialogManager().confirm(L("The object '@x1' already exists in the catalog@x2 , exactly as it is.  Would you like to change it to category '@x3'(y/N)?",cataP.Name(),category,newCat),"N")))
 					{
 						return false;
 					}
@@ -111,7 +111,7 @@ public class Catalog extends StdCommand
 			if((data!=null)&&(!data.category().equals(newCat)))
 				diffs.insert(0,"New category: '"+newCat+"', ");
 			if((mob.session()==null)
-			||(!mob.session().confirm(L("Cataloging that object will change the existing cataloged '@x1'@x2 by altering the following properties: @x3.  Please confirm (y/N)?",P.Name(),category,diffs.toString()),"Y")))
+			||(!mob.session().getSyncModalDialogManager().confirm(L("Cataloging that object will change the existing cataloged '@x1'@x2 by altering the following properties: @x3.  Please confirm (y/N)?",P.Name(),category,diffs.toString()),"Y")))
 			{
 				CMLib.catalog().changeCatalogUsage(origP,false);
 				return false;
@@ -316,9 +316,9 @@ public class Catalog extends StdCommand
 				final String type=whatKind.name().toLowerCase();
 
 				if((mob.session()!=null)
-				&&(mob.session().confirm(L("You are about to auto-catalog (room-reset and save) all @x1 @x2.\n\rThis command, if used improperly, "
+				&&(mob.session().getSyncModalDialogManager().confirm(L("You are about to auto-catalog (room-reset and save) all @x1 @x2.\n\rThis command, if used improperly, "
 						+ "may alter @x3 in this @x4.\n\rAre you absolutely sure (y/N)?",which,type,type,which),"N"))
-				&&((which.equalsIgnoreCase("ROOM"))||mob.session().confirm(L("I'm serious now.  You can't abort this, and it WILL modify stuff.\n\r"
+				&&((which.equalsIgnoreCase("ROOM"))||mob.session().getSyncModalDialogManager().confirm(L("I'm serious now.  You can't abort this, and it WILL modify stuff.\n\r"
 						+ "Have you tested this command on small areas and know what you're doing?.\n\rAre you absolutely POSITIVELY sure (y/N)?"),"N")))
 				{
 					Physical P=null;
@@ -573,7 +573,7 @@ public class Catalog extends StdCommand
 						if((data!=null)&&(data.numReferences()>0))
 							prefix="Catalog MOB '"+((MOB)P).Name()+"' is currently listed as being in use '"+data.numReferences()+" times.  ";
 						if((mob.session()!=null)
-						&&((del.length>10)||(mob.session().confirm(L("@x1This will permanently delete mob '@x2' from the catalog.  Are you sure (y/N)?",prefix,((MOB)P).Name()),"N"))))
+						&&((del.length>10)||(mob.session().getSyncModalDialogManager().confirm(L("@x1This will permanently delete mob '@x2' from the catalog.  Are you sure (y/N)?",prefix,((MOB)P).Name()),"N"))))
 						{
 							CMLib.catalog().delCatalog(P);
 							mob.tell(L("MOB '@x1 has been permanently removed from the catalog.",((MOB)P).Name()));
@@ -586,7 +586,7 @@ public class Catalog extends StdCommand
 						if((data!=null)&&(data.numReferences()>0))
 							prefix="Catalog Item '"+((Item)P).Name()+"' is currently listed as being in use '"+data.numReferences()+" times.  ";
 						if((mob.session()!=null)
-						&&((del.length>10)||(mob.session().confirm(L("@x1This will permanently delete item '@x2' from the catalog.  Are you sure (y/N)?",prefix,((Item)P).Name()),"N"))))
+						&&((del.length>10)||(mob.session().getSyncModalDialogManager().confirm(L("@x1This will permanently delete item '@x2' from the catalog.  Are you sure (y/N)?",prefix,((Item)P).Name()),"N"))))
 						{
 							CMLib.catalog().delCatalog(P);
 							mob.tell(L("Item '@x1 has been permanently removed from the catalog.",P.Name()));
@@ -612,12 +612,12 @@ public class Catalog extends StdCommand
 					final String choice;
 					if(P instanceof MOB)
 					{
-						choice=mob.session().choose(L("Auto-Spawn: N)o, R)oom,  (@x1): ",
+						choice=mob.session().getSyncModalDialogManager().choose(L("Auto-Spawn: N)o, R)oom,  (@x1): ",
 								""+data.getSpawn().name().charAt(0)),L("NR"), ""+data.getSpawn().name().charAt(0));
 					}
 					else
 					{
-						choice=mob.session().choose(L("Auto-Spawn: N)o, L)ive mobs,  D)ead mobs, R)oom,  (@x1): ",
+						choice=mob.session().getSyncModalDialogManager().choose(L("Auto-Spawn: N)o, L)ive mobs,  D)ead mobs, R)oom,  (@x1): ",
 								""+data.getSpawn().name().charAt(0)),L("NLDR"), ""+data.getSpawn().name().charAt(0));
 					}
 					if(choice.trim().length()>0)
@@ -639,7 +639,7 @@ public class Catalog extends StdCommand
 						Integer newCap=null;
 						while(newCap == null)
 						{
-							final String newRate=mob.session().prompt(L("Enter a new Max number in world (@x1): ",
+							final String newRate=mob.session().getSyncModalDialogManager().prompt(L("Enter a new Max number in world (@x1): ",
 									""+data.getCap()), ""+data.getCap());
 							if(newRate.trim().length()==0)
 								return false;
@@ -654,7 +654,7 @@ public class Catalog extends StdCommand
 						Double newPct=null;
 						while(newPct == null)
 						{
-							final String newRate=mob.session().prompt(L("Enter a new Drop Rate (@x1): ",
+							final String newRate=mob.session().getSyncModalDialogManager().prompt(L("Enter a new Drop Rate (@x1): ",
 									CMath.toPct(data.getRate())), CMath.toPct(data.getRate()));
 							if(newRate.trim().length()==0)
 								return false;
@@ -670,7 +670,7 @@ public class Catalog extends StdCommand
 						{
 							while(newMask.equalsIgnoreCase("?"))
 							{
-								newMask=mob.session().prompt(L("Enter new Room selection mask, or NULL (@x1)\n\r: ",data.getMaskStr()),data.getMaskStr());
+								newMask=mob.session().getSyncModalDialogManager().prompt(L("Enter new Room selection mask, or NULL (@x1)\n\r: ",data.getMaskStr()),data.getMaskStr());
 								if(newMask.equalsIgnoreCase("?"))
 									mob.tell(CMLib.masking().maskHelp("\n","disallow"));
 							}
@@ -680,7 +680,7 @@ public class Catalog extends StdCommand
 						{
 							while(newMask.equalsIgnoreCase("?"))
 							{
-								newMask=mob.session().prompt(L("Enter new MOB selection mask, or NULL (@x1)\n\r: ",data.getMaskStr()),data.getMaskStr());
+								newMask=mob.session().getSyncModalDialogManager().prompt(L("Enter new MOB selection mask, or NULL (@x1)\n\r: ",data.getMaskStr()),data.getMaskStr());
 								if(newMask.equalsIgnoreCase("?"))
 									mob.tell(CMLib.masking().maskHelp("\n","disallow"));
 							}
@@ -832,7 +832,7 @@ public class Catalog extends StdCommand
 					final CatalogKind whatKind=getObjectType(commands);
 					final String type=whatKind.name().toLowerCase();
 					if((mob.session()!=null)
-					&&(mob.session().confirm(L("You are about to auto-clean (and auto-save) all @x1 @x2.\n\rThis command, if used improperly, may alter @x3 in this @x4.\n\r"
+					&&(mob.session().getSyncModalDialogManager().confirm(L("You are about to auto-clean (and auto-save) all @x1 @x2.\n\rThis command, if used improperly, may alter @x3 in this @x4.\n\r"
 							+ "Are you absolutely sure (y/N)?",which,type,type,which),"N")))
 					{
 						Physical P=null;

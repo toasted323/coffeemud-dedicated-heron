@@ -774,7 +774,7 @@ public class Quests extends StdLibrary implements QuestManager
 					showFlag=-1;
 					continue;
 				}
-				showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+				showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 				if(showFlag<=0)
 				{
 					showFlag=-1;
@@ -1388,7 +1388,7 @@ public class Quests extends StdLibrary implements QuestManager
 					if(v1==V.size())
 					{
 						if((mob.session()!=null)&&(!mob.session().isStopped())
-						&&(mob.session().confirm(L("Add another thing to say (y/N)"),L("NO"))))
+						&&(mob.session().getSyncModalDialogManager().confirm(L("Add another thing to say (y/N)"),L("NO"))))
 						{
 							V.add("9say this");
 							v1-=1;
@@ -1399,7 +1399,7 @@ public class Quests extends StdLibrary implements QuestManager
 					String newStr="?";
 					while((newStr.equals("?"))&&(mob.session()!=null)&&(!mob.session().isStopped()))
 					{
-						newStr=mob.session().prompt(L("Enter  # Weight + thing to say (?) '@x1'\n\r: ",s),s);
+						newStr=mob.session().getSyncModalDialogManager().prompt(L("Enter  # Weight + thing to say (?) '@x1'\n\r: ",s),s);
 						if(newStr.equals("?"))
 							mob.tell(L("Enter a number followed by a phrase to say like 9thingtosay. Enter NULL to delete this thing to say."));
 						else
@@ -1874,7 +1874,7 @@ public class Quests extends StdLibrary implements QuestManager
 			int questIndex=-1;
 			while((questIndex<0)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 			{
-				final String choice=mob.session().prompt(L("Select a quest template (?): "),"");
+				final String choice=mob.session().getSyncModalDialogManager().prompt(L("Select a quest template (?): "),"");
 				if(choice.equals("?"))
 				{
 					final StringBuffer fullList=new StringBuffer("\n\r^HCANCEL^N -- to cancel.\n\r");
@@ -2154,10 +2154,10 @@ public class Quests extends StdLibrary implements QuestManager
 						showFlag=-1;
 						continue;
 					}
-					final String what=mob.session().prompt(L("Edit which (enter 0 to cancel)? "),"");
+					final String what=mob.session().getSyncModalDialogManager().prompt(L("Edit which (enter 0 to cancel)? "),"");
 					if(what.trim().equals("0"))
 					{
-						if(mob.session().confirm(L("Are you sure you want to abort (y/N)? "),"N"))
+						if(mob.session().getSyncModalDialogManager().confirm(L("Are you sure you want to abort (y/N)? "),"N"))
 						{
 							mob.tell(L("Aborted."));
 							return null;
@@ -2192,7 +2192,7 @@ public class Quests extends StdLibrary implements QuestManager
 			}
 			script=CMStrings.replaceAll(script,"$#AUTHOR",mob.Name());
 			if((mob.session()!=null)&&(!mob.session().isStopped())
-			&&(mob.session().confirm(L("Create the new quest: @x1 (y/N)? ",name),"N")))
+			&&(mob.session().getSyncModalDialogManager().confirm(L("Create the new quest: @x1 (y/N)? ",name),"N")))
 			{
 				final Quest Q=(Quest)CMClass.getCommon("DefaultQuest");
 				final CMFile newQF=new CMFile(Resources.makeFileResourceName("quests/"+name+".quest"),mob,CMFile.FLAG_LOGERRORS);

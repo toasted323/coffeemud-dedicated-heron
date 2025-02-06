@@ -269,7 +269,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return false;
 		if(showFlag!=showNumber)
-			return mob.session().confirm(L("Toggle (y/N)?"),"N");
+			return mob.session().getSyncModalDialogManager().confirm(L("Toggle (y/N)?"),"N");
 		return true;
 	}
 
@@ -339,7 +339,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		final String oldOldVal=oldVal;
 		while((mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			newName=mob.session().prompt(promptStr,"");
+			newName=mob.session().getSyncModalDialogManager().prompt(promptStr,"");
 			if(newName.equals("?")&&(help!=null))
 				mob.tell(help);
 			else
@@ -423,7 +423,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				{
 					if((fieldDisplayStr2!=null)&&(fieldDisplayStr2.length()>0))
 					{
-						final String val=mob.session().prompt("\n\r"+fieldDisplayStr2+": ");
+						final String val=mob.session().getSyncModalDialogManager().prompt("\n\r"+fieldDisplayStr2+": ");
 						newName=newName+prefix2+val+suffix2;
 					}
 					curSet.add(newName);
@@ -494,7 +494,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		final String promptStr=L("Enter a new value@x1@x2@x3\n\r:",(emptyOK?" (or NULL)":""),(mcp?" (or \\#$#)":""),(help!=null?" (?)":""));
 		while(newName.equals("?")&&(mob.session()!=null)&&(!sess.isStopped()))
 		{
-			newName=sess.prompt(promptStr,"");
+			newName=sess.getSyncModalDialogManager().prompt(promptStr,"");
 			if(mcp && newName.equals("\\#$#"))
 			{
 				final int tag=Math.abs(new Random(System.currentTimeMillis()).nextInt());
@@ -558,7 +558,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		String newName="?";
 		while(newName.equals("?")&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			newName=mob.session().prompt(L("Enter true or false@x1:",(help!=null?" (?)":"")),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter true or false@x1:",(help!=null?" (?)":"")),"");
 			if(newName.equals("?")&&(help!=null))
 				mob.tell(help);
 			else
@@ -592,7 +592,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		String newName="?";
 		while(newName.equals("?")&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			newName=mob.session().prompt(L("Enter a new value@x1:",(help!=null?" (?)":"")),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new value@x1:",(help!=null?" (?)":"")),"");
 			if(newName.equals("?")&&(help!=null))
 				mob.tell(help);
 			else
@@ -626,7 +626,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		String newName="?";
 		while(newName.equals("?")&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			newName=mob.session().prompt(L("Enter a new value@x1:",(help!=null?" (?)":"")),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new value@x1:",(help!=null?" (?)":"")),"");
 			if(newName.equals("?")&&(help!=null))
 				mob.tell(help);
 			else
@@ -651,7 +651,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		String newName="?";
 		while(newName.equals("?")&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			newName=mob.session().prompt(L("Enter a new value@x1:",(help!=null?" (?)":"")),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new value@x1:",(help!=null?" (?)":"")),"");
 			if(newName.equals("?")&&(help!=null))
 				mob.tell(help);
 			else
@@ -694,7 +694,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		String thisVal="?";
 		while(thisVal.equals("?")&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			thisVal=mob.session().prompt(L("Enter a new choice to add/remove (?):"),"").trim();
+			thisVal=mob.session().getSyncModalDialogManager().prompt(L("Enter a new choice to add/remove (?):"),"").trim();
 			if(thisVal.equals("?"))
 				mob.tell(CMParms.toListString(choices.toArraySecond(new String[0])));
 			else
@@ -785,7 +785,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		while(thisVal.equals("?")&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
 			mob.tell(showNumber+". "+fieldDisplayStr+": '"+CMParms.toListString(oldVals)+"'.");
-			thisVal=mob.session().prompt(L("Enter a new choice to add/remove (?):"),"").trim();
+			thisVal=mob.session().getSyncModalDialogManager().prompt(L("Enter a new choice to add/remove (?):"),"").trim();
 			if(thisVal.equals("?"))
 				mob.tell(CMParms.toListString(choices.toArraySecond(new String[0])));
 			else
@@ -849,7 +849,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		String newVal="?";
 		while(newVal.equals("?")&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			newVal=mob.session().prompt(L("Enter a new choice (? or NULL):"),"").trim();
+			newVal=mob.session().getSyncModalDialogManager().prompt(L("Enter a new choice (? or NULL):"),"").trim();
 			if(newVal.equals("?"))
 				mob.tell(CMParms.toListString(choices.toArraySecond(new String[0])));
 			else
@@ -908,7 +908,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				return;
 			}
 			else
-			if(mob.session().confirm(L("This object is cataloged.  Changing its name will detach it from the cataloged version, are you sure (y/N)?"),"N"))
+			if(mob.session().getSyncModalDialogManager().confirm(L("This object is cataloged.  Changing its name will detach it from the cataloged version, are you sure (y/N)?"),"N"))
 			{
 				CMLib.catalog().changeCatalogUsage(P,false);
 				P.setName(newName);
@@ -946,7 +946,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			cataP.destroy();
 			mob.tell(L("You have modified the following fields: \n\r@x1",detailedDiff.toString()));
 			final String message = "This object is cataloged.  Enter U to update the cataloged version, or D to detach this object from the catalog, or C to Cancel (u/d/C)?";
-			final String choice = mob.session().choose(message, L("UDC"), L("C"));
+			final String choice = mob.session().getSyncModalDialogManager().choose(message, L("UDC"), L("C"));
 			if(choice.equalsIgnoreCase("C"))
 			{
 				P.setMiscText(origCataP.text());
@@ -992,43 +992,43 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
 		mob.tell(L("Dead MOB name: '@x1'.",I.getMobName()));
-		String newName=mob.session().prompt(L("Enter a new name\n\r:"),"");
+		String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new name\n\r:"),"");
 		if(newName.length()>0)
 			I.setMobName(newName);
 		else mob.tell(L("(no change)"));
 		mob.tell(L("Dead MOB Description: '@x1'.",I.getMobDescription()));
-		newName=mob.session().prompt(L("Enter a new description\n\r:"),"");
+		newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new description\n\r:"),"");
 		if(newName.length()>0)
 			I.setMobDescription(newName);
 		else mob.tell(L("(no change)"));
 		mob.tell(L("Is a Players corpse: @x1",""+I.isPlayerCorpse()));
-		newName=mob.session().prompt(L("Enter a new true/false\n\r:"),"");
+		newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new true/false\n\r:"),"");
 		if((newName.length()>0)&&(newName.equalsIgnoreCase("true")||newName.equalsIgnoreCase("false")))
 			I.setIsPlayerCorpse(Boolean.valueOf(newName.toLowerCase()).booleanValue());
 		else mob.tell(L("(no change)"));
 		mob.tell(L("Dead mobs PK flag: @x1",""+I.getMobPKFlag()));
-		newName=mob.session().prompt(L("Enter a new true/false\n\r:"),"");
+		newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new true/false\n\r:"),"");
 		if((newName.length()>0)&&(newName.equalsIgnoreCase("true")||newName.equalsIgnoreCase("false")))
 			I.setMobPKFlag(Boolean.valueOf(newName.toLowerCase()).booleanValue());
 		else mob.tell(L("(no change)"));
 		genCharStats(mob,I.charStats());
 		mob.tell(L("Killers Name: '@x1'.",I.getKillerName()));
-		newName=mob.session().prompt(L("Enter a new killer\n\r:"),"");
+		newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new killer\n\r:"),"");
 		if(newName.length()>0)
 			I.setKillerName(newName);
 		else mob.tell(L("(no change)"));
 		mob.tell(L("Killer is a player: @x1",""+I.isKillerPlayer()));
-		newName=mob.session().prompt(L("Enter a new true/false\n\r:"),"");
+		newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new true/false\n\r:"),"");
 		if((newName.length()>0)&&(newName.equalsIgnoreCase("true")||newName.equalsIgnoreCase("false")))
 			I.setIsKillerPlayer(Boolean.valueOf(newName.toLowerCase()).booleanValue());
 		else mob.tell(L("(no change)"));
 		mob.tell(L("Time of death: @x1",CMLib.time().date2String(I.getTimeOfDeath())));
-		newName=mob.session().prompt(L("Enter a new value\n\r:"),"");
+		newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new value\n\r:"),"");
 		if(newName.length()>0)
 			I.setTimeOfDeath(CMLib.time().string2Millis(newName));
 		else mob.tell(L("(no change)"));
 		mob.tell(L("Last message string: @x1",I.getLastMessage()));
-		newName=mob.session().prompt(L("Enter a new value\n\r:"),"");
+		newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new value\n\r:"),"");
 		if(newName.length()>0)
 			I.setLastMessage(newName);
 		else mob.tell(L("(no change)"));
@@ -1054,7 +1054,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(continueThis))
 		{
 			continueThis=false;
-			final String newName=mob.session().prompt(L("Enter a new one (?)\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one (?)\n\r:"),"");
 			if(newName.length()>0)
 			{
 				if(newName.equalsIgnoreCase("?"))
@@ -1094,7 +1094,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.session().getOutputFormatter().colorOnlyPrintln(L("@x1. Currency: '@x2'.",""+showNumber,currencyName));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		final String newName=mob.session().prompt(L("Enter a new one or 'DEFAULT'\n\r:"),"");
+		final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one or 'DEFAULT'\n\r:"),"");
 		if(newName.length()>0)
 		{
 			if(newName.equalsIgnoreCase("default"))
@@ -1159,7 +1159,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			report.append("8. Months: "+CMParms.toListString(TC.getMonthNames())+"\n\r");
 			report.append("9. Year Title(s): "+CMParms.toListString(TC.getYearNames()));
 			mob.tell(report.toString());
-			newName=mob.session().prompt(L("Enter one to change (or global):"),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter one to change (or global):"),"");
 			if(newName.length()==0)
 				break;
 			if(newName.equalsIgnoreCase("global"))
@@ -1176,7 +1176,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			if(which<=6)
 			{
 				newName="";
-				final String newNum=mob.session().prompt(L("Enter a new number:"),"");
+				final String newNum=mob.session().getSyncModalDialogManager().prompt(L("Enter a new number:"),"");
 				final int val=CMath.s_int(newNum);
 				if(newNum.length()==0)
 					mob.tell(L("(no change)"));
@@ -1224,7 +1224,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			else
 			{
 				newName="";
-				final String newNum=mob.session().prompt(L("Enter a new list (comma delimited)\n\r:"),"");
+				final String newNum=mob.session().getSyncModalDialogManager().prompt(L("Enter a new list (comma delimited)\n\r:"),"");
 				if(newNum.length()==0)
 					mob.tell(L("(no change)"));
 				else
@@ -1263,7 +1263,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				if((showFlag==showNumber)||(showFlag<=-999))
 				{
 					more=true;
-					final String newName=mob.session().prompt(L("Enter a new clan to add, remove, or change (?):"),"");
+					final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new clan to add, remove, or change (?):"),"");
 					Clan C=null;
 					if(newName.trim().length()==0)
 						more=false;
@@ -1277,7 +1277,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 							if(M.getClanRole(C.clanID())==null)
 							{
 								final String role=C.getRoleName(C.getGovernment().getAcceptPos(), false, false);
-								final String newRole=mob.session().prompt(L("Enter role [@x1]\n\r: (@x2):",CMParms.toListString(C.getRolesList()),role),role);
+								final String newRole=mob.session().getSyncModalDialogManager().prompt(L("Enter role [@x1]\n\r: (@x2):",CMParms.toListString(C.getRolesList()),role),role);
 								if(newRole.trim().length()>0)
 								{
 									int roleID=-1;
@@ -1324,7 +1324,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Deity (ID): '@x2'.",""+showNumber,M.baseCharStats().getWorshipCharID()));
 			if((showFlag==showNumber)||(showFlag<=-999))
 			{
-				final String newName=mob.session().prompt(L("Enter a new one (null)\n\r:"),"");
+				final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one (null)\n\r:"),"");
 				if(newName.equalsIgnoreCase("null"))
 					M.baseCharStats().setWorshipCharID("");
 				else
@@ -1539,7 +1539,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		String newName="";
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(newName.length()==0))
 		{
-			newName=mob.session().prompt(L("Enter a new one (?)\n\r:"),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one (?)\n\r:"),"");
 			if(newName.trim().equals("?"))
 			{
 				mob.tell(CMLib.lister().build2ColTable(mob,CMClass.locales()).toString()+"\n\r");
@@ -1552,7 +1552,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				if(newRoom==null)
 					mob.tell(L("'@x1' does not exist. No Change.",newName));
 				else
-				if(mob.session().confirm(L("This will change the room type of room @x1. It will automatically save any mobs and items in this room permanently.  Are you absolutely sure (y/N)?",R.roomID()),"N"))
+				if(mob.session().getSyncModalDialogManager().confirm(L("This will change the room type of room @x1. It will automatically save any mobs and items in this room permanently.  Are you absolutely sure (y/N)?",R.roomID()),"N"))
 					R=changeRoomType(R,newRoom);
 				R.recoverRoomStats();
 			}
@@ -1585,7 +1585,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(L("@x1. Password: ********.",""+showNumber));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		final String str=mob.session().prompt(L("Enter a new one to reset\n\r:"),"");
+		final String str=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one to reset\n\r:"),"");
 		if((str.length()>0)&&(M.playerStats()!=null))
 		{
 			M.playerStats().setPassword(str);
@@ -1620,12 +1620,12 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			return;
 		String newName=null;
 		if(E instanceof Item)
-			newName=mob.session().prompt(L("Enter something new (null == blended)\n\r:"),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter something new (null == blended)\n\r:"),"");
 		else
 		if(E instanceof Exit)
-			newName=mob.session().prompt(L("Enter something new (null == see-through)\n\r:"),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter something new (null == see-through)\n\r:"),"");
 		else
-			newName=mob.session().prompt(L("Enter something new (null = empty)\n\r:"),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter something new (null = empty)\n\r:"),"");
 		if(newName.length()>0)
 		{
 			if(newName.trim().equalsIgnoreCase("null"))
@@ -1653,19 +1653,19 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			return;
 		String newName;
 		mob.session().getOutputFormatter().safeRawPrintln(L("Enter new 'put' string (ENTER='"+E.putString(CMClass.sampleMOB())+"')"));
-		newName=mob.session().prompt(":","");
+		newName=mob.session().getSyncModalDialogManager().prompt(":","");
 		if(newName.length()>0)
 			E.setPutString(newName);
 		else
 			mob.tell(L("(no change)"));
 		mob.session().getOutputFormatter().safeRawPrintln(L("Enter new 'mount' string (ENTER='"+E.mountString(0,CMClass.sampleMOB())+"')"));
-		newName=mob.session().prompt(":","");
+		newName=mob.session().getSyncModalDialogManager().prompt(":","");
 		if(newName.length()>0)
 			E.setMountString(newName);
 		else
 			mob.tell(L("(no change)"));
 		mob.session().getOutputFormatter().safeRawPrintln(L("Enter new 'dismount' string (ENTER='"+E.dismountString(CMClass.sampleMOB())+"')"));
-		newName=mob.session().prompt(":","");
+		newName=mob.session().getSyncModalDialogManager().prompt(":","");
 		if(newName.length()>0)
 			E.setDismountString(newName);
 		else
@@ -1687,19 +1687,19 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			return;
 		String newName;
 		mob.session().getOutputFormatter().safeRawPrintln(L("Enter new 'state' string (ENTER='"+E.stateString(CMClass.sampleMOB())+"')"));
-		newName=mob.session().prompt(":","");
+		newName=mob.session().getSyncModalDialogManager().prompt(":","");
 		if(newName.length()>0)
 			E.setStateString(newName);
 		else
 			mob.tell(L("(no change)"));
 		mob.session().getOutputFormatter().safeRawPrintln(L("Enter new 'state subject' string (ENTER='"+E.stateStringSubject(CMClass.sampleMOB())+"')"));
-		newName=mob.session().prompt(":","");
+		newName=mob.session().getSyncModalDialogManager().prompt(":","");
 		if(newName.length()>0)
 			E.setStateStringSubject(newName);
 		else
 			mob.tell(L("(no change)"));
 		mob.session().getOutputFormatter().safeRawPrintln(L("Enter new 'ride verb' string (ENTER='"+E.rideString(CMClass.sampleMOB())+"')"));
-		newName=mob.session().prompt(":","");
+		newName=mob.session().getSyncModalDialogManager().prompt(":","");
 		if(newName.length()>0)
 			E.setRideString(newName);
 		else
@@ -1717,7 +1717,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Closed Text: '@x2'.",""+showNumber,E.closedText()));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		final String newName=mob.session().prompt(L("Enter something new (null=blank)\n\r:"),"");
+		final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter something new (null=blank)\n\r:"),"");
 		if(newName.equals("null"))
 			E.setExitParams(E.doorName(),E.closeWord(),E.openWord(),"");
 		else
@@ -1738,7 +1738,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Door Name: '@x2'.",""+showNumber,E.doorName()));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		String newName=mob.session().prompt(L("Enter something new\n\r:"),"");
+		String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter something new\n\r:"),"");
 		if(newName.length()>0)
 		{
 			if((E instanceof Item)&&(newName.equalsIgnoreCase("null")))
@@ -1767,7 +1767,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(L("@x1. Open Word: '@x2'.",""+showNumber,E.openWord()));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		final String newName=mob.session().prompt(L("Enter something new\n\r:"),"");
+		final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter something new\n\r:"),"");
 		if(newName.length()>0)
 			E.setExitParams(E.doorName(),E.closeWord(),newName,E.closedText());
 		else
@@ -1785,7 +1785,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Area staff names: @x2",""+showNumber,A.getSubOpList()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			str=mob.session().prompt(L("Enter a name to add or remove\n\r:"),"");
+			str=mob.session().getSyncModalDialogManager().prompt(L("Enter a name to add or remove\n\r:"),"");
 			if(str.length()>0)
 			{
 				if(A.amISubOp(str))
@@ -1819,7 +1819,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Parent Areas: @x2",""+showNumber,str.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			newArea=mob.session().prompt(L("Enter an area name to add or remove\n\r:"),"");
+			newArea=mob.session().getSyncModalDialogManager().prompt(L("Enter an area name to add or remove\n\r:"),"");
 			if(newArea.equalsIgnoreCase("*clear*")
 			||((newArea.equalsIgnoreCase("all"))&&(CMLib.map().getArea("map")==null)))
 			{
@@ -1889,7 +1889,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Children areas: @x2",""+showNumber,str.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			newArea=mob.session().prompt(L("Enter an area name to add or remove\n\r:"),"");
+			newArea=mob.session().getSyncModalDialogManager().prompt(L("Enter an area name to add or remove\n\r:"),"");
 			if((newArea.equalsIgnoreCase("*clear*"))
 			||((newArea.equalsIgnoreCase("all"))&&(CMLib.map().getArea("map")==null)))
 			{
@@ -1946,7 +1946,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(L("@x1. Close Word: '@x2'.",""+showNumber,E.closeWord()));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		final String newName=mob.session().prompt(L("Enter something new\n\r:"),"");
+		final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter something new\n\r:"),"");
 		if(newName.length()>0)
 			E.setExitParams(E.doorName(),newName,E.openWord(),E.closedText());
 		else
@@ -1964,7 +1964,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Assigned Key Item: '@x2'.",""+showNumber,E.keyName()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			final String newName=mob.session().prompt(L("Enter something new (null=blank)\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter something new (null=blank)\n\r:"),"");
 			if(newName.equalsIgnoreCase("null"))
 				E.setKeyName("");
 			else
@@ -1988,7 +1988,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			{
 				E.setReadable(true);
 				mob.tell(L("\n\rText: '@x1'.",E.readableText()));
-				final String newName=mob.session().prompt(L("Enter something new (null=blank)\n\r:"),"");
+				final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter something new (null=blank)\n\r:"),"");
 				if(newName.equalsIgnoreCase("null"))
 					E.setReadableText("");
 				else
@@ -2041,7 +2041,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		boolean q=false;
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(!q))
 		{
-			final String newType=mob.session().prompt(L("Enter a new type (?)\n\r:"),RawMaterial.CODES.NAME(E.liquidType()));
+			final String newType=mob.session().getSyncModalDialogManager().prompt(L("Enter a new type (?)\n\r:"),RawMaterial.CODES.NAME(E.liquidType()));
 			if(newType.equals("?"))
 			{
 				final StringBuilder say=new StringBuilder("");
@@ -2077,7 +2077,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. @x2: '@x3'.",""+showNumber,fieldDisp,oldID));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return oldID;
-			final String newName=mob.session().prompt(L("Enter something new (?)\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter something new (?)\n\r:"),"");
 			if(newName.length()==0)
 			{
 				mob.tell(L("(no change)"));
@@ -2193,7 +2193,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				if((E instanceof Wand)
 				||((E instanceof SpellHolder)&&(!(CMClass.classID(E).endsWith("SuperPill")))))
 				{
-					newName=mob.session().prompt(L("Enter something new (?)\n\r:"),"");
+					newName=mob.session().getSyncModalDialogManager().prompt(L("Enter something new (?)\n\r:"),"");
 					if(newName.length()==0)
 						ok=true;
 					else
@@ -2247,7 +2247,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					}
 				}
 				else
-					newName=mob.session().prompt(L("Enter something new (null=blank)\n\r:"),"");
+					newName=mob.session().getSyncModalDialogManager().prompt(L("Enter something new (null=blank)\n\r:"),"");
 
 				if(ok)
 				{
@@ -2286,7 +2286,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			return;
 		while(!S.isStopped())
 		{
-			final String newName=S.prompt(L("Enter new skill id (?)\n\r:"),"");
+			final String newName=S.getSyncModalDialogManager().prompt(L("Enter new skill id (?)\n\r:"),"");
 			if(newName.equalsIgnoreCase("?"))
 			{
 				str=new StringBuilder("");
@@ -2319,7 +2319,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				break;
 			}
 		}
-		final String newCount=mob.session().prompt(L("Enter new maximum recipe count (@x1):",""+E.getTotalRecipePages()),"");
+		final String newCount=mob.session().getSyncModalDialogManager().prompt(L("Enter new maximum recipe count (@x1):",""+E.getTotalRecipePages()),"");
 		if((newCount.length()>0)&&(CMath.s_int(newCount)>0))
 			E.setTotalRecipePages(CMath.s_int(newCount));
 		else
@@ -2347,7 +2347,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				str.append(L("(@x1) ADD NEW RECIPE",""+(recipes.length+1))).append("\n");
 			if(mob.session()!=null)
 				mob.session().getOutputFormatter().rawPrint(str.toString());
-			final String newName=mob.session().prompt(L("Enter a number to add/edit/remove\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a number to add/edit/remove\n\r:"),"");
 			final int x=CMath.s_int(newName);
 			if((x<=0)||(x>E.getTotalRecipePages()))
 				break;
@@ -2372,7 +2372,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			}
 			if(x<=recipes.length)
 			{
-				final String newLine=mob.session().prompt(L("Re-Enter this line, or NULL to delete (?).\n\r:"),"");
+				final String newLine=mob.session().getSyncModalDialogManager().prompt(L("Re-Enter this line, or NULL to delete (?).\n\r:"),"");
 				if(newLine.equalsIgnoreCase("?"))
 					mob.tell((C==null)?"?":CMStrings.replaceAll(C.getRecipeFormat(), "\t", ","));
 				else
@@ -2392,7 +2392,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			}
 			else
 			{
-				final String newLine=mob.session().prompt(L("Enter a new line, or enter to cancel (?).\n\r:"),"");
+				final String newLine=mob.session().getSyncModalDialogManager().prompt(L("Enter a new line, or enter to cancel (?).\n\r:"),"");
 				if((newLine!=null)&&(newLine.trim().length()>0))
 				{
 					if(newLine.equalsIgnoreCase("?"))
@@ -2437,7 +2437,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				mob.session().getOutputFormatter().println(L("    G) Is Two-Handed : @x1",""+I.rawLogicalAnd()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			c=mob.session().choose(L("Enter one to change, or ENTER when done:"),L("ABCDEFG\n"),"\n").toUpperCase();
+			c=mob.session().getSyncModalDialogManager().choose(L("Enter one to change, or ENTER when done:"),L("ABCDEFG\n"),"\n").toUpperCase();
 			switch(Character.toUpperCase(c.charAt(0)))
 			{
 			case 'A':
@@ -2566,7 +2566,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				}
 				letter++;
 			}
-			c=mob.session().choose(L("Enter one to change, or ENTER when done: "),letters+"\n","\n").toUpperCase();
+			c=mob.session().getSyncModalDialogManager().choose(L("Enter one to change, or ENTER when done: "),letters+"\n","\n").toUpperCase();
 			letter='A';
 			for (final int mask : disps)
 			{
@@ -2590,7 +2590,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			else
 				prompt+="(y/N): ";
 
-			return mob.session().confirm(prompt,val?L("Y"):L("N"));
+			return mob.session().getSyncModalDialogManager().confirm(prompt,val?L("Y"):L("N"));
 		}
 		catch(final IOException e)
 		{
@@ -2663,7 +2663,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.session().getOutputFormatter().println(L("    W) Very windy       : @x1",""+((type&Places.CLIMASK_WINDY)>0)));
 			mob.session().getOutputFormatter().println(L("    D) Very dry         : @x1",""+((type&Places.CLIMASK_DRY)>0)));
 			mob.session().getOutputFormatter().println(L("    V) Void             : @x1",""+((type&Places.CLIMASK_VOID)>0)));
-			c=mob.session().choose(L("Enter one to change, or ENTER when done: "),L("RHCWDI\n"),"\n").toUpperCase();
+			c=mob.session().getSyncModalDialogManager().choose(L("Enter one to change, or ENTER when done: "),L("RHCWDI\n"),"\n").toUpperCase();
 			switch(c.charAt(0))
 			{
 			case 'I':
@@ -2709,11 +2709,11 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				if(i!=CharStats.STAT_GENDER)
 					mob.session().getOutputFormatter().println("    "+commandStr.charAt(i)+") "+CMStrings.padRight(CharStats.CODES.DESC(i),20)+":"+((E.getStat(i))));
 			}
-			c=mob.session().choose(L("Enter one to change, or ENTER when done: "),commandStr.substring(0,CharStats.CODES.TOTAL())+"\n","\n").toUpperCase();
+			c=mob.session().getSyncModalDialogManager().choose(L("Enter one to change, or ENTER when done: "),commandStr.substring(0,CharStats.CODES.TOTAL())+"\n","\n").toUpperCase();
 			final int num=commandStr.indexOf(c);
 			if(num>=0)
 			{
-				final String newVal=mob.session().prompt(L("Enter a new value:  @x1 (@x2): ",CharStats.CODES.DESC(num),""+E.getStat(num)),"");
+				final String newVal=mob.session().getSyncModalDialogManager().prompt(L("Enter a new value:  @x1 (@x2): ",CharStats.CODES.DESC(num),""+E.getStat(num)),"");
 				if(((CMath.s_int(newVal)>0)||(newVal.trim().equals("0")))
 				&&(num!=CharStats.STAT_GENDER))
 					E.setStat(num,CMath.s_int(newVal));
@@ -2740,11 +2740,11 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			return;
 		}
 
-		pStats.setBonusCommonSkillLimits(CMath.s_int(mob.session().prompt(L("*. Bonus Common Skills (@x1): ",""+pStats.getBonusCommonSkillLimits()),""+pStats.getBonusCommonSkillLimits())));
-		pStats.setBonusCraftingSkillLimits(CMath.s_int(mob.session().prompt(L("*. Bonus Craft Skills (@x1): ",""+pStats.getBonusCraftingSkillLimits()),""+pStats.getBonusCraftingSkillLimits())));
-		pStats.setBonusNonCraftingSkillLimits(CMath.s_int(mob.session().prompt(L("*. Bonus Gather Skills (@x1): ",""+pStats.getBonusNonCraftingSkillLimits()),""+pStats.getBonusNonCraftingSkillLimits())));
-		pStats.setBonusLanguageLimits(CMath.s_int(mob.session().prompt(L("*. Bonus Languages (@x1): ",""+pStats.getBonusLanguageLimits()),""+pStats.getBonusLanguageLimits())));
-		pStats.setBonusCharStatPoints(CMath.s_int(mob.session().prompt(L("*. Bonus Creation Pts (@x1): ",""+pStats.getBonusCharStatPoints()),""+pStats.getBonusCharStatPoints())));
+		pStats.setBonusCommonSkillLimits(CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("*. Bonus Common Skills (@x1): ",""+pStats.getBonusCommonSkillLimits()),""+pStats.getBonusCommonSkillLimits())));
+		pStats.setBonusCraftingSkillLimits(CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("*. Bonus Craft Skills (@x1): ",""+pStats.getBonusCraftingSkillLimits()),""+pStats.getBonusCraftingSkillLimits())));
+		pStats.setBonusNonCraftingSkillLimits(CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("*. Bonus Gather Skills (@x1): ",""+pStats.getBonusNonCraftingSkillLimits()),""+pStats.getBonusNonCraftingSkillLimits())));
+		pStats.setBonusLanguageLimits(CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("*. Bonus Languages (@x1): ",""+pStats.getBonusLanguageLimits()),""+pStats.getBonusLanguageLimits())));
+		pStats.setBonusCharStatPoints(CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("*. Bonus Creation Pts (@x1): ",""+pStats.getBonusCharStatPoints()),""+pStats.getBonusCharStatPoints())));
 	}
 
 	protected void genCharStats(final MOB mob, final MOB E, final int showNumber, final int showFlag)
@@ -2769,11 +2769,11 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				if(i!=CharStats.STAT_GENDER)
 					mob.session().getOutputFormatter().println("    "+commandStr.charAt(i)+") "+CMStrings.padRight(CharStats.CODES.DESC(i),20)+":"+((E.baseCharStats().getStat(i))));
 			}
-			c=mob.session().choose(L("Enter one to change, or ENTER when done: "),commandStr.substring(0,CharStats.CODES.TOTAL())+"\n","\n").toUpperCase();
+			c=mob.session().getSyncModalDialogManager().choose(L("Enter one to change, or ENTER when done: "),commandStr.substring(0,CharStats.CODES.TOTAL())+"\n","\n").toUpperCase();
 			final int num=commandStr.indexOf(c);
 			if(num>=0)
 			{
-				final String newVal=mob.session().prompt(L("Enter a new value:  @x1 (@x2): ",CharStats.CODES.DESC(num),""+E.baseCharStats().getStat(num)),"");
+				final String newVal=mob.session().getSyncModalDialogManager().prompt(L("Enter a new value:  @x1 (@x2): ",CharStats.CODES.DESC(num),""+E.baseCharStats().getStat(num)),"");
 				if(((CMath.s_int(newVal)>0)||(newVal.trim().equals("0")))
 				&&(num!=CharStats.STAT_GENDER))
 				{
@@ -2813,12 +2813,12 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				final String state=baseState.getStatCodes()[i];
 				mob.session().getOutputFormatter().println("    "+commandStr.charAt(i)+") "+CMStrings.padRight(state,20)+":"+((baseState.getStat(state))));
 			}
-			c=mob.session().choose(L("Enter one to change, or ENTER when done: "),commandStr.substring(0,baseState.getStatCodes().length)+"\n","\n").toUpperCase();
+			c=mob.session().getSyncModalDialogManager().choose(L("Enter one to change, or ENTER when done: "),commandStr.substring(0,baseState.getStatCodes().length)+"\n","\n").toUpperCase();
 			final int num=commandStr.indexOf(c);
 			if(num>=0)
 			{
 				final String state=baseState.getStatCodes()[num];
-				final String newVal=mob.session().prompt(L("Enter a new value:  @x1 (@x2): ",state,baseState.getStat(state)),"");
+				final String newVal=mob.session().getSyncModalDialogManager().prompt(L("Enter a new value:  @x1 (@x2): ",state,baseState.getStat(state)),"");
 				if(((CMath.s_int(newVal)>0)||(newVal.trim().equals("0"))))
 				{
 					baseState.setStat(state,Integer.toString(CMath.s_int(newVal)));
@@ -2890,7 +2890,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				}
 				letter++;
 			}
-			c=mob.session().choose(L("Enter one to change, or ENTER when done: "),letters+"\n","\n").toUpperCase();
+			c=mob.session().getSyncModalDialogManager().choose(L("Enter one to change, or ENTER when done: "),letters+"\n","\n").toUpperCase();
 			letter='A';
 			for (final int mask : senses)
 			{
@@ -2939,7 +2939,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				DefaultsLocked=false;
 			}
 			mob.tell(L("\n\rReset Delay (# ticks): '@x1'.",""+E.openDelayTicks()));
-			final int newLevel=CMath.s_int(mob.session().prompt(L("Enter a new delay\n\r:"),""));
+			final int newLevel=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Enter a new delay\n\r:"),""));
 			if(newLevel>0)
 				E.setOpenDelayTicks(newLevel);
 			else
@@ -2985,7 +2985,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(change.length()>0))
 		{
 			mob.tell(L("\n\rCan only contain: @x1",makeContainerTypes(E)));
-			change=mob.session().prompt(L("Enter a type to add/remove (?)\n\r:"),"");
+			change=mob.session().getSyncModalDialogManager().prompt(L("Enter a type to add/remove (?)\n\r:"),"");
 			if(change.length()==0)
 				break;
 			int found=-1;
@@ -3041,7 +3041,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Rejuv Ticks: '@x2' (0=never).",""+showNumber,rejuvStr));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		final String rlevel=mob.session().prompt(L("Enter new amount\n\r:"),"");
+		final String rlevel=mob.session().getSyncModalDialogManager().prompt(L("Enter new amount\n\r:"),"");
 		final int newLevel=CMath.s_int(rlevel);
 		if((newLevel<0)
 		&&((((Item)P).owner() instanceof MOB)&&(((MOB)((Item)P).owner()).isMonster())))
@@ -3184,7 +3184,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		while((mob.session()!=null)&&(!mob.session().isStopped())
 			&&((newText.length()>0)&&(CMLib.map().getRoom(newText)==null)))
 		{
-			newText=mob.session().prompt(L("New Property ID:"),"");
+			newText=mob.session().getSyncModalDialogManager().prompt(L("New Property ID:"),"");
 			if((newText.length()==0)
 			&&(CMLib.map().getRoom(newText)==null)
 			&&(CMLib.map().getArea(newText)==null))
@@ -3226,7 +3226,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			String oldCurrency=I.getCurrency();
 			if(oldCurrency.length()==0)
 				oldCurrency="Default";
-			oldCurrency=mob.session().prompt(L("Enter currency code (?):"),oldCurrency).trim().toUpperCase();
+			oldCurrency=mob.session().getSyncModalDialogManager().prompt(L("Enter currency code (?):"),oldCurrency).trim().toUpperCase();
 			if(oldCurrency.equalsIgnoreCase("Default"))
 			{
 				if(I.getCurrency().length()>0)
@@ -3256,7 +3256,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(gocontinue))
 		{
 			gocontinue=false;
-			String newDenom=mob.session().prompt(L("Enter denomination (?):"),""+I.getDenomination()).trim().toUpperCase();
+			String newDenom=mob.session().getSyncModalDialogManager().prompt(L("Enter denomination (?):"),""+I.getDenomination()).trim().toUpperCase();
 			final MoneyLibrary.MoneyDefinition def=CMLib.beanCounter().getCurrencySet(I.getCurrency());
 			if((newDenom.length()>0)
 			&&(!CMath.isDouble(newDenom))
@@ -3292,7 +3292,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				I.setDenomination(CMath.s_double(newDenom));
 		}
 		if((mob.session()!=null)&&(!mob.session().isStopped()))
-			I.setNumberOfCoins(CMath.s_int(mob.session().prompt(L("Enter stack size\n\r:"),""+I.getNumberOfCoins())));
+			I.setNumberOfCoins(CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Enter stack size\n\r:"),""+I.getNumberOfCoins())));
 	}
 
 	protected void genHitPoints(final MOB mob, final MOB M, final int showNumber, final int showFlag) throws IOException
@@ -3322,14 +3322,14 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
 		final String clanID=I.clanID();
-		I.setClanID(mob.session().prompt(L("Enter a new clan\n\r:"),clanID));
+		I.setClanID(mob.session().getSyncModalDialogManager().prompt(L("Enter a new clan\n\r:"),clanID));
 		if(I.clanID().equals(clanID))
 			mob.tell(L("(no change)"));
 		final String clanType=I.getClanItemType().toString();
 		String s="?";
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(s.equals("?")))
 		{
-			s=mob.session().prompt(L("Enter a new type (?)\n\r:"),clanType);
+			s=mob.session().getSyncModalDialogManager().prompt(L("Enter a new type (?)\n\r:"),clanType);
 			if(s.equalsIgnoreCase("?"))
 				mob.tell(L("Types: @x1",CMParms.toListString(ClanItem.ClanItemType.ALL)));
 			else
@@ -3378,13 +3378,13 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
 		if((mob.session()!=null)&&(!mob.session().isStopped()))
-			clothingLayer[0] = CMath.s_short(mob.session().prompt(L("Enter a new layer\n\r:"),""+clothingLayer[0]));
+			clothingLayer[0] = CMath.s_short(mob.session().getSyncModalDialogManager().prompt(L("Enter a new layer\n\r:"),""+clothingLayer[0]));
 		boolean newSeeThrough=seeThroughBool;
 		if((mob.session()!=null)&&(!mob.session().isStopped()))
-			newSeeThrough=mob.session().confirm(L("Is see-through (Y/N)? "),""+seeThroughBool);
+			newSeeThrough=mob.session().getSyncModalDialogManager().confirm(L("Is see-through (Y/N)? "),""+seeThroughBool);
 		boolean multiWear=multiWearBool;
 		if((mob.session()!=null)&&(!mob.session().isStopped()))
-			multiWear=mob.session().confirm(L("Is multi-wear (Y/N)? "),""+multiWearBool);
+			multiWear=mob.session().getSyncModalDialogManager().confirm(L("Is multi-wear (Y/N)? "),""+multiWearBool);
 		layerAtt[0] = (short)0;
 		layerAtt[0] = (short)(layerAtt[0]|(newSeeThrough?Armor.LAYERMASK_SEETHROUGH:0));
 		layerAtt[0] = (short)(layerAtt[0]|(multiWear?Armor.LAYERMASK_MULTIWEAR:0));
@@ -3397,9 +3397,9 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(L("@x1. Trains: @x2, Pracs: @x3, Quest Pts: @x4",""+showNumber,""+me.getTrains(), ""+me.getPractices(), ""+me.getQuestPoint()));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		me.setTrains(CMath.s_int(mob.session().prompt(L("*. Training Sessions ("+me.getTrains()+"): ",""+me.getTrains())),me.getTrains()));
-		me.setPractices(CMath.s_int(mob.session().prompt(L("*. Practice Points ("+me.getPractices()+"): ",""+me.getPractices())),me.getPractices()));
-		me.setQuestPoint(CMath.s_int(mob.session().prompt(L("*. Quest Points ("+me.getQuestPoint()+"): ",""+me.getQuestPoint())),me.getQuestPoint()));
+		me.setTrains(CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("*. Training Sessions ("+me.getTrains()+"): ",""+me.getTrains())),me.getTrains()));
+		me.setPractices(CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("*. Practice Points ("+me.getPractices()+"): ",""+me.getPractices())),me.getPractices()));
+		me.setQuestPoint(CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("*. Quest Points ("+me.getQuestPoint()+"): ",""+me.getQuestPoint())),me.getQuestPoint()));
 	}
 
 	protected void genLayer(final MOB mob, final Armor E, final int showNumber, final int showFlag) throws IOException
@@ -3496,10 +3496,10 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			return;
 		}
 
-		if(mob.session().confirm(L("Does this weapon require ammunition (default=@x1) (Y/N)?",defaultAmmo),defaultAmmo))
+		if(mob.session().getSyncModalDialogManager().confirm(L("Does this weapon require ammunition (default=@x1) (Y/N)?",defaultAmmo),defaultAmmo))
 		{
 			mob.tell(L("\n\rAmmo type: '@x1'.",AW.ammunitionType()));
-			final String newName=mob.session().prompt(L("Enter a new one\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one\n\r:"),"");
 			if(newName.length()>0)
 			{
 				AW.setAmmunitionType(newName);
@@ -3508,7 +3508,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			else
 				mob.tell(L("(no change)"));
 			mob.tell(L("\n\rAmmo capacity: '@x1'.)",""+AW.rawAmmunitionCapacity()));
-			final int newValue=CMath.s_int(mob.session().prompt(L("Enter a new value\n\r:"),""));
+			final int newValue=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Enter a new value\n\r:"),""));
 			if(newValue>0)
 				AW.setAmmoCapacity(newValue);
 			else
@@ -3530,8 +3530,8 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(L("@x1. Minimum/Maximum Ranges: @x2/@x3.",""+showNumber,""+W.getRanges()[0],""+W.getRanges()[1]));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		final String newMinStr=mob.session().prompt(L("Enter a new minimum range\n\r:"),"");
-		final String newMaxStr=mob.session().prompt(L("Enter a new maximum range\n\r:"),"");
+		final String newMinStr=mob.session().getSyncModalDialogManager().prompt(L("Enter a new minimum range\n\r:"),"");
+		final String newMaxStr=mob.session().getSyncModalDialogManager().prompt(L("Enter a new maximum range\n\r:"),"");
 		if((newMinStr.length()==0)&&(newMaxStr.length()==0))
 			mob.tell(L("(no change)"));
 		else
@@ -3557,7 +3557,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		final String sel="NSPBFMR";
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(!q))
 		{
-			final String newType=mob.session().choose(L("Enter a new value\n\r:"),sel+"?","");
+			final String newType=mob.session().getSyncModalDialogManager().choose(L("Enter a new value\n\r:"),sel+"?","");
 			if(newType.equals("?"))
 			{
 				for(int i=0;i<sel.length();i++)
@@ -3589,7 +3589,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		boolean q=false;
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(!q))
 		{
-			final String newType=mob.session().prompt(L("Enter a new level (?)\n\r"),Area.THEME_PHRASE[A.getThemeCode()]);
+			final String newType=mob.session().getSyncModalDialogManager().prompt(L("Enter a new level (?)\n\r"),Area.THEME_PHRASE[A.getThemeCode()]);
 			if(newType.equals("?"))
 			{
 				final StringBuilder say=new StringBuilder("");
@@ -3639,7 +3639,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Consumed Resources: '@x2'.",""+showNumber,str.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			final String newType=mob.session().prompt(L("Enter a resource to add/remove (?)\n\r:"),"");
+			final String newType=mob.session().getSyncModalDialogManager().prompt(L("Enter a resource to add/remove (?)\n\r:"),"");
 			if((newType==null)||(newType.length()==0))
 				return;
 			else
@@ -3699,7 +3699,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				mob.tell(L("@x1. Shielded Types: '@x2'.",""+showNumber,str.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			final String newType=mob.session().prompt(L("Enter a type to add/remove (?)\n\r:"),"");
+			final String newType=mob.session().getSyncModalDialogManager().prompt(L("Enter a type to add/remove (?)\n\r:"),"");
 			if((newType==null)||(newType.length()==0))
 				return;
 			else
@@ -3761,7 +3761,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(!q))
 		{
 			matName=(currMat<0)?"Inherited":RawMaterial.CODES.NAME(currMat);
-			final String newType=mob.session().prompt(L("Enter a new material (?)\n\r:"),matName);
+			final String newType=mob.session().getSyncModalDialogManager().prompt(L("Enter a new material (?)\n\r:"),matName);
 			if(newType.equals("?"))
 			{
 				final StringBuilder say=new StringBuilder("");
@@ -3810,7 +3810,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Can breathe: '@x2'.",""+showNumber,matName.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			final String newType=mob.session().prompt(L("Enter a material to add/remove, or ANYTHING (?)\n\r:"),"");
+			final String newType=mob.session().getSyncModalDialogManager().prompt(L("Enter a material to add/remove, or ANYTHING (?)\n\r:"),"");
 			if(newType.trim().length()==0)
 				return;
 			if(newType.equals("?"))
@@ -3886,7 +3886,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		boolean q=false;
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(!q))
 		{
-			final String newType=mob.session().prompt(L("Enter a new type (?)\n\r:"),E.getInstrumentTypeName());
+			final String newType=mob.session().getSyncModalDialogManager().prompt(L("Enter a new type (?)\n\r:"),E.getInstrumentTypeName());
 			if(newType.equals("?"))
 			{
 				final StringBuilder say=new StringBuilder("");
@@ -3928,7 +3928,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			final Faction.FRange FR=e.nextElement();
 			mob.tell(CMStrings.padRight(FR.name(),20)+": "+FR.low()+" - "+FR.high()+")");
 		}
-		final String newOne=mob.session().prompt(L("Enter a new value\n\r:"));
+		final String newOne=mob.session().getSyncModalDialogManager().prompt(L("Enter a new value\n\r:"));
 		if(CMath.isInteger(newOne))
 		{
 			E.addFaction(F.factionID(),CMath.s_int(newOne));
@@ -3967,7 +3967,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Factions: @x2",""+showNumber,listing));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			newFact=mob.session().prompt(L("Enter a faction name to add or remove\n\r:"),"");
+			newFact=mob.session().getSyncModalDialogManager().prompt(L("Enter a faction name to add or remove\n\r:"),"");
 			if(newFact.length()>0)
 			{
 				Faction lookedUp=CMLib.factions().getFactionByName(newFact);
@@ -3983,7 +3983,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					}
 					else
 					{
-						final String howMuch = mob.session().prompt(L("How much faction (@x1)?",""+lookedUp.findDefault(E)),
+						final String howMuch = mob.session().getSyncModalDialogManager().prompt(L("How much faction (@x1)?",""+lookedUp.findDefault(E)),
 								   Integer.toString(lookedUp.findDefault(E)));
 						if(CMath.isInteger(howMuch))
 						{
@@ -4027,7 +4027,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				cstr.append(c);
 			}
 		}
-		final String newType=mob.session().choose(L("Enter a new gender (@x1)\n\r:",str.toString()),cstr.toString(),"");
+		final String newType=mob.session().getSyncModalDialogManager().choose(L("Enter a new gender (@x1)\n\r:",str.toString()),cstr.toString(),"");
 		int newValue=-1;
 		if(newType.length()>0)
 			newValue=cstr.toString().indexOf(newType.trim().toUpperCase());
@@ -4049,7 +4049,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		final String sel=("ABEFHKPRSDTN");
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(!q))
 		{
-			final String newType=mob.session().choose(L("Enter a new value (?)\n\r:"),sel+"?","");
+			final String newType=mob.session().getSyncModalDialogManager().choose(L("Enter a new value (?)\n\r:"),sel+"?","");
 			if(newType.equals("?"))
 			{
 				for(int i=0;i<sel.length();i++)
@@ -4101,7 +4101,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Race: '@x2'.",""+showNumber,M.baseCharStats().getMyRace().ID()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			raceID=mob.session().prompt(L("Enter a new race (?)\n\r:"),"").trim();
+			raceID=mob.session().getSyncModalDialogManager().prompt(L("Enter a new race (?)\n\r:"),"").trim();
 			if(raceID.equalsIgnoreCase("?"))
 				mob.tell(CMLib.lister().build3ColTable(mob,CMClass.races()).toString());
 			else
@@ -4140,7 +4140,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Class: '@x2'.",""+showNumber,str.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			classID=mob.session().prompt(L("Enter a class to add/remove(?)\n\r:"),"").trim();
+			classID=mob.session().getSyncModalDialogManager().prompt(L("Enter a class to add/remove(?)\n\r:"),"").trim();
 			if(classID.equalsIgnoreCase("?"))
 				mob.tell(CMLib.lister().build3ColTable(mob,CMClass.charClasses()).toString());
 			else
@@ -4191,7 +4191,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 						String lvl=null;
 						if(levels>0)
 						{
-							lvl=mob.session().prompt(L("Levels to give this class (@x1)\n\r:",""+levels),""+levels).trim();
+							lvl=mob.session().getSyncModalDialogManager().prompt(L("Levels to give this class (@x1)\n\r:",""+levels),""+levels).trim();
 							int lvl2=CMath.s_int(lvl);
 							if(lvl2>levels)
 								lvl2=levels;
@@ -4200,7 +4200,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 						else
 						if(highestC!=null)
 						{
-							lvl=mob.session().prompt(L("Levels to siphon from @x1 for this class (0)\n\r:",highestC.ID()),""+0).trim();
+							lvl=mob.session().getSyncModalDialogManager().prompt(L("Levels to siphon from @x1 for this class (0)\n\r:",highestC.ID()),""+0).trim();
 							int lvl2=CMath.s_int(lvl);
 							if(lvl2>highLvl)
 								lvl2=highLvl;
@@ -4237,7 +4237,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Tattoos: '@x2'.",""+showNumber,tattoostr));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter a tattoo to add/remove\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter a tattoo to add/remove\n\r:"),"");
 			if(behave.length()>0)
 			{
 				final Tattoo pT=((Tattoo)CMClass.getCommon("DefaultTattoo")).parse(behave);
@@ -4287,7 +4287,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Titles: '@x2'.",""+showNumber,behaviorstr));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter a title to add or a number to remove\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter a title to add or a number to remove\n\r:"),"");
 			if(behave.length()>0)
 			{
 				String tattoo=behave;
@@ -4339,7 +4339,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Expertises: '@x2'.",""+showNumber,behaviorstr.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter a lesson to add/remove\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter a lesson to add/remove\n\r:"),"");
 			if(behave.length()>0)
 			{
 				if(M.fetchExpertise(behave)!=null)
@@ -4379,7 +4379,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Security Groups: '@x2'.",""+showNumber,CMParms.toListString(secFlags)));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter a group to add/remove\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter a group to add/remove\n\r:"),"");
 			if(behave.length()>0)
 			{
 				if(secFlags.contains(behave.trim().toUpperCase()))
@@ -4482,7 +4482,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Behaviors: '@x2'.",""+showNumber,behaviorstr.replace('@','_')));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter a behavior to add/remove (?)\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter a behavior to add/remove (?)\n\r:"),"");
 			if(behave.length()>0)
 			{
 				if(behave.equalsIgnoreCase("?"))
@@ -4535,7 +4535,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 							while(parms.equals("?"))
 							{
 								parms=chosenOne.getParms();
-								parms=mob.session().prompt(L("Enter any behavior parameters (?)\n\r:@x1",parms));
+								parms=mob.session().getSyncModalDialogManager().prompt(L("Enter any behavior parameters (?)\n\r:@x1",parms));
 								if(parms.equals("?"))
 								{
 									final String s2=CMLib.help().getHelpText(chosenOne.ID(),mob,true);
@@ -4593,7 +4593,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Effects: '@x2'.",""+showNumber,affectstr));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter an effect to add/remove (?)\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter an effect to add/remove (?)\n\r:"),"");
 			if(behave.length()>0)
 			{
 				if(behave.equalsIgnoreCase("?"))
@@ -4639,7 +4639,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 							while(s.equals("?"))
 							{
 								parms=chosenOne.text();
-								s=mob.session().prompt(L("Enter any effect parameters (?)\n\r:@x1",parms));
+								s=mob.session().getSyncModalDialogManager().prompt(L("Enter any effect parameters (?)\n\r:@x1",parms));
 								if(s.equals("?"))
 								{
 									final String s2=CMLib.help().getHelpText(chosenOne.ID(),mob,true);
@@ -4683,7 +4683,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		final String sel="LWACBTEDGH";
 		while(!q)
 		{
-			final String newType=mob.session().choose(L("Enter a new value (?)\n\r:"),sel+"?","");
+			final String newType=mob.session().getSyncModalDialogManager().choose(L("Enter a new value (?)\n\r:"),sel+"?","");
 			if(newType.equals("?"))
 			{
 				for(int i=0;i<sel.length();i++)
@@ -4772,7 +4772,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					buf.append(c+") "+ShopKeeper.DEAL_DESCS[r]+"\n\r");
 				}
 			}
-			final String newType=mob.session().choose(L("@x1Enter a value to toggle on/off: ",buf.toString()),codes.toString(),"");
+			final String newType=mob.session().getSyncModalDialogManager().choose(L("@x1Enter a value to toggle on/off: ",buf.toString()),codes.toString(),"");
 			int newValue=-1;
 			if(newType.trim().length()==0)
 			{
@@ -4824,7 +4824,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Inventory: '@x2'.",""+showNumber,inventorystr));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			itemstr=mob.session().prompt(L("Enter something to add/remove (?)\n\r:"),"");
+			itemstr=mob.session().getSyncModalDialogManager().prompt(L("Enter something to add/remove (?)\n\r:"),"");
 			if(itemstr.length()>0)
 			{
 				if(itemstr.equalsIgnoreCase("?"))
@@ -4880,7 +4880,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 								else
 								if(M.isSold(ShopKeeper.DEAL_INVENTORYONLY))
 									ok=true;
-								if((ok)||((mob.session()!=null)&&mob.session().confirm(L("This shopkeeper type does not sell that. Are you sure (y/N)?"),"N")))
+								if((ok)||((mob.session()!=null)&&mob.session().getSyncModalDialogManager().confirm(L("This shopkeeper type does not sell that. Are you sure (y/N)?"),"N")))
 								{
 									boolean alreadyHasIt=false;
 									if(M.getShop().doIHaveThisInStock(item.Name(),null))
@@ -4891,8 +4891,8 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 										mob.tell(L("@x1 added.",item.ID()));
 										int num=1;
 										if(!(item instanceof Ability))
-											num=CMath.s_int(mob.session().prompt(L("How many? :"),""));
-										final int price=CMath.s_int(mob.session().prompt(L("At what price? :"),""));
+											num=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("How many? :"),""));
+										final int price=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("At what price? :"),""));
 										M.getShop().addStoreInventory(item,num,price);
 									}
 								}
@@ -4931,7 +4931,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				codes.append(c);
 				buf.append(c+") "+ViewType.values()[r]+"\n\r");
 			}
-			final String newType=mob.session().choose(L("@x1Enter a value to toggle on/off: ",buf.toString()),codes.toString(),"");
+			final String newType=mob.session().getSyncModalDialogManager().choose(L("@x1Enter a value to toggle on/off: ",buf.toString()),codes.toString(),"");
 			int newValue=-1;
 			if(newType.trim().length()==0)
 			{
@@ -4982,7 +4982,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			for(int p=0;p<prics.length;p++)
 				mob.tell(CMStrings.SPACES.substring(0,header.length()-3)
 						+(p+1)+") "+prics[p]+"\n\r");
-			final String newValue=mob.session().prompt(L("Enter # to remove, or A to add:\n\r:"),"");
+			final String newValue=mob.session().getSyncModalDialogManager().prompt(L("Enter # to remove, or A to add:\n\r:"),"");
 			if(CMath.isInteger(newValue))
 			{
 				final int x=CMath.s_int(newValue);
@@ -5001,11 +5001,11 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			else
 			if(newValue.toUpperCase().startsWith("A"))
 			{
-				final double dbl=CMath.s_double(mob.session().prompt(L("Enter a price multiplier between 0.0 and X.Y\n\r: ")));
+				final double dbl=CMath.s_double(mob.session().getSyncModalDialogManager().prompt(L("Enter a price multiplier between 0.0 and X.Y\n\r: ")));
 				String mask="?";
 				while(mask.equals("?"))
 				{
-					mask=mob.session().prompt(L("Now enter a mask that describes the item (? for syntax)\n\r: "));
+					mask=mob.session().getSyncModalDialogManager().prompt(L("Now enter a mask that describes the item (? for syntax)\n\r: "));
 					if(mask.equals("?"))
 						mob.tell(CMLib.masking().maskHelp("\n\r","disallow"));
 				}
@@ -5054,7 +5054,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				final String flag = f.nextElement();
 				mob.tell(flag+": "+A.getBlurbFlag(flag));
 			}
-			final String newValue=mob.session().prompt(L("Enter flag to remove, or A to add:\n\r:"),"");
+			final String newValue=mob.session().getSyncModalDialogManager().prompt(L("Enter flag to remove, or A to add:\n\r:"),"");
 			if(A.getBlurbFlag(newValue.toUpperCase().trim())!=null)
 			{
 				A.delBlurbFlag(newValue.toUpperCase().trim());
@@ -5063,10 +5063,10 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			else
 			if(newValue.toUpperCase().equals("A"))
 			{
-				final String flag=mob.session().prompt(L("Enter a new flag: "));
+				final String flag=mob.session().getSyncModalDialogManager().prompt(L("Enter a new flag: "));
 				if(flag.trim().length()==0)
 					continue;
-				final String desc=mob.session().prompt(L("Enter a flag blurb (or nothing): "));
+				final String desc=mob.session().getSyncModalDialogManager().prompt(L("Enter a flag blurb (or nothing): "));
 				A.addBlurbFlag((flag.toUpperCase().trim()+" "+desc).trim());
 				mob.tell(L("@x1 added",flag.toUpperCase().trim()));
 			}
@@ -5121,7 +5121,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. "+desc+": '@x2'.",""+showNumber,inventorystr));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			itemstr=mob.session().prompt(L("Enter something to add/remove (?)\n\r:"),"");
+			itemstr=mob.session().getSyncModalDialogManager().prompt(L("Enter something to add/remove (?)\n\r:"),"");
 			if(itemstr.length()>0)
 			{
 				if(itemstr.equalsIgnoreCase("?"))
@@ -5201,7 +5201,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Abilities: '@x2'.",""+showNumber,abilitiestr));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter an ability to add/remove (?)\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter an ability to add/remove (?)\n\r:"),"");
 			if(behave.length()>0)
 			{
 				if(behave.equalsIgnoreCase("?"))
@@ -5239,7 +5239,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 						if(chosenOne!=null)
 						{
 							if(parms == null)
-								parms = mob.session().prompt(L("Enter any arguments: "),"");
+								parms = mob.session().getSyncModalDialogManager().prompt(L("Enter any arguments: "),"");
 							final boolean alreadyHasIt=(M.fetchAbility(chosenOne.ID())!=null);
 							if(!alreadyHasIt)
 								mob.tell(L("@x1 added.",chosenOne.ID()));
@@ -5297,7 +5297,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Effects: '@x2'.",""+showNumber,affectstr));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter a spell/behavior to add/remove (?)\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter a spell/behavior to add/remove (?)\n\r:"),"");
 			if(behave.length()>0)
 			{
 				if(behave.equalsIgnoreCase("?"))
@@ -5336,7 +5336,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 								while(parms.equals("?"))
 								{
 									parms=(chosenOne instanceof Ability)?(((Ability)chosenOne).text()):((Behavior)chosenOne).getParms();
-									final String s=mob.session().prompt(L("Enter any parameters (?)\n\r:@x1",parms));
+									final String s=mob.session().getSyncModalDialogManager().prompt(L("Enter any parameters (?)\n\r:@x1",parms));
 									if(s.equals("?"))
 									{
 										final String s2=CMLib.help().getHelpText(chosenOne.ID(),mob,true);
@@ -5414,7 +5414,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Effects/Behavs: '@x2'.",""+showNumber,affectstr));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter a spell/behavior to add/remove (?)\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter a spell/behavior to add/remove (?)\n\r:"),"");
 			if(behave.length()>0)
 			{
 				if(behave.equalsIgnoreCase("?"))
@@ -5454,13 +5454,13 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 									if(chosenOne instanceof Ability)
 									{
 										oldParm=((Ability)chosenOne).text();
-										parms=mob.session().prompt(L("Enter any effect parameters (?)\n\r:@x1",oldParm));
+										parms=mob.session().getSyncModalDialogManager().prompt(L("Enter any effect parameters (?)\n\r:@x1",oldParm));
 									}
 									else
 									if(chosenOne instanceof Behavior)
 									{
 										oldParm=((Behavior)chosenOne).getParms();
-										parms=mob.session().prompt(L("Enter any behavior parameters (?)\n\r:@x1",oldParm));
+										parms=mob.session().getSyncModalDialogManager().prompt(L("Enter any behavior parameters (?)\n\r:@x1",oldParm));
 									}
 									else
 										oldParm="";
@@ -5517,7 +5517,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Clan Members : '@x2'.",""+showNumber,memberStr));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter a name to add/remove\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter a name to add/remove\n\r:"),"");
 			if(behave.length()>0)
 			{
 				int chosenOne=-1;
@@ -5556,7 +5556,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 						int newRole=-1;
 						while((mob.session()!=null)&&(!mob.session().isStopped())&&(newRole<0))
 						{
-							final String newRoleStr=mob.session().prompt(L("Enter this members role (?) '@x1': ",C.getRoleName(members.get(index).role,true,false)),C.getRoleName(members.get(index).role,true,false));
+							final String newRoleStr=mob.session().getSyncModalDialogManager().prompt(L("Enter this members role (?) '@x1': ",C.getRoleName(members.get(index).role,true,false)),C.getRoleName(members.get(index).role,true,false));
 							newRole =C.getRoleFromName(newRoleStr);
 							if(newRole<0)
 								mob.tell(L("That role is invalid.  Valid roles include: @x1",CMParms.toListString(C.getRolesList())));
@@ -5707,7 +5707,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Blessings: '@x2'.",""+showNumber,abilitiestr));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter an ability to add/remove (?)\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter an ability to add/remove (?)\n\r:"),"");
 			if(behave.length()>0)
 			{
 				if(behave.equalsIgnoreCase("?"))
@@ -5742,8 +5742,8 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 								if((A!=null)&&(A.ID().equals(chosenOne.ID())))
 									alreadyHasIt=true;
 							}
-							final String arg=mob.session().prompt(L("Enter any arguments: "),"");
-							final boolean clericOnly=mob.session().confirm(L("Is this for clerics only (y/N)?"),"N");
+							final String arg=mob.session().getSyncModalDialogManager().prompt(L("Enter any arguments: "),"");
+							final boolean clericOnly=mob.session().getSyncModalDialogManager().confirm(L("Is this for clerics only (y/N)?"),"N");
 							if(!alreadyHasIt)
 								mob.tell(L("@x1 added.",chosenOne.ID()));
 							else
@@ -5789,7 +5789,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Curses: '@x2'.",""+showNumber,abilitiestr));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter an ability to add/remove (?)\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter an ability to add/remove (?)\n\r:"),"");
 			if(behave.length()>0)
 			{
 				if(behave.equalsIgnoreCase("?"))
@@ -5824,8 +5824,8 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 								if((A!=null)&&(A.ID().equals(chosenOne.ID())))
 									alreadyHasIt=true;
 							}
-							final String arg=mob.session().prompt(L("Enter any arguments: "),"");
-							final boolean clericOnly=mob.session().confirm(L("Is this for clerics only (y/N)?"),"N");
+							final String arg=mob.session().getSyncModalDialogManager().prompt(L("Enter any arguments: "),"");
+							final boolean clericOnly=mob.session().getSyncModalDialogManager().confirm(L("Is this for clerics only (y/N)?"),"N");
 							if(!alreadyHasIt)
 								mob.tell(L("@x1 added.",chosenOne.ID()));
 							else
@@ -5871,7 +5871,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Granted Powers: '@x2'.",""+showNumber,abilitiestr));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter an ability to add/remove (?)\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter an ability to add/remove (?)\n\r:"),"");
 			if(behave.length()>0)
 			{
 				if(behave.equalsIgnoreCase("?"))
@@ -5906,7 +5906,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 								if((A!=null)&&(A.ID().equals(chosenOne.ID())))
 									alreadyHasIt=true;
 							}
-							final String arg=mob.session().prompt(L("Enter any arguments: "),"");
+							final String arg=mob.session().getSyncModalDialogManager().prompt(L("Enter any arguments: "),"");
 							if(!alreadyHasIt)
 								mob.tell(L("@x1 added.",chosenOne.ID()));
 							else
@@ -5999,7 +5999,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		&&(continueThis))
 		{
 			continueThis=false;
-			final String newName=mob.session().prompt(L("Enter a new target in space\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new target in space\n\r:"),"");
 			if(newName.trim().length()>0)
 			{
 				SpaceObject O=null;
@@ -6046,7 +6046,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		}
 		while((mob!=null)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			final String val=mob.session().prompt(L("@x1. Radius (ENTER=@x2): ",""+showNumber,(CMLib.english().sizeDescShort(E.radius()))));
+			final String val=mob.session().getSyncModalDialogManager().prompt(L("@x1. Radius (ENTER=@x2): ",""+showNumber,(CMLib.english().sizeDescShort(E.radius()))));
 			if((val==null)||(val.trim().length()==0))
 			{
 				mob.tell(L("(unchanged)"));
@@ -6068,7 +6068,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		final String coordHelp2=L("Valid distance units include: @x1.",SpaceObject.Distance.getFullList());
 		while((mob!=null)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			String val=mob.session().prompt(L("@x1. Coordinates in Space (ENTER=@x2): ",""+showNumber,(CMLib.english().coordDescShort(E.coordinates().toLongs()))));
+			String val=mob.session().getSyncModalDialogManager().prompt(L("@x1. Coordinates in Space (ENTER=@x2): ",""+showNumber,(CMLib.english().coordDescShort(E.coordinates().toLongs()))));
 			if((val==null)||(val.trim().length()==0))
 			{
 				mob.tell(L("(unchanged)"));
@@ -6158,7 +6158,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		}
 		while((mob!=null)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			String val=mob.session().prompt(L("@x1. Speed in Space (ENTER=@x2): ",""+showNumber,(CMLib.english().speedDescShort(E.speed()))));
+			String val=mob.session().getSyncModalDialogManager().prompt(L("@x1. Speed in Space (ENTER=@x2): ",""+showNumber,(CMLib.english().speedDescShort(E.speed()))));
 			if((val==null)||(val.trim().length()==0))
 			{
 				mob.tell(L("(unchanged)"));
@@ -6180,7 +6180,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		}
 		while((mob!=null)&&(mob.session()!=null)&&(!mob.session().isStopped())&&(E.speed()>0))
 		{
-			String val=mob.session().prompt(L("@x1. Direction in Space (ENTER=@x2): ",""+showNumber,
+			String val=mob.session().getSyncModalDialogManager().prompt(L("@x1. Direction in Space (ENTER=@x2): ",""+showNumber,
 					(CMLib.english().directionDescShort(E.direction().toDoubles()))));
 			if((val==null)||(val.trim().length()==0))
 			{
@@ -6250,7 +6250,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					mob.tell(header);
 				}
 			}
-			String codeStr=mob.session().prompt(L("Select an option number above to TOGGLE\n\r: "));
+			String codeStr=mob.session().getSyncModalDialogManager().prompt(L("Select an option number above to TOGGLE\n\r: "));
 			codeVal=CMath.s_int(codeStr);
 			if((codeVal == 0)&&(codeStr.trim().length()>0))
 			{
@@ -6315,7 +6315,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(showNumber+". "+fieldDisplayStr+": '"+CharStats.CODES.DESC(CMath.s_int(E.getStat(field)))+"'.");
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		final String newName=mob.session().prompt(L("Enter a new one\n\r:"),"");
+		final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one\n\r:"),"");
 		String newStat="";
 		for(final int i : CharStats.CODES.BASECODES())
 		{
@@ -6336,7 +6336,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(showNumber+". "+fieldDisplayStr+": '"+CharClass.ARMOR_LONGDESC[CMath.s_int(E.getStat(field))]+"'.");
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		final String newName=mob.session().prompt(L("Enter (@x1)\n\r:",CMParms.toListString(CharClass.ARMOR_DESCS)),"");
+		final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter (@x1)\n\r:",CMParms.toListString(CharClass.ARMOR_DESCS)),"");
 		String newStat="";
 		for(int i=0;i<CharClass.ARMOR_DESCS.length;i++)
 		{
@@ -6360,7 +6360,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		String newName="?";
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(newName.equals("?")))
 		{
-			newName=mob.session().prompt(L("Enter a new mask (?)\n\r:"),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new mask (?)\n\r:"),"");
 			if(newName.equals("?"))
 				mob.tell(CMLib.masking().maskHelp("\n","disallow"));
 		}
@@ -6392,7 +6392,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		boolean setChanged=false;
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(newName.equals("?")))
 		{
-			newName=mob.session().prompt(L("Enter a weapon class to add/remove (?)\n\r:"),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a weapon class to add/remove (?)\n\r:"),"");
 			if(newName.equals("?"))
 				mob.tell(CMParms.toListString(Weapon.CLASS_DESCS));
 			else
@@ -6452,7 +6452,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		boolean setChanged=false;
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(newName.equals("?")))
 		{
-			newName=mob.session().prompt(L("Enter a material type to add/remove to requirements (?)\n\r:"),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a material type to add/remove to requirements (?)\n\r:"),"");
 			if(newName.equals("?"))
 				mob.tell(CMParms.toListString(RawMaterial.Material.values()));
 			else
@@ -6512,7 +6512,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
 
-			newName=mob.session().prompt(L("Enter flag to toggle (?)\n\r:"),"").toUpperCase();
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter flag to toggle (?)\n\r:"),"").toUpperCase();
 			if(newName.length()==0)
 				mob.tell(L("(no change)"));
 			else
@@ -6559,7 +6559,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
 
-			newName=mob.session().prompt(L("Enter a location to toggle (?)\n\r:"),"").toUpperCase();
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a location to toggle (?)\n\r:"),"").toUpperCase();
 			if(newName.length()==0)
 				mob.tell(L("(no change)"));
 			else
@@ -6599,7 +6599,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		String newName="?";
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(newName.equals("?")))
 		{
-			newName=mob.session().prompt(L("Enter a new value (?)\n\r:"),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new value (?)\n\r:"),"");
 			if(newName.length()==0)
 				mob.tell(L("(no change)"));
 			else
@@ -6629,7 +6629,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		String newName="?";
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(newName.equals("?")))
 		{
-			newName=mob.session().prompt(L("Enter a new value (?)\n\r:"),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new value (?)\n\r:"),"");
 			if(newName.length()==0)
 				mob.tell(L("(no change)"));
 			else
@@ -6656,7 +6656,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(L("@x1. Racial Category: '@x2'.",""+showNumber,E.racialCategory()));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		String newName=mob.session().prompt(L("Enter a new one\n\r:"),"");
+		String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one\n\r:"),"");
 		if(newName.length()>0)
 		{
 			boolean found=false;
@@ -6709,7 +6709,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(showNumber+". "+prompt+": '"+E.getStat(flag)+"'.");
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		final String newName=mob.session().prompt(L("Enter a new one\n\r:"),"");
+		final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one\n\r:"),"");
 		if(newName.length()>0)
 		{
 			Race R2=CMClass.getRace(newName);
@@ -6746,7 +6746,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(showNumber+". "+prompt+": '"+E.getStat(flag)+"'.");
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		final String newName=mob.session().prompt(L("Enter a new one\n\r:"),"");
+		final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one\n\r:"),"");
 		if(newName.length()>0)
 		{
 			CharClass C2=CMClass.getCharClass(newName);
@@ -6787,7 +6787,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(showNumber+". "+prompt+": '"+CMParms.toListString(newRaces)+"'.");
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			final String newName=mob.session().prompt(L("Enter a race to add or remove\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a race to add or remove\n\r:"),"");
 			if(newName.length()>0)
 			{
 				final int x=CMParms.indexOfIgnoreCase(newRaces, newName);
@@ -6851,7 +6851,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			return;
 		while((mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			String newName=mob.session().prompt(L("Enter a body part\n\r:"),"");
+			String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a body part\n\r:"),"");
 			if(newName.length()>0)
 			{
 				final Integer partNum=Race.BODYPARTHASH.get(newName.toUpperCase().trim());
@@ -6864,7 +6864,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				}
 				else
 				{
-					newName=mob.session().prompt(L("Enter new number (@x1), 0=none\n\r:",""+E.bodyMask()[partNum.intValue()]),""+E.bodyMask()[partNum.intValue()]);
+					newName=mob.session().getSyncModalDialogManager().prompt(L("Enter new number (@x1), 0=none\n\r:",""+E.bodyMask()[partNum.intValue()]),""+E.bodyMask()[partNum.intValue()]);
 					if(newName.length()>0)
 						E.bodyMask()[partNum.intValue()]=CMath.s_int(newName);
 					else
@@ -6899,7 +6899,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		boolean done=false;
 		while((!done)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			String newName=mob.session().prompt(L("Enter a stat name\n\r:"),"");
+			String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a stat name\n\r:"),"");
 			if(newName.length()>0)
 			{
 				String partName=null;
@@ -6934,7 +6934,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					}
 					else
 					{
-						newName=mob.session().prompt(L("Enter a value\n\r:"),"");
+						newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a value\n\r:"),"");
 						if(newName.length()>0)
 						{
 							S.setStat(partName,newName);
@@ -6993,7 +6993,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		boolean done=false;
 		while((!done)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			String newName=mob.session().prompt(L("Enter a stat name\n\r:"),"");
+			String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a stat name\n\r:"),"");
 			if(newName.length()>0)
 			{
 				String partName=null;
@@ -7014,7 +7014,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				}
 				else
 				{
-					newName=mob.session().prompt(L("Enter a value\n\r:"),"");
+					newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a value\n\r:"),"");
 					if(newName.length()>0)
 					{
 						S.setStat(partName,newName);
@@ -7063,7 +7063,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		boolean done=false;
 		while((!done)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			String newName=mob.session().prompt(L("Enter a stat name\n\r:"),"");
+			String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a stat name\n\r:"),"");
 			if(newName.length()>0)
 			{
 				int partNum=-1;
@@ -7084,7 +7084,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				}
 				else
 				{
-					newName=mob.session().prompt(L("Enter a value\n\r:"),"");
+					newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a value\n\r:"),"");
 					if(newName.length()>0)
 					{
 						if(newName.trim().equalsIgnoreCase("0"))
@@ -7145,7 +7145,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		boolean done=false;
 		while((!done)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			String newName=mob.session().prompt(L("Enter a stat name\n\r:"),"");
+			String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a stat name\n\r:"),"");
 			if(newName.length()>0)
 			{
 				String partName=null;
@@ -7183,7 +7183,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					}
 					else
 					{
-						newName=mob.session().prompt(L("Enter a value\n\r:"),"");
+						newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a value\n\r:"),"");
 						if(newName.length()>0)
 						{
 							S.setStat(partName,newName);
@@ -7242,7 +7242,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		boolean done=false;
 		while((!done)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			String newName=mob.session().prompt(L("Enter a stat name\n\r:"),"");
+			String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a stat name\n\r:"),"");
 			if(newName.length()>0)
 			{
 				String partName=null;
@@ -7263,7 +7263,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				}
 				else
 				{
-					newName=mob.session().prompt(L("Enter a value\n\r:"),"");
+					newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a value\n\r:"),"");
 					if(newName.length()>0)
 					{
 						S.setStat(partName,newName);
@@ -7312,7 +7312,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		boolean done=false;
 		while((!done)&&(mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			String newName=mob.session().prompt(L("Enter a stat name\n\r:"),"");
+			String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a stat name\n\r:"),"");
 			if(newName.length()>0)
 			{
 				int partNum=-1;
@@ -7333,7 +7333,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				}
 				else
 				{
-					newName=mob.session().prompt(L("Enter a value\n\r:"),"");
+					newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a value\n\r:"),"");
 					if(newName.length()>0)
 					{
 						S.setStat(partNum,CMath.s_int(newName));
@@ -7413,7 +7413,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Resources: @x2.",""+showNumber,parts.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			final String newName=mob.session().prompt(L("Enter a resource name to remove or\n\rthe word new and an item name to add from your inventory\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a resource name to remove or\n\rthe word new and an item name to add from your inventory\n\r:"),"");
 			if(newName.length()>0)
 			{
 				int partNum=-1;
@@ -7532,7 +7532,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Outfit: @x2.",""+showNumber,parts.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			final String newName=mob.session().prompt(L("Enter an item name to remove or\n\rthe word new and an item name to add from your inventory\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter an item name to remove or\n\rthe word new and an item name to add from your inventory\n\r:"),"");
 			if(newName.length()>0)
 			{
 				int partNum=-1;
@@ -7615,7 +7615,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Outfit: @x2.",""+showNumber,parts.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			final String newName=mob.session().prompt(L("Enter an item name to remove or\n\rthe word new and an item name to add from your inventory\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter an item name to remove or\n\rthe word new and an item name to add from your inventory\n\r:"),"");
 			if(newName.length()>0)
 			{
 				int partNum=-1;
@@ -7693,7 +7693,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Min. Stats: @x2.",""+showNumber,parts.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			String newName=mob.session().prompt(L("Enter a stat name to remove or add:"),"");
+			String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a stat name to remove or add:"),"");
 			if(newName.length()>0)
 			{
 				int statNum=-1;
@@ -7719,7 +7719,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					}
 					if(vNum<0)
 					{
-						final String newMin=mob.session().prompt(L("Enter a minimum stat value:"),"");
+						final String newMin=mob.session().getSyncModalDialogManager().prompt(L("Enter a minimum stat value:"),"");
 						if((newMin.length()>0)&&(CMath.isInteger(newMin)))
 						{
 							V.add(new Pair<String,Integer>(newName,Integer.valueOf(CMath.s_int(newMin))));
@@ -7768,7 +7768,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(L("@x1. Natural Weapon(s): @x2.",""+showNumber,parts.toString()));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		String newName=mob.session().prompt(L("Enter a weapon name to add (from inv) or remove\n\r:"),"");
+		String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a weapon name to add (from inv) or remove\n\r:"),"");
 		while(newName.trim().length()>0)
 		{
 			Item delI=null;
@@ -7802,7 +7802,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			if(parts.length()>0)
 				parts.delete(parts.length()-2, parts.length());
 			mob.tell(L("@x1. Natural Weapon(s): @x2.",""+showNumber,parts.toString()));
-			newName=mob.session().prompt(L("Enter a weapon name to add (from inv) or remove\n\r:"),"");
+			newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a weapon name to add (from inv) or remove\n\r:"),"");
 		}
 		final StringBuilder x = new StringBuilder("");
 		x.append("<ITEMS>");
@@ -7836,7 +7836,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			return;
 		while((mob.session()!=null)&&(!mob.session().isStopped())&&(true))
 		{
-			final String newName=mob.session().prompt(L("Enter a comma-delimited list of 9 numbers, running from infant -> ancient\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a comma-delimited list of 9 numbers, running from infant -> ancient\n\r:"),"");
 			if(newName.length()==0)
 			{
 				mob.tell(L("(no change)"));
@@ -7885,7 +7885,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(L("@x1. Extra CharClass Flags: @x2.",""+showNumber,sets.toString()));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		final String newName=mob.session().prompt(L("Enter: 1) Classless, 2) Leveless, 3) Expless\n\r:"),"");
+		final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter: 1) Classless, 2) Leveless, 3) Expless\n\r:"),"");
 		switch(CMath.s_int(newName))
 		{
 		case 1:
@@ -7956,7 +7956,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. @x2 Abilities: @x3.",""+showNumber,typeName,parts.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			final String newName=mob.session().prompt(L("Enter an ability name to add or remove (?)\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter an ability name to add or remove (?)\n\r:"),"");
 			if(newName.equalsIgnoreCase("?"))
 				mob.tell(CMLib.lister().build3ColTable(mob,CMClass.abilities(),-1).toString());
 			else
@@ -7990,15 +7990,15 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					else
 					{
 						final StringBuilder str=new StringBuilder(A.ID()+";");
-						final String level=mob.session().prompt(L("Enter the level of this skill (1): "),"1");
+						final String level=mob.session().getSyncModalDialogManager().prompt(L("Enter the level of this skill (1): "),"1");
 						str.append((""+CMath.s_int(level))+";");
-						if(mob.session().confirm(L("Is this skill automatically gained (Y/n)?"),"Y"))
+						if(mob.session().getSyncModalDialogManager().confirm(L("Is this skill automatically gained (Y/n)?"),"Y"))
 							str.append("false;");
 						else
 							str.append("true;");
-						final String prof=mob.session().prompt(L("Enter the (perm) proficiency level (100): "),"100");
+						final String prof=mob.session().getSyncModalDialogManager().prompt(L("Enter the (perm) proficiency level (100): "),"100");
 						str.append((""+CMath.s_int(prof))+";");
-						final String parm=mob.session().prompt(L("Enter any default parameters: "),"");
+						final String parm=mob.session().getSyncModalDialogManager().prompt(L("Enter any default parameters: "),"");
 						str.append(""+parm+";");
 						String roles="";
 						if((CMParms.contains(E.getStatCodes(),"GETRABLEROLE"))&&(E instanceof ClanGovernment))
@@ -8006,7 +8006,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 							final boolean repeat=true;
 							while(repeat && (mob.session()!=null)&&(!mob.session().isStopped()))
 							{
-								final String s=mob.session().prompt(L("Enter one or more roles to restrict this to (?): "),"");
+								final String s=mob.session().getSyncModalDialogManager().prompt(L("Enter one or more roles to restrict this to (?): "),"");
 								if(s.trim().equalsIgnoreCase("?"))
 									mob.tell(L("Roles: ")+CMParms.toCMObjectListString(((ClanGovernment)E).getPositions()));
 								else
@@ -8122,7 +8122,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. @x2 Effects: @x3.",""+showNumber,typeName,parts.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			final String newName=mob.session().prompt(L("Enter an effect name to add or remove\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter an effect name to add or remove\n\r:"),"");
 			if(newName.equalsIgnoreCase("?"))
 				mob.tell(CMLib.lister().build3ColTable(mob,CMClass.abilities(),-1).toString());
 			else
@@ -8150,9 +8150,9 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					else
 					{
 						final StringBuilder str=new StringBuilder(A.ID()+"~");
-						final String level=mob.session().prompt(L("Enter the @x1 level to gain this effect (1): ",levelName),"1");
+						final String level=mob.session().getSyncModalDialogManager().prompt(L("Enter the @x1 level to gain this effect (1): ",levelName),"1");
 						str.append((""+CMath.s_int(level))+"~");
-						final String prof=mob.session().prompt(L("Enter any parameters: "),"");
+						final String prof=mob.session().getSyncModalDialogManager().prompt(L("Enter any parameters: "),"");
 						str.append(""+prof+"~");
 						String roles="";
 						if((CMParms.contains(E.getStatCodes(),"GETREFFROLE"))&&(E instanceof ClanGovernment))
@@ -8160,7 +8160,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 							final boolean repeat=true;
 							while(repeat && (mob.session()!=null)&&(!mob.session().isStopped()))
 							{
-								final String s=mob.session().prompt(L("Enter one or more roles to restrict this to (?): "),"");
+								final String s=mob.session().getSyncModalDialogManager().prompt(L("Enter one or more roles to restrict this to (?): "),"");
 								if(s.trim().equalsIgnoreCase("?"))
 									mob.tell(L("Roles: ")+CMParms.toCMObjectListString(((ClanGovernment)E).getPositions()));
 								else
@@ -8260,7 +8260,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. @x2 Immunities: @x3.",""+showNumber,typeName,parts.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			final String newName=mob.session().prompt(L("Enter an ability id to add or remove\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter an ability id to add or remove\n\r:"),"");
 			if(newName.equalsIgnoreCase("?"))
 				mob.tell(CMLib.lister().build3ColTable(mob,CMClass.abilities(),-1).toString());
 			else
@@ -8329,7 +8329,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		Integer level=null;
 		if(origLevelIndex>=0)
 		{
-			if(mob.session().confirm(L("Enter Y to DELETE, or N to modify (y/N)?"),"N"))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Enter Y to DELETE, or N to modify (y/N)?"),"N"))
 			{
 				final List<AbilityMapper.AbilityMapping> set=sets.get(origLevelIndex).second;
 				set.remove(origAbleIndex);
@@ -8339,7 +8339,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		}
 		else
 			level=Integer.valueOf(1);
-		level=Integer.valueOf(CMath.s_int(mob.session().prompt(L("Enter the level of this skill (@x1): ",""+level),""+level)));
+		level=Integer.valueOf(CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Enter the level of this skill (@x1): ",""+level),""+level)));
 		if(level.intValue()<=0)
 		{
 			mob.tell(L("Aborted."));
@@ -8376,20 +8376,20 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		}
 		else
 			levelSet=sets.get(newlevelIndex).second;
-		aMAP.defaultProficiency(CMath.s_int(mob.session().prompt(L("Enter the (default) proficiency level (@x1): ",""+aMAP.defaultProficiency()),aMAP.defaultProficiency()+"")));
-		aMAP.maxProficiency(CMath.s_int(mob.session().prompt(L("Enter the (maximum) proficiency level (@x1): ",""+aMAP.maxProficiency()),aMAP.maxProficiency()+"")));
-		aMAP.autoGain(mob.session().confirm(L("Is this skill automatically gained@x1?",(aMAP.autoGain()?"(Y/n)":"(y/N)")),""+aMAP.autoGain()));
+		aMAP.defaultProficiency(CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Enter the (default) proficiency level (@x1): ",""+aMAP.defaultProficiency()),aMAP.defaultProficiency()+"")));
+		aMAP.maxProficiency(CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Enter the (maximum) proficiency level (@x1): ",""+aMAP.maxProficiency()),aMAP.maxProficiency()+"")));
+		aMAP.autoGain(mob.session().getSyncModalDialogManager().confirm(L("Is this skill automatically gained@x1?",(aMAP.autoGain()?"(Y/n)":"(y/N)")),""+aMAP.autoGain()));
 		aMAP.secretFlag(SecretFlag.startsWithIgnoreCase(
-				mob.session().choose(L("Is this skill P)ublic, S)ecret, or M)asked @x1?",
+				mob.session().getSyncModalDialogManager().choose(L("Is this skill P)ublic, S)ecret, or M)asked @x1?",
 						(aMAP.secretFlag()==SecretFlag.PUBLIC?"(P/s/m)":aMAP.secretFlag()==SecretFlag.SECRET?"(p/S/m)":"(p/s/M)")),
 						"PSM",""+aMAP.secretFlag().name().charAt(0))
 				)
 		);
-		aMAP.defaultParm(mob.session().prompt(L("Enter any properties (@x1)\n\r: ",aMAP.defaultParm()),aMAP.defaultParm()));
+		aMAP.defaultParm(mob.session().getSyncModalDialogManager().prompt(L("Enter any properties (@x1)\n\r: ",aMAP.defaultParm()),aMAP.defaultParm()));
 		String s="?";
 		while(s.equalsIgnoreCase("?"))
 		{
-			s=mob.session().prompt(L("Enter any pre-requisites (@x1)\n\r(?) : ",aMAP.originalSkillPreReqList()),aMAP.originalSkillPreReqList());
+			s=mob.session().getSyncModalDialogManager().prompt(L("Enter any pre-requisites (@x1)\n\r(?) : ",aMAP.originalSkillPreReqList()),aMAP.originalSkillPreReqList());
 			if(s.equalsIgnoreCase("?"))
 				mob.tell(""+CMLib.help().getHelpText("ABILITY_PREREQS",mob,true));
 			else
@@ -8398,7 +8398,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		s="?";
 		while(s.equalsIgnoreCase("?"))
 		{
-			s=mob.session().prompt(L("Enter any requirement mask (@x1)\n\r(?) : ",aMAP.extraMask()),aMAP.extraMask());
+			s=mob.session().getSyncModalDialogManager().prompt(L("Enter any requirement mask (@x1)\n\r(?) : ",aMAP.extraMask()),aMAP.extraMask());
 			if(s.equalsIgnoreCase("?"))
 				mob.tell(""+CMLib.help().getHelpText("MASKS",mob,true));
 			else
@@ -8492,7 +8492,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			}
 
 			mob.session().getOutputFormatter().wraplessPrintln(header+parts.toString());
-			final String newName=mob.session().prompt(L("Enter an ability name to add or remove (?)\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter an ability name to add or remove (?)\n\r:"),"");
 			if(newName.equalsIgnoreCase("?"))
 				mob.tell(CMLib.lister().build3ColTable(mob,CMClass.abilities(),-1).toString());
 			else
@@ -8599,7 +8599,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				final String promptStr=L("Enter a material or resource to add or remove (?)\n\r:");
 				while((mob.session()!=null)&&(!mob.session().isStopped()))
 				{
-					final String word=mob.session().prompt(promptStr,"");
+					final String word=mob.session().getSyncModalDialogManager().prompt(promptStr,"");
 					if(word.trim().length()==0)
 					{
 						break;
@@ -8669,7 +8669,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Cultural Abilities: @x2.",""+showNumber,parts.toString()));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			final String newName=mob.session().prompt(L("Enter an ability name to add or remove (?)\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter an ability name to add or remove (?)\n\r:"),"");
 			if(newName.equalsIgnoreCase("?"))
 				mob.tell(CMLib.lister().build3ColTable(mob,CMClass.abilities(),-1).toString());
 			else
@@ -8697,15 +8697,15 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					else
 					{
 						final StringBuilder str=new StringBuilder(A.ID()+";");
-						final String prof=mob.session().prompt(L("Enter the default proficiency level (100): "),"100");
+						final String prof=mob.session().getSyncModalDialogManager().prompt(L("Enter the default proficiency level (100): "),"100");
 						str.append((""+CMath.s_int(prof)));
-						final String levelStr=mob.session().prompt(L("Enter the character level (0): "),"0");
+						final String levelStr=mob.session().getSyncModalDialogManager().prompt(L("Enter the character level (0): "),"0");
 						str.append(";");
 						str.append((""+CMath.s_int(levelStr)));
-						final String gainStr=Boolean.valueOf(mob.session().confirm(L("Enter Y if it is auto-gained (Y/n)? "),"Y")).toString();
+						final String gainStr=Boolean.valueOf(mob.session().getSyncModalDialogManager().confirm(L("Enter Y if it is auto-gained (Y/n)? "),"Y")).toString();
 						str.append(";");
 						str.append(gainStr);
-						final String parmStr=mob.session().prompt(L("Enter default params (): "),"");
+						final String parmStr=mob.session().getSyncModalDialogManager().prompt(L("Enter default params (): "),"");
 						str.append(";");
 						str.append(""+parmStr);
 						data.addElement(str.toString());
@@ -8860,7 +8860,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -8903,7 +8903,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -8923,7 +8923,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		final String promptStr=L("Enter a position ID to edit/remove or ADD\n\r:");
 		while((mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			final String word=mob.session().prompt(promptStr,"");
+			final String word=mob.session().getSyncModalDialogManager().prompt(promptStr,"");
 			if(word.trim().length()==0)
 			{
 				return;
@@ -8949,7 +8949,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				else
 				if(mob.session()!=null)
 				{
-					final String choice=mob.session().choose(L("Edit or Delete position @x1 (E/D/)?",editMe.getID()), L("ED"), "");
+					final String choice=mob.session().getSyncModalDialogManager().choose(L("Edit or Delete position @x1 (E/D/)?",editMe.getID()), L("ED"), "");
 					if(choice.equalsIgnoreCase("E"))
 						modifyClanPosition(mob,editMe,showFlag);
 					else
@@ -9028,7 +9028,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -9098,7 +9098,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -9137,7 +9137,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					final String promptStr=L("Enter a word definition to add or remove\n\r:");
 					while((mob.session()!=null)&&(!mob.session().isStopped()))
 					{
-						String word=mob.session().prompt(promptStr,"");
+						String word=mob.session().getSyncModalDialogManager().prompt(promptStr,"");
 						if(word.trim().length()==0)
 						{
 							break;
@@ -9174,7 +9174,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					final String promptStr=L("Enter a language ID to add or remove\n\r:");
 					while((mob.session()!=null)&&(!mob.session().isStopped()))
 					{
-						String word=mob.session().prompt(promptStr,"");
+						String word=mob.session().getSyncModalDialogManager().prompt(promptStr,"");
 						if(word.trim().length()==0)
 						{
 							break;
@@ -9219,7 +9219,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -9263,7 +9263,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -9308,7 +9308,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -9361,7 +9361,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -9415,7 +9415,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -9433,7 +9433,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(showNumber+". "+fieldDisplayStr+": '"+(set.get(setDex).second+"'."));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return true;
-		String newName=mob.session().prompt(L("Enter a new one\n\r:"),"");
+		String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one\n\r:"),"");
 		if(newName.trim().length()==0)
 		{
 			mob.tell(L("(no change)"));
@@ -9482,7 +9482,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(showNumber+". "+fieldDisplayStr+": '"+(map.get(field)+"'."));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return true;
-		String newName=mob.session().prompt(L("Enter a new one\n\r:"),"");
+		String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one\n\r:"),"");
 		if(newName.trim().length()==0)
 		{
 			mob.tell(L("(no change)"));
@@ -9579,7 +9579,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -9654,7 +9654,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -9820,14 +9820,14 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					if((showFlag!=showNumber)&&(showFlag>-999))
 						break;
 					final String height = CMParms.getParmStr(oldVal,"HEIGHT","");
-					String newHeight = sess.prompt("Height ("+height+"): ");
+					String newHeight = sess.getSyncModalDialogManager().prompt("Height ("+height+"): ");
 					if(newHeight.length()==0)
 						newHeight=height;
 					else
 					if(!CMath.isNumber(newHeight))
 						newHeight="";
 					final String weight = CMParms.getParmStr(oldVal,"WEIGHT","");
-					String newWeight = sess.prompt("Weight ("+weight+"): ");
+					String newWeight = sess.getSyncModalDialogManager().prompt("Weight ("+weight+"): ");
 					if(newWeight.length()==0)
 						newWeight=weight;
 					else
@@ -9972,8 +9972,8 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 						chanceStr=rest.substring(0,x).trim();
 						rest=rest.substring(x+1);
 					}
-					final boolean up = sess.confirm("Make uppercase ("+defUp+")? ", defUp);
-					String newChance = sess.prompt("Pct chance ("+chanceStr+")?");
+					final boolean up = sess.getSyncModalDialogManager().confirm("Make uppercase ("+defUp+")? ", defUp);
+					String newChance = sess.getSyncModalDialogManager().prompt("Pct chance ("+chanceStr+")?");
 					if(newChance.trim().length()==0)
 						newChance=chanceStr;
 					else
@@ -10005,8 +10005,8 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					String colorCode = varVal;
 					if(defUp.equals("Y"))
 						colorCode=defUp.substring(3).trim();
-					final boolean up = sess.confirm("Make uppercase ("+defUp+")? ", defUp);
-					String roomColorChar = sess.prompt("Color Code ("+colorCode+"): ");
+					final boolean up = sess.getSyncModalDialogManager().confirm("Make uppercase ("+defUp+")? ", defUp);
+					String roomColorChar = sess.getSyncModalDialogManager().prompt("Color Code ("+colorCode+"): ");
 					if(roomColorChar.trim().length()==0)
 						roomColorChar=colorCode.trim();
 					else
@@ -10055,7 +10055,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -10132,7 +10132,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -10284,7 +10284,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -10349,7 +10349,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -10391,7 +10391,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			mob.tell(L("@x1. Scripts: '@x2'.",""+showNumber,behaviorstr));
 			if((showFlag!=showNumber)&&(showFlag>-999))
 				return;
-			behave=mob.session().prompt(L("Enter a script number to remove\n\r:"),"");
+			behave=mob.session().getSyncModalDialogManager().prompt(L("Enter a script number to remove\n\r:"),"");
 			if(behave.length()>0)
 			{
 				final String tattoo=behave;
@@ -10475,7 +10475,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -10523,7 +10523,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -10582,7 +10582,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -10718,7 +10718,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -10829,7 +10829,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -10915,7 +10915,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -10981,7 +10981,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -11042,7 +11042,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -11070,7 +11070,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				final Item I=i.nextElement();
 				if((I!=null)&&(I.basePhyStats().rejuv()>0)&&(I.basePhyStats().rejuv()!=PhyStats.NO_REJUV)&&(session!=null))
 				{
-					if(session.confirm(L("\n\r**This mob has variable equipment in the catalog, would you like to reset it first (Y/n)? "),"Y"))
+					if(session.getSyncModalDialogManager().confirm(L("\n\r**This mob has variable equipment in the catalog, would you like to reset it first (Y/n)? "),"Y"))
 					{
 						CMLib.coffeeMaker().unpackEnvironmentalMiscTextXML(me, cataM.text(),false);
 						CMLib.catalog().changeCatalogUsage(me, true);
@@ -11178,7 +11178,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -11336,7 +11336,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -11405,7 +11405,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			return;
 		while((mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			final String newName=mob.session().prompt(L("Enter a new one (?)\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one (?)\n\r:"),"");
 			if(newName.trim().length()==0)
 			{
 				mob.tell(L("(no change)"));
@@ -11469,7 +11469,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			return;
 		while((mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			final String newName=mob.session().prompt(L("Enter a new one (?)\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one (?)\n\r:"),"");
 			if(newName.trim().length()==0)
 			{
 				mob.tell(L("(no change)"));
@@ -11508,7 +11508,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			return;
 		while((mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			final String newName=mob.session().prompt(L("Enter a new one (?)\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one (?)\n\r:"),"");
 			if(newName.trim().equalsIgnoreCase("none"))
 			{
 				C.setClanClass("");
@@ -11550,7 +11550,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 			return oldRoomID;
 		while((mob.session()!=null)&&(!mob.session().isStopped()))
 		{
-			final String newName=mob.session().prompt(L("Enter a new one (null)\n\r:"),"");
+			final String newName=mob.session().getSyncModalDialogManager().prompt(L("Enter a new one (null)\n\r:"),"");
 			if(newName.trim().equalsIgnoreCase("null"))
 				return "";
 			else
@@ -11614,7 +11614,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -11770,7 +11770,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -11833,7 +11833,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -11850,7 +11850,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 		mob.tell(L("@x1. Expires: @x2",""+showNumber,CMLib.time().date2String(A.getAccountExpiration())));
 		if((showFlag!=showNumber)&&(showFlag>-999))
 			return;
-		final String s=mob.session().prompt(L("Enter a new value\n\r:"),"");
+		final String s=mob.session().getSyncModalDialogManager().prompt(L("Enter a new value\n\r:"),"");
 		if(s.length()>0)
 			A.setAccountExpiration(CMLib.time().string2Millis(s));
 		else
@@ -11911,7 +11911,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -11956,7 +11956,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 					showFlag = -1;
 					continue;
 				}
-				showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+				showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 				if(showFlag<=0)
 				{
 					showFlag=-1;
@@ -12005,7 +12005,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -12095,7 +12095,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -12138,7 +12138,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;
@@ -12185,7 +12185,7 @@ public class CMGenEditor extends StdLibrary implements GenericEditor
 				showFlag = -1;
 				continue;
 			}
-			showFlag=CMath.s_int(mob.session().prompt(L("Edit which? "),""));
+			showFlag=CMath.s_int(mob.session().getSyncModalDialogManager().prompt(L("Edit which? "),""));
 			if(showFlag<=0)
 			{
 				showFlag=-1;

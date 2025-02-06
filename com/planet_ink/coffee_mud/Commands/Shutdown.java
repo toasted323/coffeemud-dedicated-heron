@@ -146,7 +146,7 @@ public class Shutdown extends StdCommand implements Tickable
 					mob.tell(L("I don't know how to shutdown within the next @x1 @x2; try `5 minutes` or something similar.",""+wait,multiplier));
 					return false;
 				}
-				if((!mob.session().confirm(L("Shutdown @x1 in @x2 @x3 (y/N)?",CMProps.getVar(CMProps.Str.MUDNAME),""+wait,multiplier.toLowerCase()),"N")))
+				if((!mob.session().getSyncModalDialogManager().confirm(L("Shutdown @x1 in @x2 @x3 (y/N)?",CMProps.getVar(CMProps.Str.MUDNAME),""+wait,multiplier.toLowerCase()),"N")))
 					return false;
 				shuttingDownCompletes=System.currentTimeMillis()+(wait * timeMultiplier)-1;
 				shuttingDownNextAnnounce=System.currentTimeMillis() + ((wait * timeMultiplier)/2)-100;
@@ -165,7 +165,7 @@ public class Shutdown extends StdCommand implements Tickable
 					mob.session().getOutputFormatter().println(L("'@x1' is not a valid time.",atWhat));
 					return false;
 				}
-				if((!mob.session().confirm(L("Shutdown @x1 at @x2 (y/N)?",CMProps.getVar(CMProps.Str.MUDNAME),CMLib.time().date2String(C)),"N")))
+				if((!mob.session().getSyncModalDialogManager().confirm(L("Shutdown @x1 at @x2 (y/N)?",CMProps.getVar(CMProps.Str.MUDNAME),CMLib.time().date2String(C)),"N")))
 					return false;
 				shuttingDownCompletes=C.getTimeInMillis();
 				shuttingDownNextAnnounce=System.currentTimeMillis() + ((C.getTimeInMillis()-System.currentTimeMillis())/2)-100;
@@ -185,7 +185,7 @@ public class Shutdown extends StdCommand implements Tickable
 		if(!startCountDown)
 		{
 			if((!noPrompt)
-			&&(!mob.session().confirm(L("Shutdown @x1 (y/N)?",CMProps.getVar(CMProps.Str.MUDNAME)),"N")))
+			&&(!mob.session().getSyncModalDialogManager().confirm(L("Shutdown @x1 (y/N)?",CMProps.getVar(CMProps.Str.MUDNAME)),"N")))
 				return false;
 
 			shuttingDownMob=null;

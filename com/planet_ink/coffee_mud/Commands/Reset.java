@@ -211,7 +211,7 @@ public class Reset extends StdCommand
 			final AmmunitionWeapon W=(AmmunitionWeapon)I;
 			if((W.requiresAmmunition())&&(W.rawAmmunitionCapacity()>0))
 			{
-				String str=mob.session().prompt(L("@x1@x2 requires (@x3): ",lead,I.Name(),W.ammunitionType()));
+				String str=mob.session().getSyncModalDialogManager().prompt(L("@x1@x2 requires (@x3): ",lead,I.Name(),W.ammunitionType()));
 				if(str.length()>0)
 				{
 					if((str.trim().length()==0)
@@ -220,7 +220,7 @@ public class Reset extends StdCommand
 						W.setAmmunitionType("");
 						W.setAmmoCapacity(0);
 						W.setUsesRemaining(100);
-						str=mob.session().prompt(L("@x1@x2 new weapon type: ",lead,I.Name()));
+						str=mob.session().getSyncModalDialogManager().prompt(L("@x1@x2 new weapon type: ",lead,I.Name()));
 						W.setWeaponDamageType(CMath.s_int(str));
 					}
 					else
@@ -246,7 +246,7 @@ public class Reset extends StdCommand
 		}
 		while(!mob.session().isStopped())
 		{
-			final String str=mob.session().prompt(lead+I.Name()+"/"+RawMaterial.CODES.NAME(I.material()),"");
+			final String str=mob.session().getSyncModalDialogManager().prompt(lead+I.Name()+"/"+RawMaterial.CODES.NAME(I.material()),"");
 			if(str.equalsIgnoreCase("delete"))
 				return -1;
 			else
@@ -340,7 +340,7 @@ public class Reset extends StdCommand
 				String s=I.description().trim().toLowerCase();
 				if((mob!=null)&&(mob.session()!=null)&&(openOnly))
 				{
-					if(mob.session().confirm(L("Clear @x1/@x2/@x3 (Y/n)?",I.name(),I.displayText(),I.description()),"Y"))
+					if(mob.session().getSyncModalDialogManager().confirm(L("Clear @x1/@x2/@x3 (Y/n)?",I.name(),I.displayText(),I.description()),"Y"))
 					{
 						I.setDescription("");
 						return I.material();
@@ -369,7 +369,7 @@ public class Reset extends StdCommand
 				{
 					if(mob!=null)
 					{
-						if(mob.session().confirm(L("Change @x1/@x2 material to @x3 (y/N)?",I.name(),I.displayText(),RawMaterial.CODES.NAME(rightMat)),"N"))
+						if(mob.session().getSyncModalDialogManager().confirm(L("Change @x1/@x2 material to @x3 (y/N)?",I.name(),I.displayText(),RawMaterial.CODES.NAME(rightMat)),"N"))
 						{
 							I.setMaterial(rightMat);
 							I.setDescription("");
@@ -626,7 +626,7 @@ public class Reset extends StdCommand
 			}
 			final Session sess=mob.session();
 			if((sess==null)
-			||(sess.confirm(L("Re-Level the area '@x1' to between @x2 and @x3 (y/N)?",A.name(),""+levelLow,""+levelHigh),"N")))
+			||(sess.getSyncModalDialogManager().confirm(L("Re-Level the area '@x1' to between @x2 and @x3 (y/N)?",A.name(),""+levelLow,""+levelHigh),"N")))
 			{
 				if(sess!=null)
 					sess.getOutputFormatter().print(L("Working..."));
@@ -849,7 +849,7 @@ public class Reset extends StdCommand
 				if((skipPrompt==Boolean.TRUE)
 				||((skipPrompt==null)
 					&&(mob.session()!=null)
-					&&(mob.session().confirm("Save (y/N)?", "N"))))
+					&&(mob.session().getSyncModalDialogManager().confirm("Save (y/N)?", "N"))))
 					F.saveText(finalTxt);
 			}
 			return true;
@@ -860,7 +860,7 @@ public class Reset extends StdCommand
 			final String warning=resetWarning(mob, mob.location());
 			if((mob.session()==null)
 			||(warning==null)
-			||(mob.session().confirm(L("@x1\n\rReset the contents of the room '@x2', OK (Y/n)?",warning,mob.location().displayText(mob)),"Y")))
+			||(mob.session().getSyncModalDialogManager().confirm(L("@x1\n\rReset the contents of the room '@x2', OK (Y/n)?",warning,mob.location().displayText(mob)),"Y")))
 			{
 				for(final Session S : CMLib.sessions().localOnlineIterable())
 				{
@@ -933,7 +933,7 @@ public class Reset extends StdCommand
 			}
 			if(CMLib.smtp().isValidEmailAddress(stat.getEmail()))
 			{
-				if((mob.session()==null)||(mob.session().confirm(L("Generate a random password for '@x1' and email to '@x2' (Y/n)?",finalName,stat.getEmail()),"Y")))
+				if((mob.session()==null)||(mob.session().getSyncModalDialogManager().confirm(L("Generate a random password for '@x1' and email to '@x2' (Y/n)?",finalName,stat.getEmail()),"Y")))
 				{
 					Log.infoOut(mob.Name()+" did: RESET PASSWORD "+name);
 					final String password=CMLib.encoder().generateRandomPassword();
@@ -951,7 +951,7 @@ public class Reset extends StdCommand
 				}
 			}
 			else
-			if((mob.session()==null)||(mob.session().confirm(L("Would you like to set the password for '@x1' to '@x2' (Y/n)?",finalName,finalName.toLowerCase()),"Y")))
+			if((mob.session()==null)||(mob.session().getSyncModalDialogManager().confirm(L("Would you like to set the password for '@x1' to '@x2' (Y/n)?",finalName,finalName.toLowerCase()),"Y")))
 			{
 				final String password=finalName.toLowerCase();
 				stat.setPassword(password);
@@ -991,7 +991,7 @@ public class Reset extends StdCommand
 				final String warning=resetWarning(mob, A);
 				if(warning!=null)
 					mob.tell(warning);
-				if((mob.session()==null)||(mob.session().confirm(L("Reset the contents of the area '@x1', OK (Y/n)?",A.name()),"Y")))
+				if((mob.session()==null)||(mob.session().getSyncModalDialogManager().confirm(L("Reset the contents of the area '@x1', OK (Y/n)?",A.name()),"Y")))
 				{
 					for(final Session S : CMLib.sessions().localOnlineIterable())
 					{
@@ -1135,7 +1135,7 @@ public class Reset extends StdCommand
 		else
 		if(s.equalsIgnoreCase("propertygarbage"))
 		{
-			if(mob.session().confirm(L("Reset all unowned property to default room descriptions?"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Reset all unowned property to default room descriptions?"), L("N")))
 			{
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				Room R=null;
@@ -1161,7 +1161,7 @@ public class Reset extends StdCommand
 		else
 		if(s.equalsIgnoreCase("racestatgains")&&(CMSecurity.isAllowed(mob,mob.location(),CMSecurity.SecFlag.CMDRACES)))
 		{
-			if(mob.session().confirm(L("Alter the stat gains every generic race automatically?"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Alter the stat gains every generic race automatically?"), L("N")))
 			{
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				for(final Enumeration<Race> e=CMClass.races();e.hasMoreElements();)
@@ -1195,7 +1195,7 @@ public class Reset extends StdCommand
 		else
 		if(s.equalsIgnoreCase("genraceagingcharts")&&(CMSecurity.isAllowed(mob,mob.location(),CMSecurity.SecFlag.CMDRACES)))
 		{
-			if(mob.session().confirm(L("Alter the aging charts of every race automatically?"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Alter the aging charts of every race automatically?"), L("N")))
 			{
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				for(final Enumeration<Race> e=CMClass.races();e.hasMoreElements();)
@@ -1252,7 +1252,7 @@ public class Reset extends StdCommand
 			final List<Race> racesToDo = new ArrayList<Race>();
 			if(rest.length()==0)
 			{
-				if(mob.session().confirm(L("Recreate all the gen-mixed-races?!"), L("N")))
+				if(mob.session().getSyncModalDialogManager().confirm(L("Recreate all the gen-mixed-races?!"), L("N")))
 				{
 					Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 					for(final Enumeration<Race> e=CMClass.races();e.hasMoreElements();)
@@ -1348,7 +1348,7 @@ public class Reset extends StdCommand
 				mob.tell(L("Which bank?"));
 				return false;
 			}
-			if(mob.session().confirm(L("Inspect and update all COIN objects in player bank accounts?"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Inspect and update all COIN objects in player bank accounts?"), L("N")))
 			{
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				final List<JournalEntry> V=CMLib.database().DBReadJournalMsgsByUpdateDate(bank, true);
@@ -1376,7 +1376,7 @@ public class Reset extends StdCommand
 				s=commands.get(1);
 			if(mob.session()==null)
 				return false;
-			if(mob.session().confirm(L("Alter every mobs combat stats to system defaults?!"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Alter every mobs combat stats to system defaults?!"), L("N")))
 			{
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				mob.session().getOutputFormatter().print(L("working..."));
@@ -1506,7 +1506,7 @@ public class Reset extends StdCommand
 				s=commands.get(1);
 			if(mob.session()==null)
 				return false;
-			if(mob.session().confirm(L("Alter weapon bearing mobs damage stat to damage-weapon or 0?!"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Alter weapon bearing mobs damage stat to damage-weapon or 0?!"), L("N")))
 			{
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				mob.session().getOutputFormatter().print(L("working..."));
@@ -1633,7 +1633,7 @@ public class Reset extends StdCommand
 		{
 			if(mob.session()==null)
 				return false;
-			if(mob.session().confirm(L("Alter every door called 'the ground'?!"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Alter every door called 'the ground'?!"), L("N")))
 			{
 				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
@@ -1673,7 +1673,7 @@ public class Reset extends StdCommand
 		{
 			if(mob.session()==null)
 				return false;
-			if(mob.session().confirm(L("Change all mobs armor to the codebase defaults?"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Change all mobs armor to the codebase defaults?"), L("N")))
 			{
 				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
@@ -1723,7 +1723,7 @@ public class Reset extends StdCommand
 		{
 			if(mob.session()==null)
 				return false;
-			if(mob.session().confirm(L("Alter every mobs money to system defaults?!"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Alter every mobs money to system defaults?!"), L("N")))
 			{
 				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
@@ -1784,7 +1784,7 @@ public class Reset extends StdCommand
 				return false;
 			}
 
-			if(mob.session().confirm(L("Add this behavior/property to every Area?"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Add this behavior/property to every Area?"), L("N")))
 			{
 				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
@@ -1841,7 +1841,7 @@ public class Reset extends StdCommand
 		{
 			if(mob.session()==null)
 				return false;
-			if(mob.session().confirm(L("Begin scanning and altering the material type of all items?"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Begin scanning and altering the material type of all items?"), L("N")))
 			{
 				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
@@ -1913,7 +1913,7 @@ public class Reset extends StdCommand
 		{
 			if(mob.session()==null)
 				return false;
-			if(mob.session().confirm(L("Begin scanning mixed generic races for descrepencies?"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Begin scanning mixed generic races for descrepencies?"), L("N")))
 			{
 				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
@@ -2040,7 +2040,7 @@ public class Reset extends StdCommand
 
 			if(mob.session()==null)
 				return false;
-			if(mob.session().confirm(L("Begin scanning and altering all items to system defaults?"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Begin scanning and altering all items to system defaults?"), L("N")))
 			{
 				mob.session().getOutputFormatter().print(L("working..."));
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
@@ -2248,7 +2248,7 @@ public class Reset extends StdCommand
 		else
 		if(s.equalsIgnoreCase("arearacemat")&&(CMSecurity.isASysOp(mob)))
 		{
-			if(mob.session().confirm(L("Begin scanning and altering all item materials and mob races manually?"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Begin scanning and altering all item materials and mob races manually?"), L("N")))
 			{
 				// this is just utility code and will change frequently
 				final Area A=mob.location().getArea();
@@ -2317,7 +2317,7 @@ public class Reset extends StdCommand
 								else
 								while(!mob.session().isStopped())
 								{
-									final String str=mob.session().prompt(" "+M.Name()+"/"+M.charStats().getMyRace().ID(),"");
+									final String str=mob.session().getSyncModalDialogManager().prompt(" "+M.Name()+"/"+M.charStats().getMyRace().ID(),"");
 									if(str.length()==0)
 									{
 										rememberM.put(M.name(),M.baseCharStats().getMyRace());
@@ -2465,7 +2465,7 @@ public class Reset extends StdCommand
 		{
 			TechType[] types;
 			String[] names;
-			if(mob.session().confirm(L("Re-create all the manufacturers?"), L("N")))
+			if(mob.session().getSyncModalDialogManager().confirm(L("Re-create all the manufacturers?"), L("N")))
 			{
 				Log.infoOut(mob.Name()+" did: RESET "+CMParms.combine(commands));
 				final List<Manufacturer> m=new XVector<Manufacturer>(CMLib.tech().manufacterers());

@@ -9818,7 +9818,7 @@ public class DefaultScriptingEngine implements ScriptingEngine
 				{
 					try
 					{
-						final String value=((MOB)newTarget).session().prompt(promptStr,360000);
+						final String value=((MOB)newTarget).session().getSyncModalDialogManager().prompt(promptStr,360000);
 						if(CMSecurity.isDebugging(CMSecurity.DbgFlag.SCRIPTVARS))
 							Log.debugOut(CMStrings.padRight(ctx.scripted.Name(), 15)+": SETVAR: "+newTarget.Name()+"("+var+")="+value+"<");
 						setVar(newTarget.Name(),var,value);
@@ -9846,7 +9846,7 @@ public class DefaultScriptingEngine implements ScriptingEngine
 				{
 					try
 					{
-						final String value=((MOB)newTarget).session().confirm(promptStr,defaultVal,60000)?"Y":"N";
+						final String value=((MOB)newTarget).session().getSyncModalDialogManager().confirm(promptStr,defaultVal,60000)?"Y":"N";
 						if(CMSecurity.isDebugging(CMSecurity.DbgFlag.SCRIPTVARS))
 							Log.debugOut(CMStrings.padRight(ctx.scripted.Name(), 15)+": SETVAR: "+newTarget.Name()+"("+var+")="+value+"<");
 						setVar(newTarget.Name(),var,value);
@@ -9865,7 +9865,7 @@ public class DefaultScriptingEngine implements ScriptingEngine
 						{
 							final int lastLineNum=si;
 							final JScriptEvent continueEvent=new JScriptEvent(this,ctx);
-							((MOB)newTarget).session().prompt(new InputCallback(InputCallback.Type.PROMPT,"",0)
+							((MOB)newTarget).session().getSyncModalDialogManager().prompt(new InputCallback(InputCallback.Type.PROMPT,"",0)
 							{
 								private final JScriptEvent event=continueEvent;
 								private final int lineNum=lastLineNum;
@@ -9923,7 +9923,7 @@ public class DefaultScriptingEngine implements ScriptingEngine
 				{
 					try
 					{
-						final String value=((MOB)newTarget).session().choose(promptStr,choices,defaultVal,60000);
+						final String value=((MOB)newTarget).session().getSyncModalDialogManager().choose(promptStr,choices,defaultVal,60000);
 						if(CMSecurity.isDebugging(CMSecurity.DbgFlag.SCRIPTVARS))
 							Log.debugOut(CMStrings.padRight(ctx.scripted.Name(), 15)+": SETVAR: "+newTarget.Name()+"("+var+")="+value+"<");
 						setVar(newTarget.Name(),var,value);

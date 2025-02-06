@@ -110,7 +110,7 @@ public class Save extends StdCommand
 
 				if(promptStr.length() > 0)
 				{
-					if((!mob.session().confirm(L("Saving @x1 will @x2. Are you sure (Y/n)?",
+					if((!mob.session().getSyncModalDialogManager().confirm(L("Saving @x1 will @x2. Are you sure (Y/n)?",
 						CMLib.map().getExtendedRoomID(room),promptStr.toString()), "Y"))
 					||(mob.session().isStopped()))
 					{
@@ -207,7 +207,7 @@ public class Save extends StdCommand
 			}
 			if(firstCommand.equals("AREA"))
 			{
-				if((mob.session()!=null)&&(mob.session().confirm(L("Doing this assumes every item in every room in this area is correctly placed.  Are you sure (N/y)?"),"N")))
+				if((mob.session()!=null)&&(mob.session().getSyncModalDialogManager().confirm(L("Doing this assumes every item in every room in this area is correctly placed.  Are you sure (N/y)?"),"N")))
 				{
 					final Area A=mob.location().getArea();
 					boolean saved = false;
@@ -223,7 +223,7 @@ public class Save extends StdCommand
 			if(firstCommand.equalsIgnoreCase("REWORLD"))
 			{
 				if((mob.session()!=null)
-				&&(mob.session().confirm(L("This will load, and then re-save ever item in the world, for no reason.  Are you sure (N/y)?"),"N")))
+				&&(mob.session().getSyncModalDialogManager().confirm(L("This will load, and then re-save ever item in the world, for no reason.  Are you sure (N/y)?"),"N")))
 				{
 					for(final Enumeration<Room> r = CMLib.map().rooms();r.hasMoreElements();)
 					{
@@ -277,7 +277,7 @@ public class Save extends StdCommand
 			if(firstCommand.equals("AREA"))
 			{
 				if((mob.session()!=null)
-				&&(mob.session().confirm(L("Doing this assumes every mob and item in every room in this area is correctly placed.  Are you sure (N/y)?"),"N")))
+				&&(mob.session().getSyncModalDialogManager().confirm(L("Doing this assumes every mob and item in every room in this area is correctly placed.  Are you sure (N/y)?"),"N")))
 				{
 					final Area A=mob.location().getArea();
 					boolean saved = false;
@@ -307,7 +307,7 @@ public class Save extends StdCommand
 			}
 			if(firstCommand.equals("AREA"))
 			{
-				if((mob.session()!=null)&&(mob.session().confirm(L("Doing this assumes every mob in every room in this area is correctly placed.  Are you sure (N/y)?"),"N")))
+				if((mob.session()!=null)&&(mob.session().getSyncModalDialogManager().confirm(L("Doing this assumes every mob in every room in this area is correctly placed.  Are you sure (N/y)?"),"N")))
 				{
 					final Area A=mob.location().getArea();
 					boolean saved = false;

@@ -215,7 +215,7 @@ public class ClanCreate extends StdCommand
 														if(!CMLib.masking().maskCheck(C.getBasicRequirementMask(), mob, true))
 														{
 															mob.tell(L("You are not qualified to create a clan of this style.\n\rRequirements: @x1",CMLib.masking().maskDesc(gvt.requiredMaskStr)));
-															session.prompt(IC[0].reset());
+															session.getSyncModalDialogManager().prompt(IC[0].reset());
 															return;
 														}
 														*/

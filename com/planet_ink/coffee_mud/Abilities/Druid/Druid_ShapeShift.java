@@ -553,7 +553,7 @@ public class Druid_ShapeShift extends StdAbility
 			{
 				try
 				{
-					if(!mob.session().confirm(L("You have not yet chosen your form, would you like to now (Y/n)?"),"Y"))
+					if(!mob.session().getSyncModalDialogManager().confirm(L("You have not yet chosen your form, would you like to now (Y/n)?"),"Y"))
 						return false;
 					while(!mob.session().isStopped())
 					{
@@ -570,7 +570,7 @@ public class Druid_ShapeShift extends StdAbility
 							}
 						}
 						str.append(L("Please select: "));
-						final String choice=mob.session().prompt(str.toString(),"");
+						final String choice=mob.session().getSyncModalDialogManager().prompt(str.toString(),"");
 						if(choice.trim().length()==0)
 						{
 							mob.tell(L("Aborted."));
