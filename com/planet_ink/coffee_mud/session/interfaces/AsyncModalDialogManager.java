@@ -19,6 +19,15 @@ import com.planet_ink.coffee_mud.Common.interfaces.Session;
    limitations under the License.
 */
 
+/**
+ * The AsyncModalDialogManager interface defines methods for handling modal dialogs
+ * in the CoffeeMUD system using non-blocking input handlers.
+ *
+ * Note: The term "Async" here is CoffeeMUD-specific jargon and does not imply
+ * true asynchronous behavior in the conventional sense of concurrent programming.
+ * Instead, it refers to the use of non-blocking input handlers that allow for
+ * periodic checks and processing during input operations.
+ */
 public interface AsyncModalDialogManager {
 	/**
 	 * Starts an asynchronous modal dialog.
